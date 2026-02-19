@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox spacing="10.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.CategoryController">
+   <children>
+      <Label text="Category Management">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </Label>
+      <HBox spacing="10.0" VBox.vgrow="ALWAYS">
+         <children>
+            <VBox spacing="10.0" HBox.hgrow="SOMETIMES">
+               <children>
+                  <Label text="Add / Edit Category">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="nameField" promptText="Category Name" />
+                  <TextArea fx:id="descriptionArea" prefHeight="100.0" promptText="Description" />
+                  <HBox spacing="10.0">
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#handleAdd" styleClass="accent" text="Add" />
+                        <Button mnemonicParsing="false" onAction="#handleUpdate" text="Update" />
+                        <Button mnemonicParsing="false" onAction="#handleDelete" style="-fx-base: #e74c3c;" text="Delete" />
+                     </children>
+                  </HBox>
+                  <Button mnemonicParsing="false" onAction="#handleClear" text="Clear Fields" />
+               </children>
+               <padding>
+                  <Insets right="10.0" />
+               </padding>
+            </VBox>
+            <TableView fx:id="categoryTable" HBox.hgrow="ALWAYS">
+              <columns>
+                <TableColumn fx:id="idCol" prefWidth="50.0" text="ID" />
+                <TableColumn fx:id="nameCol" prefWidth="150.0" text="Name" />
+                  <TableColumn fx:id="descCol" prefWidth="250.0" text="Description" />
+              </columns>
+            </TableView>
+         </children>
+      </HBox>
+   </children>
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+</VBox>
