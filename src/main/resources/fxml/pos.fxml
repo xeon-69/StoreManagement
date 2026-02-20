@@ -10,19 +10,15 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<HBox prefHeight="600.0" prefWidth="900.0" spacing="10.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.POSController">
+<HBox prefHeight="600.0" prefWidth="900.0" spacing="10.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.POSController" stylesheets="@../css/styles.css">
    <children>
       <VBox spacing="10.0" HBox.hgrow="ALWAYS">
          <children>
-            <Label text="Product Search">
-               <font>
-                  <Font size="18.0" />
-               </font>
-            </Label>
+            <Label text="Product Search" styleClass="sub-header-label"/>
             <HBox spacing="10.0">
                <children>
                   <TextField fx:id="searchField" promptText="Scan Barcode or Type Name..." HBox.hgrow="ALWAYS" />
-                  <Button mnemonicParsing="false" onAction="#handleSearch" text="Search" />
+                  <Button mnemonicParsing="false" onAction="#handleSearch" text="Search" styleClass="btn-primary"/>
                </children>
             </HBox>
             <javafx.scene.control.ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
@@ -37,11 +33,7 @@
       </VBox>
       <VBox prefWidth="350.0" spacing="10.0" style="-fx-background-color: #f0f0f0;">
          <children>
-            <Label text="Current Sale">
-               <font>
-                  <Font size="18.0" />
-               </font>
-            </Label>
+            <Label text="Current Sale" styleClass="sub-header-label"/>
             <TableView fx:id="cartTable" VBox.vgrow="ALWAYS">
               <columns>
                 <TableColumn fx:id="cNameCol" prefWidth="140.0" text="Item" />
@@ -56,19 +48,19 @@
                         <Font name="System Bold" size="20.0" />
                      </font>
                   </Label>
-                  <Label fx:id="totalLabel" text="\$0.00" textFill="#2980b9">
+                  <Label fx:id="totalLabel" text="0.00 MMK" textFill="#2980b9">
                      <font>
                         <Font name="System Bold" size="20.0" />
                      </font>
                   </Label>
                </children>
             </HBox>
-            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleCheckout" prefHeight="50.0" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="CHECKOUT">
+            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleCheckout" prefHeight="50.0" styleClass="btn-success" text="CHECKOUT">
                <font>
                   <Font name="System Bold" size="18.0" />
                </font>
             </Button>
-            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleClearCart" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" text="Clear Cart" />
+            <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleClearCart" styleClass="btn-danger" text="Clear Cart" />
          </children>
          <padding>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

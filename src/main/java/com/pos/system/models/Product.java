@@ -8,10 +8,10 @@ public class Product {
     private double costPrice;
     private double sellingPrice;
     private int stock;
-    private String imagePath;
+    private byte[] imageData;
 
     public Product(int id, String barcode, String name, String category, double costPrice, double sellingPrice,
-            int stock, String imagePath) {
+            int stock, byte[] imageData) {
         this.id = id;
         this.barcode = barcode;
         this.name = name;
@@ -19,7 +19,7 @@ public class Product {
         this.costPrice = costPrice;
         this.sellingPrice = sellingPrice;
         this.stock = stock;
-        this.imagePath = imagePath;
+        this.imageData = imageData;
     }
 
     // Constructor overload for backward compatibility (optional but helpful)
@@ -84,11 +84,11 @@ public class Product {
         this.stock = stock;
     }
 
-    public String getImagePath() {
-        return imagePath;
+    public byte[] getImageData() {
+        return imageData;
     }
 
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
     }
 }

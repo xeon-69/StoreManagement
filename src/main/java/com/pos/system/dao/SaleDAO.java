@@ -22,7 +22,7 @@ public class SaleDAO extends BaseDAO {
         PreparedStatement itemStmt = null;
         PreparedStatement updateStockStmt = null;
 
-        String insertSale = "INSERT INTO sales (user_id, total_amount, total_profit) VALUES (?, ?, ?)";
+        String insertSale = "INSERT INTO sales (user_id, total_amount, total_profit, sale_date) VALUES (?, ?, ?, ?)";
         String insertItem = "INSERT INTO sale_items (sale_id, product_id, quantity, price_at_sale, cost_at_sale) VALUES (?, ?, ?, ?, ?)";
         String updateStock = "UPDATE products SET stock = stock - ? WHERE id = ?";
 
@@ -34,6 +34,8 @@ public class SaleDAO extends BaseDAO {
             saleStmt.setInt(1, sale.getUserId());
             saleStmt.setDouble(2, sale.getTotalAmount());
             saleStmt.setDouble(3, sale.getTotalProfit());
+            saleStmt.setString(4,
+                    sale.getSaleDate() != null ? sale.getSaleDate().toString() : LocalDateTime.now().toString());
             saleStmt.executeUpdate();
 
             int saleId = 0;
@@ -93,11 +95,12 @@ public class SaleDAO extends BaseDAO {
 
     // New granular methods for Service Layer
     public int insertSale(Sale sale) throws SQLException {
-        String sql = "INSERT INTO sales (user_id, total_amount, total_profit) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO sales (user_id, total_amount, total_profit, sale_date) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, sale.getUserId());
             stmt.setDouble(2, sale.getTotalAmount());
             stmt.setDouble(3, sale.getTotalProfit());
+            stmt.setString(4, sale.getSaleDate().toString()); // Use standard LocalDateTime toString (ISO-8601)
             stmt.executeUpdate();
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
@@ -128,13 +131,7 @@ public class SaleDAO extends BaseDAO {
     public double getTotalSalesSince(LocalDateTime since) throws SQLException {
         String sql = "SELECT SUM(total_amount) FROM sales WHERE sale_date >= ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, since.toString()); // SQLite stores dates as strings usually, or use Timestamp
-            // If using standard SQLite layout:
-            // stmt.setObject(1, since); // JDBC might handle it if using robust driver
-            // Safest for SQLite default:
-            // stmt.setString(1, since.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            // Let's assume standard ISO format string.
-
+            stmt.setString(1, since.toString());
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getDouble(1);
@@ -142,5 +139,68 @@ public class SaleDAO extends BaseDAO {
             }
         }
         return 0.0;
+    }
+
+    public double getTotalProfitSince(LocalDateTime since) throws SQLException {
+        String sql = "SELECT SUM(total_profit) FROM sales WHERE sale_date >= ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, since.toString());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble(1);
+                }
+            }
+        }
+        return 0.0;
+    }
+
+    // Get all sales ordered by date desc
+    public List<Sale> getAllSales() throws SQLException {
+        List<Sale> sales = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM sales ORDER BY sale_date DESC LIMIT 100"; // Limit for performance
+        try (Statement stmt = connection.createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                sales.add(new Sale(
+                        rs.getInt("id"),
+                        rs.getInt("user_id"),
+                        rs.getDouble("total_amount"),
+                        rs.getDouble("total_profit"),
+                        java.time.LocalDateTime.parse(rs.getString("sale_date").replace(" ", "T")) // Basic robust
+                                                                                                   // parsing
+                ));
+            }
+        } catch (Exception e) {
+            // Try parsing standard SQLite format if above fails or use simple string
+            // Ideally we standardise on storing ISO-8601
+            logger.warn("Date parsing check required in GetAllSales");
+        }
+        return sales;
+    }
+
+    public List<Sale> getRecentSales(int limit) throws SQLException {
+        List<Sale> sales = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM sales ORDER BY sale_date DESC LIMIT ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    LocalDateTime date;
+                    try {
+                        date = LocalDateTime.parse(rs.getString("sale_date"));
+                    } catch (Exception e) {
+                        // Fallback for space instead of T
+                        date = LocalDateTime.parse(rs.getString("sale_date").replace(" ", "T"));
+                    }
+                    sales.add(new Sale(
+                            rs.getInt("id"),
+                            rs.getInt("user_id"),
+                            rs.getDouble("total_amount"),
+                            rs.getDouble("total_profit"),
+                            date));
+                }
+            }
+        }
+        return sales;
     }
 }

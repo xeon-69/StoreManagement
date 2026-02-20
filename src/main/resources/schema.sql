@@ -22,12 +22,16 @@ CREATE TABLE IF NOT EXISTS products (
     cost_price REAL NOT NULL DEFAULT 0.0,
     selling_price REAL NOT NULL,
     stock INTEGER NOT NULL DEFAULT 0,
-    image_path TEXT -- New column for product image
+    image_path TEXT,
+    -- New column for product image
+    image_blob BLOB
 );
 -- Migration: Add image_path if missing (for existing databases)
 -- Note: This might fail if column exists, but DatabaseManager will ignore the error.
 ALTER TABLE products
 ADD COLUMN image_path TEXT;
+ALTER TABLE products
+ADD COLUMN image_blob BLOB;
 -- Sales Header Table
 CREATE TABLE IF NOT EXISTS sales (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

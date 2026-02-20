@@ -10,7 +10,7 @@
 
 <VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="400.0" spacing="10.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.AddProductController">
    <children>
-      <Label text="Add New Product">
+      <Label fx:id="titleLabel" text="Add New Product">
          <font>
             <Font size="18.0" />
          </font>

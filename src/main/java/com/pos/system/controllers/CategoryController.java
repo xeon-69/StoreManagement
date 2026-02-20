@@ -72,7 +72,11 @@ public class CategoryController {
             loadCategories();
         } catch (SQLException e) {
             e.printStackTrace();
-            NotificationUtils.showWarning("Error", "Failed to add category.");
+            if (e.getMessage().contains("SQLITE_CONSTRAINT_UNIQUE")) {
+                NotificationUtils.showWarning("Error", "Category name already exists.");
+            } else {
+                NotificationUtils.showWarning("Error", "Failed to add category.");
+            }
         }
     }
 
@@ -92,7 +96,11 @@ public class CategoryController {
             loadCategories();
         } catch (SQLException e) {
             e.printStackTrace();
-            NotificationUtils.showWarning("Error", "Failed to update category.");
+            if (e.getMessage().contains("SQLITE_CONSTRAINT_UNIQUE")) {
+                NotificationUtils.showWarning("Error", "Category name already exists.");
+            } else {
+                NotificationUtils.showWarning("Error", "Failed to update category.");
+            }
         }
     }
 
@@ -110,7 +118,11 @@ public class CategoryController {
             loadCategories();
         } catch (SQLException e) {
             e.printStackTrace();
-            NotificationUtils.showWarning("Error", "Failed to delete category.");
+            if (e.getMessage().contains("SQLITE_CONSTRAINT_FOREIGNKEY")) {
+                NotificationUtils.showWarning("Error", "Cannot delete category used by products.");
+            } else {
+                NotificationUtils.showWarning("Error", "Failed to delete category.");
+            }
         }
     }
 

@@ -10,9 +10,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="600.0" prefWidth="700.0" spacing="10.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.InventoryController">
+<VBox prefHeight="600.0" prefWidth="900.0" spacing="10.0" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.InventoryController">
    <children>
-      <Label text="Inventory Management">
+      <Label styleClass="header-label" text="Inventory Management">
          <font>
             <Font size="24.0" />
          </font>
@@ -20,17 +20,20 @@
       <HBox spacing="10.0">
          <children>
             <TextField fx:id="searchField" prefHeight="25.0" prefWidth="233.0" promptText="Search Product..." />
-            <Button mnemonicParsing="false" onAction="#handleSearch" text="Search" />
+            <Button mnemonicParsing="false" onAction="#handleSearch" styleClass="btn-primary" text="Search" />
             <Button mnemonicParsing="false" onAction="#handleRefresh" text="Refresh" />
-            <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+            <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS" spacing="10.0">
                <children>
-                  <Button mnemonicParsing="false" onAction="#handleAddProduct" text="Add Product" />
+                  <Button mnemonicParsing="false" onAction="#handleDeleteProduct" styleClass="btn-danger" text="Delete Product" />
+                  <Button mnemonicParsing="false" onAction="#handleEditProduct" styleClass="btn-primary" text="Edit Product" />
+                  <Button mnemonicParsing="false" onAction="#handleAddProduct" styleClass="btn-success" text="Add Product" />
                </children>
             </HBox>
          </children>
       </HBox>
       <TableView fx:id="productTable" VBox.vgrow="ALWAYS">
         <columns>
+          <TableColumn fx:id="imageCol" prefWidth="80.0" text="Image" />
           <TableColumn fx:id="barcodeCol" prefWidth="100.0" text="Barcode" />
           <TableColumn fx:id="nameCol" prefWidth="194.0" text="Name" />
             <TableColumn fx:id="categoryCol" prefWidth="108.0" text="Category" />

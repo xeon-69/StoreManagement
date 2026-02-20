@@ -28,7 +28,11 @@ public class AddProductController {
     @FXML
     private javafx.scene.image.ImageView productImageView;
 
-    private String selectedImagePath = null;
+    @FXML
+    private Label titleLabel; // Added reference
+
+    private Product productToEdit; // To track edit mode
+    private byte[] selectedImageData = null; // Changed from String path to byte[]
     private Runnable onSaveCallback;
 
     public void setOnSaveCallback(Runnable onSaveCallback) {
@@ -38,6 +42,40 @@ public class AddProductController {
     @FXML
     public void initialize() {
         loadCategories();
+    }
+
+    // New method to initialize controller in "Edit Mode"
+    public void setProductToEdit(Product product) {
+        this.productToEdit = product;
+        if (product != null) {
+            titleLabel.setText("Edit Product");
+            barcodeField.setText(product.getBarcode());
+            nameField.setText(product.getName());
+
+            // Set Category
+            if (product.getCategory() != null) {
+                for (com.pos.system.models.Category c : categoryComboBox.getItems()) {
+                    if (c.getName().equalsIgnoreCase(product.getCategory())) {
+                        categoryComboBox.setValue(c);
+                        break;
+                    }
+                }
+            }
+
+            costPriceField.setText(String.valueOf(product.getCostPrice()));
+            sellingPriceField.setText(String.valueOf(product.getSellingPrice()));
+            stockField.setText(String.valueOf(product.getStock()));
+
+            selectedImageData = product.getImageData();
+            if (selectedImageData != null && selectedImageData.length > 0) {
+                try {
+                    java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(selectedImageData);
+                    productImageView.setImage(new javafx.scene.image.Image(bis));
+                } catch (Exception e) {
+                    // Ignore image load error
+                }
+            }
+        }
     }
 
     private void loadCategories() {
@@ -58,8 +96,13 @@ public class AddProductController {
 
         java.io.File selectedFile = fileChooser.showOpenDialog(messageLabel.getScene().getWindow());
         if (selectedFile != null) {
-            selectedImagePath = selectedFile.toURI().toString(); // Store as URI string for portability/loading
-            productImageView.setImage(new javafx.scene.image.Image(selectedImagePath));
+            try {
+                selectedImageData = java.nio.file.Files.readAllBytes(selectedFile.toPath());
+                java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(selectedImageData);
+                productImageView.setImage(new javafx.scene.image.Image(bis));
+            } catch (java.io.IOException e) {
+                messageLabel.setText("Failed to load image: " + e.getMessage());
+            }
         }
     }
 
@@ -74,19 +117,27 @@ public class AddProductController {
                 categoryName = categoryComboBox.getValue().getName();
             }
 
+            // If editing, keep ID, else 0 (auto-generated)
+            int id = (productToEdit != null) ? productToEdit.getId() : 0;
+
             Product product = new Product(
-                    0, // ID auto-generated
+                    id,
                     barcodeField.getText().trim(),
                     nameField.getText().trim(),
-                    categoryName, // Use name from category object
+                    categoryName,
                     Double.parseDouble(costPriceField.getText().trim()),
                     Double.parseDouble(sellingPriceField.getText().trim()),
                     Integer.parseInt(stockField.getText().trim()),
-                    selectedImagePath); // Pass image path
+                    selectedImageData);
 
-            productDAO.addProduct(product);
+            if (productToEdit != null) {
+                productDAO.updateProduct(product); // Update
+                messageLabel.setText("Product updated!");
+            } else {
+                productDAO.addProduct(product); // Add
+                messageLabel.setText("Product saved!");
+            }
 
-            messageLabel.setText("Product saved!");
             messageLabel.setStyle("-fx-text-fill: green;");
 
             if (onSaveCallback != null) {
@@ -99,7 +150,11 @@ public class AddProductController {
             messageLabel.setText("Invalid number format for price or stock.");
             messageLabel.setStyle("-fx-text-fill: red;");
         } catch (SQLException e) {
-            messageLabel.setText("Database error: " + e.getMessage());
+            if (e.getMessage().contains("SQLITE_CONSTRAINT_UNIQUE")) {
+                messageLabel.setText("Error: Barcode already exists.");
+            } else {
+                messageLabel.setText("Database error: " + e.getMessage());
+            }
             messageLabel.setStyle("-fx-text-fill: red;");
         }
     }

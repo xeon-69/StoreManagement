@@ -17,7 +17,7 @@ public class ProductDAO extends BaseDAO {
     }
 
     public void addProduct(Product product) throws SQLException {
-        String sql = "INSERT INTO products (barcode, name, category, cost_price, selling_price, stock, image_path) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO products (barcode, name, category, cost_price, selling_price, stock, image_blob) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, product.getBarcode());
             pstmt.setString(2, product.getName());
@@ -25,13 +25,13 @@ public class ProductDAO extends BaseDAO {
             pstmt.setDouble(4, product.getCostPrice());
             pstmt.setDouble(5, product.getSellingPrice());
             pstmt.setInt(6, product.getStock());
-            pstmt.setString(7, product.getImagePath());
+            pstmt.setBytes(7, product.getImageData());
             pstmt.executeUpdate();
         }
     }
 
     public void updateProduct(Product product) throws SQLException {
-        String sql = "UPDATE products SET barcode=?, name=?, category=?, cost_price=?, selling_price=?, stock=?, image_path=? WHERE id=?";
+        String sql = "UPDATE products SET barcode=?, name=?, category=?, cost_price=?, selling_price=?, stock=?, image_blob=? WHERE id=?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, product.getBarcode());
             pstmt.setString(2, product.getName());
@@ -39,7 +39,7 @@ public class ProductDAO extends BaseDAO {
             pstmt.setDouble(4, product.getCostPrice());
             pstmt.setDouble(5, product.getSellingPrice());
             pstmt.setInt(6, product.getStock());
-            pstmt.setString(7, product.getImagePath());
+            pstmt.setBytes(7, product.getImageData());
             pstmt.setInt(8, product.getId());
             pstmt.executeUpdate();
         }
@@ -69,7 +69,7 @@ public class ProductDAO extends BaseDAO {
                         rs.getDouble("cost_price"),
                         rs.getDouble("selling_price"),
                         rs.getInt("stock"),
-                        rs.getString("image_path")));
+                        rs.getBytes("image_blob")));
             }
         }
         return products;
@@ -89,7 +89,7 @@ public class ProductDAO extends BaseDAO {
                             rs.getDouble("cost_price"),
                             rs.getDouble("selling_price"),
                             rs.getInt("stock"),
-                            rs.getString("image_path"));
+                            rs.getBytes("image_blob"));
                 }
             }
         }
