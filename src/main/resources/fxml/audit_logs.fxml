@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="600.0" prefWidth="900.0" spacing="20.0" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.AuditLogController">
+   <children>
+      <Label styleClass="header-label" text="%audit.title" />
+      
+      <TableView fx:id="auditTable" VBox.vgrow="ALWAYS">
+         <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+         </columnResizePolicy>
+         <columns>
+            <TableColumn fx:id="idCol" prefWidth="50.0" text="%audit.id" />
+            <TableColumn fx:id="dateCol" prefWidth="150.0" text="%audit.date" />
+            <TableColumn fx:id="userCol" prefWidth="100.0" text="%audit.user" />
+            <TableColumn fx:id="actionCol" prefWidth="150.0" text="%audit.action" />
+            <TableColumn fx:id="entityCol" prefWidth="150.0" text="%audit.entity" />
+            <TableColumn fx:id="detailsCol" prefWidth="300.0" text="%audit.details" />
+         </columns>
+      </TableView>
+   </children>
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+</VBox>

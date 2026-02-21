@@ -15,6 +15,15 @@ import java.util.UUID;
 
 public class InventoryService {
 
+    // Protected methods to allow mocking DAOs in tests
+    protected BatchDAO getBatchDAO(Connection connection) {
+        return new BatchDAO(connection);
+    }
+
+    protected InventoryTransactionDAO getInventoryTransactionDAO(Connection connection) {
+        return new InventoryTransactionDAO(connection);
+    }
+
     /**
      * Receives new stock by creating a new Batch and logging a PURCHASE
      * transaction.
@@ -25,8 +34,8 @@ public class InventoryService {
             throw new IllegalArgumentException("Quantity to add must be positive.");
         }
 
-        try (BatchDAO batchDAO = new BatchDAO(conn);
-                InventoryTransactionDAO txDAO = new InventoryTransactionDAO(conn)) {
+        try (BatchDAO batchDAO = getBatchDAO(conn);
+                InventoryTransactionDAO txDAO = getInventoryTransactionDAO(conn)) {
 
             // 1. Create Batch
             Batch newBatch = new Batch(0, productId, "BATCH-" + UUID.randomUUID().toString().substring(0, 8),
@@ -53,8 +62,8 @@ public class InventoryService {
             throw new IllegalArgumentException("Quantity to deduct must be positive.");
         }
 
-        try (BatchDAO batchDAO = new BatchDAO(conn);
-                InventoryTransactionDAO txDAO = new InventoryTransactionDAO(conn)) {
+        try (BatchDAO batchDAO = getBatchDAO(conn);
+                InventoryTransactionDAO txDAO = getInventoryTransactionDAO(conn)) {
 
             List<Batch> availableBatches = batchDAO.getAvailableBatches(productId);
             int remainingToDeduct = quantityToDeduct;
@@ -99,7 +108,7 @@ public class InventoryService {
         if (quantityChange == 0)
             return;
 
-        try (InventoryTransactionDAO txDAO = new InventoryTransactionDAO(conn)) {
+        try (InventoryTransactionDAO txDAO = getInventoryTransactionDAO(conn)) {
             if (quantityChange > 0) {
                 // Treat positive adjustment like adding generic stock: Needs a batch or generic
                 // pool.
@@ -134,8 +143,8 @@ public class InventoryService {
      * circulation, and logs an EXPIRE transaction.
      */
     public void expireItems(Connection conn, Integer createdBy) throws SQLException {
-        try (BatchDAO batchDAO = new BatchDAO(conn);
-                InventoryTransactionDAO txDAO = new InventoryTransactionDAO(conn)) {
+        try (BatchDAO batchDAO = getBatchDAO(conn);
+                InventoryTransactionDAO txDAO = getInventoryTransactionDAO(conn)) {
 
             List<Batch> expiredBatches = batchDAO.getExpiredBatches(LocalDateTime.now());
 
@@ -160,7 +169,7 @@ public class InventoryService {
      * Retrieves the complete lifecycle transaction ledger for a specific product.
      */
     public List<InventoryTransaction> getTransactionHistory(Connection conn, int productId) throws SQLException {
-        try (InventoryTransactionDAO txDAO = new InventoryTransactionDAO(conn)) {
+        try (InventoryTransactionDAO txDAO = getInventoryTransactionDAO(conn)) {
             return txDAO.getTransactionHistory(productId);
         }
     }

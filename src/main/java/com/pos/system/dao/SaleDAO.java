@@ -22,8 +22,8 @@ public class SaleDAO extends BaseDAO {
         PreparedStatement itemStmt = null;
         PreparedStatement updateStockStmt = null;
 
-        String insertSale = "INSERT INTO sales (user_id, total_amount, total_profit, sale_date) VALUES (?, ?, ?, ?)";
-        String insertItem = "INSERT INTO sale_items (sale_id, product_id, quantity, price_at_sale, cost_at_sale) VALUES (?, ?, ?, ?, ?)";
+        String insertSale = "INSERT INTO sales (user_id, shift_id, subtotal, tax_amount, discount_amount, total_amount, total_profit, sale_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertItem = "INSERT INTO sale_items (sale_id, product_id, quantity, price_at_sale, cost_at_sale, discount_amount, tax_amount) VALUES (?, ?, ?, ?, ?, ?, ?)";
         String updateStock = "UPDATE products SET stock = stock - ? WHERE id = ?";
 
         try {
@@ -32,9 +32,17 @@ public class SaleDAO extends BaseDAO {
             // 1. Insert Sale Header
             saleStmt = connection.prepareStatement(insertSale, Statement.RETURN_GENERATED_KEYS);
             saleStmt.setInt(1, sale.getUserId());
-            saleStmt.setDouble(2, sale.getTotalAmount());
-            saleStmt.setDouble(3, sale.getTotalProfit());
-            saleStmt.setString(4,
+            if (sale.getShiftId() != null) {
+                saleStmt.setInt(2, sale.getShiftId());
+            } else {
+                saleStmt.setNull(2, Types.INTEGER);
+            }
+            saleStmt.setDouble(3, sale.getSubtotal());
+            saleStmt.setDouble(4, sale.getTaxAmount());
+            saleStmt.setDouble(5, sale.getDiscountAmount());
+            saleStmt.setDouble(6, sale.getTotalAmount());
+            saleStmt.setDouble(7, sale.getTotalProfit());
+            saleStmt.setString(8,
                     sale.getSaleDate() != null ? sale.getSaleDate().toString() : LocalDateTime.now().toString());
             saleStmt.executeUpdate();
 
@@ -42,6 +50,7 @@ public class SaleDAO extends BaseDAO {
             try (ResultSet generatedKeys = saleStmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     saleId = generatedKeys.getInt(1);
+                    sale.setId(saleId);
                 } else {
                     throw new SQLException("Creating sale failed, no ID obtained.");
                 }
@@ -58,6 +67,8 @@ public class SaleDAO extends BaseDAO {
                 itemStmt.setInt(3, item.getQuantity());
                 itemStmt.setDouble(4, item.getPriceAtSale());
                 itemStmt.setDouble(5, item.getCostAtSale());
+                itemStmt.setDouble(6, item.getDiscountAmount());
+                itemStmt.setDouble(7, item.getTaxAmount());
                 itemStmt.addBatch();
 
                 // Update Stock
@@ -93,19 +104,27 @@ public class SaleDAO extends BaseDAO {
         }
     }
 
-    // New granular methods for Service Layer
     public int insertSale(Sale sale) throws SQLException {
-        String sql = "INSERT INTO sales (user_id, total_amount, total_profit, sale_date) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO sales (user_id, shift_id, subtotal, tax_amount, discount_amount, total_amount, total_profit, sale_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, sale.getUserId());
-            stmt.setDouble(2, sale.getTotalAmount());
-            stmt.setDouble(3, sale.getTotalProfit());
-            stmt.setString(4, sale.getSaleDate().toString()); // Use standard LocalDateTime toString (ISO-8601)
+            if (sale.getShiftId() != null) {
+                stmt.setInt(2, sale.getShiftId());
+            } else {
+                stmt.setNull(2, Types.INTEGER);
+            }
+            stmt.setDouble(3, sale.getSubtotal());
+            stmt.setDouble(4, sale.getTaxAmount());
+            stmt.setDouble(5, sale.getDiscountAmount());
+            stmt.setDouble(6, sale.getTotalAmount());
+            stmt.setDouble(7, sale.getTotalProfit());
+            stmt.setString(8, sale.getSaleDate().toString());
             stmt.executeUpdate();
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    return generatedKeys.getInt(1);
+                    sale.setId(generatedKeys.getInt(1));
+                    return sale.getId();
                 } else {
                     throw new SQLException("Creating sale failed, no ID obtained.");
                 }
@@ -114,7 +133,7 @@ public class SaleDAO extends BaseDAO {
     }
 
     public void insertSaleItems(int saleId, List<SaleItem> items) throws SQLException {
-        String sql = "INSERT INTO sale_items (sale_id, product_id, quantity, price_at_sale, cost_at_sale) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO sale_items (sale_id, product_id, quantity, price_at_sale, cost_at_sale, discount_amount, tax_amount) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             for (SaleItem item : items) {
                 stmt.setInt(1, saleId);
@@ -122,6 +141,8 @@ public class SaleDAO extends BaseDAO {
                 stmt.setInt(3, item.getQuantity());
                 stmt.setDouble(4, item.getPriceAtSale());
                 stmt.setDouble(5, item.getCostAtSale());
+                stmt.setDouble(6, item.getDiscountAmount());
+                stmt.setDouble(7, item.getTaxAmount());
                 stmt.addBatch();
             }
             stmt.executeBatch();
@@ -156,29 +177,17 @@ public class SaleDAO extends BaseDAO {
         return 0.0;
     }
 
-    // Get all sales ordered by date desc
     public List<Sale> getAllSales() throws SQLException {
         List<Sale> sales = new java.util.ArrayList<>();
         String sql = "SELECT s.*, " +
                 "(SELECT GROUP_CONCAT(p.name || ' (x' || si.quantity || ')', ', ') " +
                 " FROM sale_items si JOIN products p ON si.product_id = p.id WHERE si.sale_id = s.id) AS details " +
-                "FROM sales s ORDER BY s.sale_date DESC LIMIT 100"; // Limit for performance
+                "FROM sales s ORDER BY s.sale_date DESC LIMIT 100";
         try (Statement stmt = connection.createStatement();
                 ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                sales.add(new Sale(
-                        rs.getInt("id"),
-                        rs.getInt("user_id"),
-                        rs.getDouble("total_amount"),
-                        rs.getDouble("total_profit"),
-                        java.time.LocalDateTime.parse(rs.getString("sale_date").replace(" ", "T")), // Basic robust
-                                                                                                    // parsing
-                        rs.getString("details")));
+                sales.add(mapResultSetToSale(rs));
             }
-        } catch (Exception e) {
-            // Try parsing standard SQLite format if above fails or use simple string
-            // Ideally we standardise on storing ISO-8601
-            logger.warn("Date parsing check required in GetAllSales");
         }
         return sales;
     }
@@ -194,22 +203,56 @@ public class SaleDAO extends BaseDAO {
             stmt.setString(2, end.toString());
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    LocalDateTime date;
-                    try {
-                        date = LocalDateTime.parse(rs.getString("sale_date"));
-                    } catch (Exception e) {
-                        date = LocalDateTime.parse(rs.getString("sale_date").replace(" ", "T"));
-                    }
-                    sales.add(new Sale(
-                            rs.getInt("id"),
-                            rs.getInt("user_id"),
-                            rs.getDouble("total_amount"),
-                            rs.getDouble("total_profit"),
-                            date,
-                            rs.getString("details")));
+                    sales.add(mapResultSetToSale(rs));
                 }
             }
         }
         return sales;
+    }
+
+    public List<SaleItem> getItemsBySaleId(int saleId) throws SQLException {
+        List<SaleItem> items = new java.util.ArrayList<>();
+        String sql = "SELECT si.*, p.name as product_name FROM sale_items si JOIN products p ON si.product_id = p.id WHERE si.sale_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, saleId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    SaleItem item = new SaleItem(
+                            rs.getInt("id"),
+                            rs.getInt("sale_id"),
+                            rs.getInt("product_id"),
+                            rs.getString("product_name"),
+                            rs.getInt("quantity"),
+                            rs.getDouble("price_at_sale"),
+                            rs.getDouble("cost_at_sale"));
+                    item.setDiscountAmount(rs.getDouble("discount_amount"));
+                    item.setTaxAmount(rs.getDouble("tax_amount"));
+                    items.add(item);
+                }
+            }
+        }
+        return items;
+    }
+
+    private Sale mapResultSetToSale(ResultSet rs) throws SQLException {
+        LocalDateTime date;
+        try {
+            date = LocalDateTime.parse(rs.getString("sale_date"));
+        } catch (Exception e) {
+            date = LocalDateTime.parse(rs.getString("sale_date").replace(" ", "T"));
+        }
+
+        Sale sale = new Sale(
+                rs.getInt("id"),
+                rs.getInt("user_id"),
+                rs.getInt("shift_id") != 0 ? rs.getInt("shift_id") : null,
+                rs.getDouble("subtotal"),
+                rs.getDouble("tax_amount"),
+                rs.getDouble("discount_amount"),
+                rs.getDouble("total_amount"),
+                rs.getDouble("total_profit"),
+                date);
+        sale.setTransactionDetails(rs.getString("details"));
+        return sale;
     }
 }

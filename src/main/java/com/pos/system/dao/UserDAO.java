@@ -32,7 +32,8 @@ public class UserDAO extends BaseDAO { // Extended BaseDAO
                             rs.getInt("id"),
                             rs.getString("username"),
                             rs.getString("password"),
-                            rs.getString("role"));
+                            rs.getString("role"),
+                            rs.getBoolean("force_password_change"));
                 }
             }
         } catch (SQLException e) { // Catching SQLException
@@ -51,7 +52,8 @@ public class UserDAO extends BaseDAO { // Extended BaseDAO
                             rs.getInt("id"),
                             rs.getString("username"),
                             rs.getString("password"),
-                            rs.getString("role"));
+                            rs.getString("role"),
+                            rs.getBoolean("force_password_change"));
                 }
             }
         } catch (SQLException e) {
@@ -60,10 +62,73 @@ public class UserDAO extends BaseDAO { // Extended BaseDAO
         return null;
     }
 
-    // Add other methods if they existed (create user etc.)
-    // For now only getUserByUsername was visible in the view_file (it was short).
-    // Wait, the file content I see in view_file 165 is only showing lines 1-45?
-    // Let me check if there are more lines.
-    // The view_file output usually shows "Total Lines: XX".
-    // I will check the output of the view_file command.
+    public java.util.List<User> getAllUsers() {
+        java.util.List<User> list = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM users";
+        try (java.sql.Statement stmt = connection.createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                list.add(new User(
+                        rs.getInt("id"),
+                        rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("role"),
+                        rs.getBoolean("force_password_change")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public boolean createUser(User user) {
+        String sql = "INSERT INTO users (username, password, role, force_password_change) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, user.getUsername());
+            pstmt.setString(2, user.getPassword()); // Should be hashed beforehand
+            pstmt.setString(3, user.getRole());
+            pstmt.setBoolean(4, user.isForcePasswordChange());
+            int affected = pstmt.executeUpdate();
+            return affected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateUserRole(int userId, String role) {
+        String sql = "UPDATE users SET role = ? WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, role);
+            pstmt.setInt(2, userId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateUserPassword(int userId, String newPasswordHash, boolean forceChange) {
+        String sql = "UPDATE users SET password = ?, force_password_change = ? WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, newPasswordHash);
+            pstmt.setBoolean(2, forceChange);
+            pstmt.setInt(3, userId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteUser(int userId) {
+        String sql = "DELETE FROM users WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

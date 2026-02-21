@@ -3,8 +3,12 @@ CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'CASHIER' -- 'ADMIN', 'CASHIER'
+    role TEXT NOT NULL DEFAULT 'CASHIER',
+    force_password_change BOOLEAN DEFAULT 0
 );
+-- Migration for existing databases
+ALTER TABLE users
+ADD COLUMN force_password_change BOOLEAN DEFAULT 0;
 -- Categories Table
 CREATE TABLE IF NOT EXISTS categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,30 +21,80 @@ CREATE TABLE IF NOT EXISTS products (
     barcode TEXT UNIQUE,
     name TEXT NOT NULL,
     category TEXT,
-    -- Legacy text field, or FK? Keeping text for simplicity or migration. 
-    -- ideally: category_id INTEGER REFERENCES categories(id)
     cost_price REAL NOT NULL DEFAULT 0.0,
     selling_price REAL NOT NULL,
     stock INTEGER NOT NULL DEFAULT 0,
     image_path TEXT,
-    -- New column for product image
     image_blob BLOB
 );
 -- Migration: Add image_path if missing (for existing databases)
--- Note: This might fail if column exists, but DatabaseManager will ignore the error.
 ALTER TABLE products
 ADD COLUMN image_path TEXT;
 ALTER TABLE products
 ADD COLUMN image_blob BLOB;
+-- Settings Table (New for Store config, tax rates, etc.)
+CREATE TABLE IF NOT EXISTS settings (
+    setting_key TEXT PRIMARY KEY,
+    setting_value TEXT
+);
+-- Shifts Table (New for Shift Management)
+CREATE TABLE IF NOT EXISTS shifts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    start_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    end_time DATETIME,
+    opening_cash REAL NOT NULL DEFAULT 0.0,
+    expected_closing_cash REAL,
+    actual_closing_cash REAL,
+    status TEXT NOT NULL DEFAULT 'OPEN',
+    -- 'OPEN', 'CLOSED'
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+-- Cash Drawer Transactions Table (New for manual ins/outs)
+CREATE TABLE IF NOT EXISTS cash_drawer_transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    shift_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    amount REAL NOT NULL,
+    -- Positive for IN, Negative for OUT
+    transaction_type TEXT NOT NULL,
+    -- 'OPENING_FLOAT', 'CASH_SALE', 'CASH_REFUND', 'MANUAL_IN', 'MANUAL_OUT', 'CLOSING_WITHDRAWAL'
+    description TEXT,
+    transaction_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (shift_id) REFERENCES shifts(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
 -- Sales Header Table
 CREATE TABLE IF NOT EXISTS sales (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
+    shift_id INTEGER,
+    subtotal REAL DEFAULT 0.0,
+    tax_amount REAL DEFAULT 0.0,
+    discount_amount REAL DEFAULT 0.0,
     total_amount REAL NOT NULL,
     total_profit REAL,
-    -- Calculated as (selling_price - cost_price) * quantity
     sale_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (shift_id) REFERENCES shifts(id)
+);
+-- Migrations for existing databases
+ALTER TABLE sales
+ADD COLUMN shift_id INTEGER;
+ALTER TABLE sales
+ADD COLUMN subtotal REAL DEFAULT 0.0;
+ALTER TABLE sales
+ADD COLUMN tax_amount REAL DEFAULT 0.0;
+ALTER TABLE sales
+ADD COLUMN discount_amount REAL DEFAULT 0.0;
+-- Sale Payments Table (New for Split Payments)
+CREATE TABLE IF NOT EXISTS sale_payments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sale_id INTEGER NOT NULL,
+    payment_method TEXT NOT NULL,
+    amount REAL NOT NULL,
+    payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE
 );
 -- Sale Items Table (Line Items)
 CREATE TABLE IF NOT EXISTS sale_items (
@@ -49,56 +103,72 @@ CREATE TABLE IF NOT EXISTS sale_items (
     product_id INTEGER,
     quantity INTEGER NOT NULL,
     price_at_sale REAL NOT NULL,
-    -- Selling price at that moment
     cost_at_sale REAL,
-    -- Cost price at that moment (to lock in profit logic)
+    discount_amount REAL DEFAULT 0.0,
+    tax_amount REAL DEFAULT 0.0,
     FOREIGN KEY (sale_id) REFERENCES sales(id),
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
--- Batches Table (For Expiry, Costing, FIFO/FEFO tracking)
+-- Migrations for existing databases
+ALTER TABLE sale_items
+ADD COLUMN discount_amount REAL DEFAULT 0.0;
+ALTER TABLE sale_items
+ADD COLUMN tax_amount REAL DEFAULT 0.0;
+-- Batches Table
 CREATE TABLE IF NOT EXISTS batches (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id INTEGER NOT NULL,
     batch_number TEXT NOT NULL,
     expiry_date TEXT,
-    -- ISO-8601 Format
     cost_price REAL NOT NULL,
     remaining_quantity INTEGER NOT NULL CHECK (remaining_quantity >= 0),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
 );
--- Inventory Transactions Table (Append-only Ledger)
+-- Inventory Transactions Table
 CREATE TABLE IF NOT EXISTS inventory_transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id INTEGER NOT NULL,
     batch_id INTEGER,
-    -- Nullable for generic adjustments if batch is unknown
     quantity_change INTEGER NOT NULL,
-    -- Positive (In) or Negative (Out)
     transaction_type TEXT NOT NULL,
-    -- PURCHASE, SALE, EXPIRE, ADJUSTMENT, RETURN
     reference_id TEXT,
-    -- e.g., 'SALE-1025' or 'INV-PO-99'
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER,
-    -- User ID executing the action
     FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE,
     FOREIGN KEY(batch_id) REFERENCES batches(id)
 );
--- Expenses Table (New for Finance)
+-- Expenses Table
 CREATE TABLE IF NOT EXISTS expenses (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     category TEXT NOT NULL,
-    -- e.g., 'Rent', 'Utilities', 'Salaries'
     amount REAL NOT NULL,
     description TEXT,
     expense_date DATETIME DEFAULT CURRENT_TIMESTAMP
 );
--- Initial Admin User (Default password: admin)
+-- Audit Logs Table (New for Security)
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    action TEXT NOT NULL,
+    entity_name TEXT,
+    entity_id TEXT,
+    details TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+-- Initial Admin User (Default password: admin - BCrypt format)
+-- We'll just put a known hash for 'admin': $2a$10$I2jdGIOzwA6L9EjQCfovRu9H1YCns/sKPR6zqI4kLo1ce/yRFF5R6
 INSERT
-    OR IGNORE INTO users (username, password, role)
-VALUES ('admin', 'admin', 'ADMIN');
+    OR IGNORE INTO users (username, password, role, force_password_change)
+VALUES (
+        'admin',
+        '$2a$10$I2jdGIOzwA6L9EjQCfovRu9H1YCns/sKPR6zqI4kLo1ce/yRFF5R6',
+        'ADMIN',
+        1
+    );
 -- Ensure password is updated if user already exists
 UPDATE users
-SET password = 'admin'
+SET password = '$2a$10$I2jdGIOzwA6L9EjQCfovRu9H1YCns/sKPR6zqI4kLo1ce/yRFF5R6',
+    force_password_change = 1
 WHERE username = 'admin';

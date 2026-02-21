@@ -60,20 +60,39 @@ public class LoginController {
         }
 
         try (UserDAO userDAO = new UserDAO()) {
-            User user = userDAO.login(username, password);
+            User user = userDAO.getUserByUsername(username);
 
-            if (user != null) {
+            com.pos.system.services.SecurityService securityService = new com.pos.system.services.SecurityService();
+
+            if (user != null && securityService.verifyPassword(password, user.getPassword())) {
                 // Successful Login
                 SessionManager.getInstance().setCurrentUser(user);
-                // Switch to Main View
+                securityService.logAction(user.getId(), "LOGIN", "USER", String.valueOf(user.getId()),
+                        "Successful login");
+
+                // Check if shift is open
+                com.pos.system.models.Shift openShift;
+                try (com.pos.system.dao.ShiftDAO shiftDAO = new com.pos.system.dao.ShiftDAO()) {
+                    openShift = shiftDAO.findOpenShiftByUser(user.getId());
+                }
+
                 try {
-                    com.pos.system.App.setRoot("dashboard");
+                    if (openShift != null) {
+                        SessionManager.getInstance().setCurrentShift(openShift);
+                        com.pos.system.App.setRoot("dashboard");
+                    } else {
+                        com.pos.system.App.setRoot("shift_management");
+                    }
                 } catch (java.io.IOException e) {
                     e.printStackTrace();
-                    errorLabel.setText("Error loading POS.");
+                    errorLabel.setText("Error loading next view.");
                 }
             } else {
                 errorLabel.setText(getString("error.invalidLogin", "Invalid username or password."));
+                if (user != null) {
+                    securityService.logAction(user.getId(), "LOGIN_FAILED", "USER", String.valueOf(user.getId()),
+                            "Failed login attempt");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

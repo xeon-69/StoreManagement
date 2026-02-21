@@ -5,12 +5,22 @@ public class User {
     private String username;
     private String password; // In a real app, this should be hashed
     private String role; // "ADMIN" or "CASHIER"
+    private boolean forcePasswordChange;
 
     public User(int id, String username, String password, String role) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.role = role;
+        this.forcePasswordChange = false;
+    }
+
+    public User(int id, String username, String password, String role, boolean forcePasswordChange) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.forcePasswordChange = forcePasswordChange;
     }
 
     public int getId() {
@@ -47,5 +57,13 @@ public class User {
 
     public boolean isAdmin() {
         return "ADMIN".equalsIgnoreCase(role);
+    }
+
+    public boolean isForcePasswordChange() {
+        return forcePasswordChange;
+    }
+
+    public void setForcePasswordChange(boolean forcePasswordChange) {
+        this.forcePasswordChange = forcePasswordChange;
     }
 }

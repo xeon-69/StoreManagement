@@ -64,6 +64,34 @@
                <tooltip><Tooltip text="%nav.reports"/></tooltip>
             </Button>
             
+            <Button mnemonicParsing="false" onAction="#showCashDrawer" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.drawer" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-cash-register" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.drawer"/></tooltip>
+            </Button>
+
+            <Button fx:id="navAuditBtn" mnemonicParsing="false" onAction="#showAuditLogs" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.audit" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-shield-alt" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.audit"/></tooltip>
+            </Button>
+            
+            <Button fx:id="navUsersBtn" mnemonicParsing="false" onAction="#showUsers" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.users" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-users" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.users"/></tooltip>
+            </Button>
+
+            <Button fx:id="navSettingsBtn" mnemonicParsing="false" onAction="#showSettings" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.settings" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-cog" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.settings"/></tooltip>
+            </Button>
+            
             <VBox alignment="BOTTOM_CENTER" VBox.vgrow="ALWAYS">
                <children>
                   <Button mnemonicParsing="false" onAction="#logout" maxWidth="Infinity" styleClass="btn-danger" text="%nav.logout">

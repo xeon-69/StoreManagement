@@ -77,6 +77,7 @@
           <TableColumn fx:id="detailsCol" prefWidth="350.0" text="%reports.details" />
           <TableColumn fx:id="amountCol" prefWidth="120.0" text="%reports.amount" />
           <TableColumn fx:id="profitCol" prefWidth="120.0" text="%reports.profit" />
+          <TableColumn fx:id="actionCol" prefWidth="100.0" text="%pos.action" />
         </columns>
       </TableView>
    </children>

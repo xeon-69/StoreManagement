@@ -12,6 +12,8 @@ import java.util.Locale;
 
 import java.io.IOException;
 
+import javafx.scene.control.Button;
+
 public class DashboardController {
 
     private static String currentActiveView = null;
@@ -26,10 +28,29 @@ public class DashboardController {
     private ComboBox<String> languageComboBox;
 
     @FXML
+    private Button navAuditBtn;
+
+    @FXML
+    private Button navUsersBtn;
+
+    @FXML
+    private Button navSettingsBtn;
+
+    @FXML
     public void initialize() {
         if (SessionManager.getInstance().isLoggedIn()) {
             currentUserLabel.setText(
                     getString("nav.user", "User: ") + SessionManager.getInstance().getCurrentUser().getUsername());
+
+            // Only admin users can see Audit Logs and Users Management
+            if (!SessionManager.getInstance().getCurrentUser().isAdmin()) {
+                navAuditBtn.setVisible(false);
+                navAuditBtn.setManaged(false);
+                navUsersBtn.setVisible(false);
+                navUsersBtn.setManaged(false);
+                navSettingsBtn.setVisible(false);
+                navSettingsBtn.setManaged(false);
+            }
         }
 
         languageComboBox.getItems().addAll("English", "မြန်မာစာ", "中文");
@@ -90,6 +111,26 @@ public class DashboardController {
     @FXML
     private void showReports() {
         loadView("reports");
+    }
+
+    @FXML
+    private void showCashDrawer() {
+        loadView("cash_drawer");
+    }
+
+    @FXML
+    private void showAuditLogs() {
+        loadView("audit_logs");
+    }
+
+    @FXML
+    private void showUsers() {
+        loadView("users");
+    }
+
+    @FXML
+    private void showSettings() {
+        loadView("settings");
     }
 
     @FXML

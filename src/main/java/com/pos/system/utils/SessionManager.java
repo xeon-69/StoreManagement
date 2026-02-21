@@ -1,10 +1,12 @@
 package com.pos.system.utils;
 
 import com.pos.system.models.User;
+import com.pos.system.models.Shift;
 
 public class SessionManager {
     private static SessionManager instance;
     private User currentUser;
+    private Shift currentShift;
 
     private SessionManager() {
     }
@@ -24,8 +26,17 @@ public class SessionManager {
         return currentUser;
     }
 
+    public void setCurrentShift(Shift shift) {
+        this.currentShift = shift;
+    }
+
+    public Shift getCurrentShift() {
+        return currentShift;
+    }
+
     public void logout() {
         this.currentUser = null;
+        this.currentShift = null;
     }
 
     public boolean isLoggedIn() {

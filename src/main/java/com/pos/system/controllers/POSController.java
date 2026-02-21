@@ -1,9 +1,7 @@
 package com.pos.system.controllers;
 
 import com.pos.system.models.Product;
-import com.pos.system.models.Sale;
 import com.pos.system.models.SaleItem;
-import com.pos.system.utils.SessionManager;
 import com.pos.system.utils.NotificationUtils;
 import com.pos.system.viewmodels.ProductCatalogViewModel;
 import javafx.application.Platform;
@@ -20,10 +18,6 @@ import javafx.scene.layout.HBox;
 
 import org.controlsfx.control.GridView;
 import org.controlsfx.control.GridCell;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class POSController {
 
@@ -249,38 +243,35 @@ public class POSController {
             return;
         }
 
-        double totalAmount = cartItems.stream().mapToDouble(SaleItem::getTotal).sum();
-        double totalCost = cartItems.stream().mapToDouble(i -> i.getCostAtSale() * i.getQuantity()).sum();
-        double totalProfit = totalAmount - totalCost;
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/fxml/checkout_modal.fxml"));
+            loader.setResources(com.pos.system.App.getBundle());
+            javafx.scene.Parent root = loader.load();
 
-        int userId = SessionManager.getInstance().getCurrentUser().getId();
+            CheckoutController controller = loader.getController();
+            controller.setCheckoutData(cartItems, () -> {
+                Platform.runLater(() -> {
+                    NotificationUtils.showSuccess(com.pos.system.App.getBundle().getString("dialog.success"),
+                            "Transaction Completed!");
+                    cartItems.clear();
+                    updateTotal();
+                    catalogViewModel.loadProducts();
+                });
+            });
 
-        Sale sale = new Sale(0, userId, totalAmount, totalProfit, LocalDateTime.now());
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.initOwner(totalLabel.getScene().getWindow());
+            stage.setTitle("Checkout");
+            stage.setScene(new javafx.scene.Scene(root));
+            stage.showAndWait();
 
-        javafx.concurrent.Task<Void> checkoutTask = new javafx.concurrent.Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                com.pos.system.services.CheckoutService checkoutService = new com.pos.system.services.CheckoutService();
-                checkoutService.processCheckout(sale, new ArrayList<>(cartItems));
-                return null;
-            }
-        };
-
-        checkoutTask.setOnSucceeded(e -> {
-            NotificationUtils.showSuccess(com.pos.system.App.getBundle().getString("dialog.success"),
-                    "Transaction Completed!");
-            cartItems.clear();
-            updateTotal();
-            catalogViewModel.loadProducts();
-        });
-
-        checkoutTask.setOnFailed(e -> {
-            e.getSource().getException().printStackTrace();
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
             NotificationUtils.showError(com.pos.system.App.getBundle().getString("dialog.error"),
-                    "Checkout Failed: " + e.getSource().getException().getMessage());
-        });
-
-        new Thread(checkoutTask).start();
+                    "Failed to open checkout modal.");
+        }
     }
 
     private void updateTotal() {

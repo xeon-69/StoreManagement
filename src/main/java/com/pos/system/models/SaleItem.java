@@ -4,10 +4,12 @@ public class SaleItem {
     private int id;
     private int saleId;
     private int productId;
-    private String productName; // Helper for display
+    private String productName;
     private int quantity;
     private double priceAtSale;
     private double costAtSale;
+    private double discountAmount;
+    private double taxAmount;
 
     public SaleItem(int id, int saleId, int productId, String productName, int quantity, double priceAtSale,
             double costAtSale) {
@@ -18,9 +20,10 @@ public class SaleItem {
         this.quantity = quantity;
         this.priceAtSale = priceAtSale;
         this.costAtSale = costAtSale;
+        this.discountAmount = 0.0;
+        this.taxAmount = 0.0;
     }
 
-    // Getters and Setters
     public int getId() {
         return id;
     }
@@ -49,11 +52,35 @@ public class SaleItem {
         return priceAtSale;
     }
 
+    public void setPriceAtSale(double priceAtSale) {
+        this.priceAtSale = priceAtSale;
+    }
+
     public double getCostAtSale() {
         return costAtSale;
     }
 
+    public void setCostAtSale(double costAtSale) {
+        this.costAtSale = costAtSale;
+    }
+
+    public double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(double discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public double getTaxAmount() {
+        return taxAmount;
+    }
+
+    public void setTaxAmount(double taxAmount) {
+        this.taxAmount = taxAmount;
+    }
+
     public double getTotal() {
-        return quantity * priceAtSale;
+        return (quantity * priceAtSale) - discountAmount + taxAmount;
     }
 }

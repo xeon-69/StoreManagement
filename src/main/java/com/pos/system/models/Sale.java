@@ -5,23 +5,39 @@ import java.time.LocalDateTime;
 public class Sale {
     private int id;
     private int userId;
+    private Integer shiftId;
+    private double subtotal;
+    private double taxAmount;
+    private double discountAmount;
     private double totalAmount;
     private double totalProfit;
     private LocalDateTime saleDate;
     private String transactionDetails;
 
+    // Legacy constructor compatibility
     public Sale(int id, int userId, double totalAmount, double totalProfit, LocalDateTime saleDate) {
+        this(id, userId, null, totalAmount, 0.0, 0.0, totalAmount, totalProfit, saleDate);
+    }
+
+    // Legacy with transaction details
+    public Sale(int id, int userId, double totalAmount, double totalProfit, LocalDateTime saleDate,
+            String transactionDetails) {
+        this(id, userId, null, totalAmount, 0.0, 0.0, totalAmount, totalProfit, saleDate);
+        this.transactionDetails = transactionDetails;
+    }
+
+    // Full constructor
+    public Sale(int id, int userId, Integer shiftId, double subtotal, double taxAmount, double discountAmount,
+            double totalAmount, double totalProfit, LocalDateTime saleDate) {
         this.id = id;
         this.userId = userId;
+        this.shiftId = shiftId;
+        this.subtotal = subtotal;
+        this.taxAmount = taxAmount;
+        this.discountAmount = discountAmount;
         this.totalAmount = totalAmount;
         this.totalProfit = totalProfit;
         this.saleDate = saleDate;
-    }
-
-    public Sale(int id, int userId, double totalAmount, double totalProfit, LocalDateTime saleDate,
-            String transactionDetails) {
-        this(id, userId, totalAmount, totalProfit, saleDate);
-        this.transactionDetails = transactionDetails;
     }
 
     public int getId() {
@@ -38,6 +54,38 @@ public class Sale {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public Integer getShiftId() {
+        return shiftId;
+    }
+
+    public void setShiftId(Integer shiftId) {
+        this.shiftId = shiftId;
+    }
+
+    public double getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(double subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    public double getTaxAmount() {
+        return taxAmount;
+    }
+
+    public void setTaxAmount(double taxAmount) {
+        this.taxAmount = taxAmount;
+    }
+
+    public double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(double discountAmount) {
+        this.discountAmount = discountAmount;
     }
 
     public double getTotalAmount() {

@@ -49,6 +49,8 @@ public class ReportsController {
     private TableColumn<Sale, Double> profitCol;
     @FXML
     private TableColumn<Sale, LocalDateTime> dateCol;
+    @FXML
+    private TableColumn<Sale, Void> actionCol;
 
     private SaleDAO saleDAO;
 
@@ -124,11 +126,62 @@ public class ReportsController {
                 }
             });
 
+            setupActionColumn();
+
             // Default triggers initial handleFilter() inherently
             dateRangeComboBox.getSelectionModel().select(0);
 
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void setupActionColumn() {
+        actionCol.setCellFactory(param -> new javafx.scene.control.TableCell<Sale, Void>() {
+            private final javafx.scene.control.Button detailsBtn = new javafx.scene.control.Button("Details");
+
+            {
+                detailsBtn.getStyleClass().add("btn-primary");
+                detailsBtn.setOnAction(event -> {
+                    Sale sale = getTableView().getItems().get(getIndex());
+                    handleViewDetails(sale);
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    javafx.scene.layout.HBox pane = new javafx.scene.layout.HBox(detailsBtn);
+                    pane.setAlignment(javafx.geometry.Pos.CENTER);
+                    setGraphic(pane);
+                }
+            }
+        });
+    }
+
+    private void handleViewDetails(Sale sale) {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/fxml/transaction_details_modal.fxml"));
+            loader.setResources(com.pos.system.App.getBundle());
+            javafx.scene.Parent root = loader.load();
+
+            TransactionDetailsController controller = loader.getController();
+            controller.setSale(sale);
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(root);
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.setTitle("Transaction Details");
+            stage.setScene(scene);
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+            com.pos.system.utils.NotificationUtils.showError("Error", "Could not load transaction details.");
         }
     }
 
