@@ -72,10 +72,10 @@ public class FinanceController {
             loadExpenses();
 
         } catch (NumberFormatException e) {
-            // Show alert
-            System.err.println("Invalid number");
+            com.pos.system.utils.NotificationUtils.showWarning("Input Error", "Please enter a valid amount.");
         } catch (SQLException e) {
             e.printStackTrace();
+            com.pos.system.utils.NotificationUtils.showWarning("Database Error", "Failed to add expense.");
         }
     }
 }

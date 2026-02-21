@@ -7,6 +7,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ComboBox;
+import java.util.Locale;
 
 public class LoginController {
 
@@ -20,12 +22,40 @@ public class LoginController {
     private Label errorLabel;
 
     @FXML
+    private ComboBox<String> languageComboBox;
+
+    @FXML
+    public void initialize() {
+        languageComboBox.getItems().addAll("English", "မြန်မာစာ", "中文");
+
+        Locale current = com.pos.system.App.getBundle().getLocale();
+        if ("my".equals(current.getLanguage())) {
+            languageComboBox.setValue("မြန်မာစာ");
+        } else if ("zh".equals(current.getLanguage())) {
+            languageComboBox.setValue("中文");
+        } else {
+            languageComboBox.setValue("English");
+        }
+
+        languageComboBox.setOnAction(e -> {
+            String selected = languageComboBox.getValue();
+            if ("English".equals(selected)) {
+                com.pos.system.App.setLocale("en");
+            } else if ("မြန်မာစာ".equals(selected)) {
+                com.pos.system.App.setLocale("my");
+            } else if ("中文".equals(selected)) {
+                com.pos.system.App.setLocale("zh");
+            }
+        });
+    }
+
+    @FXML
     private void handleLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
 
         if (username.isEmpty() || password.isEmpty()) {
-            errorLabel.setText("Please enter both username and password.");
+            errorLabel.setText(getString("error.emptyFields", "Please enter both username and password."));
             return;
         }
 
@@ -43,11 +73,19 @@ public class LoginController {
                     errorLabel.setText("Error loading POS.");
                 }
             } else {
-                errorLabel.setText("Invalid username or password.");
+                errorLabel.setText(getString("error.invalidLogin", "Invalid username or password."));
             }
         } catch (Exception e) {
             e.printStackTrace();
-            errorLabel.setText("Database error: " + e.getMessage());
+            errorLabel.setText(getString("error.database", "Database error: ") + e.getMessage());
+        }
+    }
+
+    private String getString(String key, String defaultVal) {
+        try {
+            return com.pos.system.App.getBundle().getString(key);
+        } catch (Exception e) {
+            return defaultVal;
         }
     }
 }

@@ -1,119 +1,173 @@
-/* Global Styles */
+/* Application Base Styling */
 .root {
-    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", "Inter", "Roboto", sans-serif;
+    -fx-background-color: #f8f9fa;
 }
 
-/* Headings */
+/* Global Text Formatting */
+.button,
+.label {
+    -fx-text-overrun: ELLIPSIS;
+}
+
+/* Icon Color Synchronization */
+.button .ikonli-font-icon,
+.label .ikonli-font-icon {
+    -fx-icon-color: -fx-text-fill;
+    -fx-icon-size: 16px;
+}
+
+/* Headers */
 .header-label {
-    -fx-font-size: 24px;
+    -fx-font-size: 28px;
     -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
 }
 
 .sub-header-label {
-    -fx-font-size: 18px;
+    -fx-font-size: 20px;
     -fx-font-weight: bold;
+    -fx-text-fill: #34495e;
 }
 
-/* Dashboard Sidebar */
+/* Sidebar Styling */
 .sidebar {
     -fx-background-color: #2c3e50;
+    -fx-padding: 10;
 }
 
 .sidebar-button {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
+    -fx-text-fill: #ecf0f1;
     -fx-alignment: BASELINE_LEFT;
-    -fx-font-size: 16px;
+    -fx-padding: 12 20;
     -fx-cursor: hand;
+    -fx-background-radius: 5;
+    -fx-transition: -fx-background-color 0.2s;
+    -fx-wrap-text: true;
+    -fx-min-height: USE_COMPUTED_SIZE;
+}
+
+.sidebar-button .ikonli-font-icon {
+    -fx-icon-color: #ecf0f1;
+    -fx-icon-size: 18px;
 }
 
 .sidebar-button:hover {
     -fx-background-color: #34495e;
-}
-
-/* Reports Cards */
-.report-card {
-    -fx-padding: 20;
-    -fx-background-radius: 10;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
-}
-
-.card-blue { -fx-background-color: #3498db; }
-.card-green { -fx-background-color: #2ecc71; }
-.card-purple { -fx-background-color: #9b59b6; }
-
-.card-title {
     -fx-text-fill: white;
-    -fx-font-size: 16px;
 }
 
-.card-value {
-    -fx-text-fill: white;
-    -fx-font-size: 28px;
-    -fx-font-weight: bold;
+.sidebar-button:hover .ikonli-font-icon {
+    -fx-icon-color: white;
 }
 
-/* Product Tile */
+/* Cards & Containers */
+.report-card,
 .product-card {
     -fx-background-color: white;
-    -fx-background-radius: 5;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);
-    -fx-padding: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.05), 10, 0, 0, 3);
 }
 
-.product-name {
-    -fx-font-weight: bold;
-    -fx-font-size: 14px;
+.product-tile {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-padding: 15;
+    -fx-border-color: #ecf0f1;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.02), 5, 0, 0, 1);
 }
 
-.product-price {
-    -fx-text-fill: #2980b9;
-    -fx-font-weight: bold;
-}
-
-.stock-label {
-    -fx-text-fill: gray;
-}
-
-.stock-low {
-    -fx-text-fill: red;
+.product-tile:hover {
+    -fx-border-color: #3498db;
+    -fx-effect: dropshadow(gaussian, rgba(52, 152, 219, 0.2), 10, 0, 0, 3);
 }
 
 /* Buttons */
+.button {
+    -fx-font-weight: bold;
+    -fx-padding: 6 12;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-min-height: 32px;
+    -fx-alignment: CENTER;
+}
+
 .btn-primary {
     -fx-background-color: #3498db;
     -fx-text-fill: white;
-    -fx-cursor: hand;
+}
+
+.btn-primary:hover {
+    -fx-background-color: #2980b9;
 }
 
 .btn-success {
     -fx-background-color: #2ecc71;
     -fx-text-fill: white;
-    -fx-cursor: hand;
+}
+
+.btn-success:hover {
+    -fx-background-color: #27ae60;
 }
 
 .btn-danger {
     -fx-background-color: #e74c3c;
     -fx-text-fill: white;
-    -fx-cursor: hand;
 }
 
-.btn-danger-outline {
-    -fx-base: #e74c3c; 
+.btn-danger:hover {
+    -fx-background-color: #c0392b;
+}
+
+.btn-warning {
+    -fx-background-color: #f1c40f;
     -fx-text-fill: white;
 }
 
-.stepper-btn {
-    -fx-min-width: 30px;
-    -fx-font-weight: bold;
+.btn-warning:hover {
+    -fx-background-color: #f39c12;
 }
 
-.stepper-btn-minus {
-    -fx-background-color: #e74c3c;
-    -fx-text-fill: white;
+/* Input Fields */
+.search-field {
+    -fx-background-radius: 20;
+    -fx-padding: 5 15;
 }
 
-.stepper-btn-plus {
-    -fx-background-color: #2ecc71;
-    -fx-text-fill: white;
+/* Table Enhancements */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #ecf0f1;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+}
+
+.table-view .table-cell {
+    -fx-padding: 10 5;
+    -fx-font-size: 14px;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #fafbfc;
+}
+
+.table-row-cell:even {
+    -fx-background-color: white;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(52, 152, 219, 0.1);
+    -fx-text-background-color: #2c3e50;
 }

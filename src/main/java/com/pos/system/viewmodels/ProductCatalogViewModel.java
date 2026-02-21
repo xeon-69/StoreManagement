@@ -21,8 +21,20 @@ public class ProductCatalogViewModel {
     private final ObservableList<Product> filteredProducts = FXCollections.observableArrayList();
     private final ObjectProperty<Product> selectedProduct = new SimpleObjectProperty<>();
 
+    // Use a shared daemon thread pool for DB loading to avoid unbounded thread
+    // creation
+    private static final java.util.concurrent.ExecutorService dbExecutor = Executors.newCachedThreadPool(r -> {
+        Thread t = new Thread(r);
+        t.setDaemon(true);
+        return t;
+    });
+
     // Debounce executor
-    private final ScheduledExecutorService debounceExecutor = Executors.newSingleThreadScheduledExecutor();
+    private static final ScheduledExecutorService debounceExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r);
+        t.setDaemon(true);
+        return t;
+    });
     private volatile Runnable pendingSearch;
 
     public ProductCatalogViewModel() {
@@ -46,7 +58,7 @@ public class ProductCatalogViewModel {
 
         loadTask.setOnFailed(e -> loadTask.getException().printStackTrace());
 
-        new Thread(loadTask).start();
+        dbExecutor.execute(loadTask);
     }
 
     public void loadCategories() {
@@ -58,7 +70,7 @@ public class ProductCatalogViewModel {
                 }
             }
         };
-        new Thread(loadTask).start();
+        dbExecutor.execute(loadTask);
     }
 
     public void search(String query) {

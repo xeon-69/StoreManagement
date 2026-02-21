@@ -6,40 +6,52 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox prefHeight="600.0" prefWidth="900.0" spacing="10.0" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.InventoryController">
+<VBox prefHeight="600.0" prefWidth="900.0" spacing="20.0" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.InventoryController">
    <children>
-      <Label styleClass="header-label" text="Inventory Management">
-         <font>
-            <Font size="24.0" />
-         </font>
-      </Label>
-      <HBox spacing="10.0">
+      <Label styleClass="header-label" text="%inventory.title" />
+      <HBox spacing="10.0" alignment="CENTER_LEFT">
          <children>
-            <TextField fx:id="searchField" prefHeight="25.0" prefWidth="233.0" promptText="Search Product..." />
-            <Button mnemonicParsing="false" onAction="#handleSearch" styleClass="btn-primary" text="Search" />
-            <Button mnemonicParsing="false" onAction="#handleRefresh" text="Refresh" />
+            <TextField fx:id="searchField" HBox.hgrow="SOMETIMES" prefWidth="350.0" promptText="%inventory.search" styleClass="search-field" />
+            <Button mnemonicParsing="false" onAction="#handleSearch" styleClass="btn-primary" contentDisplay="GRAPHIC_ONLY">
+                <graphic><FontIcon iconLiteral="fas-search" iconColor="white"/></graphic>
+                <tooltip><Tooltip text="%inventory.searchBtn"/></tooltip>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#handleRefresh" contentDisplay="GRAPHIC_ONLY">
+                <graphic><FontIcon iconLiteral="fas-sync-alt" /></graphic>
+                <tooltip><Tooltip text="%inventory.refreshBtn"/></tooltip>
+            </Button>
             <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS" spacing="10.0">
                <children>
-                  <Button mnemonicParsing="false" onAction="#handleDeleteProduct" styleClass="btn-danger" text="Delete Product" />
-                  <Button mnemonicParsing="false" onAction="#handleEditProduct" styleClass="btn-primary" text="Edit Product" />
-                  <Button mnemonicParsing="false" onAction="#handleAddProduct" styleClass="btn-success" text="Add Product" />
+                  <Button mnemonicParsing="false" onAction="#handleExpireStock" styleClass="btn-warning" contentDisplay="GRAPHIC_ONLY">
+                      <graphic><FontIcon iconLiteral="fas-calendar-times" iconColor="black" /></graphic>
+                      <tooltip><Tooltip text="%inventory.runExpiryBtn"/></tooltip>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#handleAddProduct" styleClass="btn-success" contentDisplay="GRAPHIC_ONLY">
+                      <graphic><FontIcon iconLiteral="fas-plus" iconColor="white"/></graphic>
+                      <tooltip><Tooltip text="%inventory.addBtn"/></tooltip>
+                  </Button>
                </children>
             </HBox>
          </children>
       </HBox>
       <TableView fx:id="productTable" VBox.vgrow="ALWAYS">
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+        </columnResizePolicy>
         <columns>
-          <TableColumn fx:id="imageCol" prefWidth="80.0" text="Image" />
-          <TableColumn fx:id="barcodeCol" prefWidth="100.0" text="Barcode" />
-          <TableColumn fx:id="nameCol" prefWidth="194.0" text="Name" />
-            <TableColumn fx:id="categoryCol" prefWidth="108.0" text="Category" />
-            <TableColumn fx:id="costCol" prefWidth="86.0" text="Cost Price" />
-            <TableColumn fx:id="priceCol" prefWidth="95.0" text="Selling Price" />
-            <TableColumn fx:id="stockCol" prefWidth="85.0" text="Stock" />
+          <TableColumn fx:id="imageCol" prefWidth="80.0" text="%inventory.image" />
+          <TableColumn fx:id="barcodeCol" prefWidth="100.0" text="%inventory.barcode" />
+          <TableColumn fx:id="nameCol" prefWidth="150.0" text="%inventory.name" />
+          <TableColumn fx:id="categoryCol" prefWidth="100.0" text="%inventory.category" />
+          <TableColumn fx:id="costCol" prefWidth="80.0" text="%inventory.costPrice" />
+          <TableColumn fx:id="priceCol" prefWidth="80.0" text="%inventory.sellingPrice" />
+          <TableColumn fx:id="stockCol" prefWidth="80.0" text="%inventory.stock" />
+          <TableColumn fx:id="actionCol" prefWidth="180.0" minWidth="160.0" maxWidth="200.0" text="%inventory.actions" />
         </columns>
       </TableView>
    </children>

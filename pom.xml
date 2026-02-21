@@ -34,6 +34,13 @@
             <version>2.0.1</version>
         </dependency>
 
+        <!-- ControlsFX for GridView Virtualization -->
+        <dependency>
+            <groupId>org.controlsfx</groupId>
+            <artifactId>controlsfx</artifactId>
+            <version>11.2.0</version>
+        </dependency>
+
         <!-- Reactive Programming (ReactFX) -->
         <dependency>
             <groupId>org.reactfx</groupId>

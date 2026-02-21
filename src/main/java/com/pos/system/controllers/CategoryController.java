@@ -4,21 +4,23 @@ import com.pos.system.dao.CategoryDAO;
 import com.pos.system.models.Category;
 import com.pos.system.utils.NotificationUtils;
 import javafx.collections.FXCollections;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import org.kordamp.ikonli.javafx.FontIcon;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 public class CategoryController {
 
-    @FXML
-    private TextField nameField;
-    @FXML
-    private TextArea descriptionArea;
     @FXML
     private TableView<Category> categoryTable;
     @FXML
@@ -27,6 +29,10 @@ public class CategoryController {
     private TableColumn<Category, String> nameCol;
     @FXML
     private TableColumn<Category, String> descCol;
+    @FXML
+    private TableColumn<Category, Void> actionCol;
+    @FXML
+    private TextField searchField;
 
     private Category selectedCategory;
 
@@ -36,15 +42,17 @@ public class CategoryController {
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         descCol.setCellValueFactory(new PropertyValueFactory<>("description"));
 
+        setupActionColumn();
+
         categoryTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                selectedCategory = newVal;
-                nameField.setText(newVal.getName());
-                descriptionArea.setText(newVal.getDescription());
-            }
+            selectedCategory = newVal;
         });
 
         loadCategories();
+
+        if (searchField != null) {
+            searchField.textProperty().addListener((observable, oldValue, newValue) -> filterCategories(newValue));
+        }
     }
 
     private void loadCategories() {
@@ -56,81 +64,116 @@ public class CategoryController {
         }
     }
 
-    @FXML
-    private void handleAdd() {
-        String name = nameField.getText();
-        if (name.isEmpty()) {
-            NotificationUtils.showWarning("Input Error", "Name is required.");
+    private void filterCategories(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            loadCategories();
             return;
         }
 
+        String lowerCaseKeyword = keyword.toLowerCase();
         try (CategoryDAO dao = new CategoryDAO()) {
-            Category category = new Category(0, name, descriptionArea.getText());
-            dao.addCategory(category);
-            NotificationUtils.showInfo("Success", "Category added.");
-            handleClear();
-            loadCategories();
+            FilteredList<Category> filteredList = new FilteredList<>(
+                    FXCollections.observableArrayList(dao.getAllCategories()), category -> {
+                        if (category.getName().toLowerCase().contains(lowerCaseKeyword))
+                            return true;
+                        if (category.getDescription() != null
+                                && category.getDescription().toLowerCase().contains(lowerCaseKeyword))
+                            return true;
+                        return false;
+                    });
+            categoryTable.setItems(filteredList);
         } catch (SQLException e) {
             e.printStackTrace();
-            if (e.getMessage().contains("SQLITE_CONSTRAINT_UNIQUE")) {
-                NotificationUtils.showWarning("Error", "Category name already exists.");
-            } else {
-                NotificationUtils.showWarning("Error", "Failed to add category.");
-            }
         }
     }
 
-    @FXML
-    private void handleUpdate() {
-        if (selectedCategory == null) {
-            NotificationUtils.showWarning("Selection Error", "No category selected.");
-            return;
-        }
+    private void setupActionColumn() {
+        actionCol.setCellFactory(param -> new TableCell<Category, Void>() {
+            private final Button editBtn = new Button();
+            private final Button deleteBtn = new Button();
+            private final HBox pane = new HBox(8, editBtn, deleteBtn);
 
-        try (CategoryDAO dao = new CategoryDAO()) {
-            selectedCategory.setName(nameField.getText());
-            selectedCategory.setDescription(descriptionArea.getText());
-            dao.updateCategory(selectedCategory);
-            NotificationUtils.showInfo("Success", "Category updated.");
-            handleClear();
-            loadCategories();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            if (e.getMessage().contains("SQLITE_CONSTRAINT_UNIQUE")) {
-                NotificationUtils.showWarning("Error", "Category name already exists.");
-            } else {
-                NotificationUtils.showWarning("Error", "Failed to update category.");
+            {
+                FontIcon editIcon = new FontIcon("fas-edit");
+                editIcon.setIconColor(javafx.scene.paint.Color.WHITE);
+                editBtn.setGraphic(editIcon);
+                editBtn.getStyleClass().add("btn-primary");
+                editBtn.setOnAction(event -> {
+                    Category category = getTableView().getItems().get(getIndex());
+                    openCategoryForm(category);
+                });
+
+                FontIcon deleteIcon = new FontIcon("fas-trash-alt");
+                deleteIcon.setIconColor(javafx.scene.paint.Color.WHITE);
+                deleteBtn.setGraphic(deleteIcon);
+                deleteBtn.getStyleClass().add("btn-danger");
+                deleteBtn.setOnAction(event -> {
+                    Category category = getTableView().getItems().get(getIndex());
+                    handleDeleteCategory(category);
+                });
+
+                pane.setStyle("-fx-alignment: CENTER;");
             }
-        }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : pane);
+            }
+        });
     }
 
     @FXML
-    private void handleDelete() {
-        if (selectedCategory == null) {
-            NotificationUtils.showWarning("Selection Error", "No category selected.");
-            return;
-        }
+    private void handleAddCategory() {
+        openCategoryForm(null);
+    }
 
-        try (CategoryDAO dao = new CategoryDAO()) {
-            dao.deleteCategory(selectedCategory.getId());
-            NotificationUtils.showInfo("Success", "Category deleted.");
-            handleClear();
-            loadCategories();
-        } catch (SQLException e) {
+    private void openCategoryForm(Category category) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/add_category.fxml"));
+
+            // Standardize Resource bundles
+            java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("bundle.messages");
+            // Optionally support switching here, omitted for brevity as UI language toggle
+            // usually reloads main scene
+            loader.setResources(bundle);
+
+            Parent root = loader.load();
+
+            AddCategoryController controller = loader.getController();
+            controller.setCategoryToEdit(category);
+            controller.setOnSaveCallback(this::loadCategories);
+
+            Stage stage = new Stage();
+            stage.setTitle(category == null ? "Add Category" : "Edit Category");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+
+        } catch (IOException e) {
             e.printStackTrace();
-            if (e.getMessage().contains("SQLITE_CONSTRAINT_FOREIGNKEY")) {
-                NotificationUtils.showWarning("Error", "Cannot delete category used by products.");
-            } else {
-                NotificationUtils.showWarning("Error", "Failed to delete category.");
-            }
+            NotificationUtils.showWarning("Error", "Could not load category form.");
         }
     }
 
-    @FXML
-    private void handleClear() {
-        nameField.clear();
-        descriptionArea.clear();
-        categoryTable.getSelectionModel().clearSelection();
-        selectedCategory = null;
+    private void handleDeleteCategory(Category category) {
+        boolean confirm = NotificationUtils.showConfirmation(
+                com.pos.system.App.getBundle().getString("dialog.confirm"),
+                "Delete category: " + category.getName() + "? This action cannot be undone.");
+
+        if (confirm) {
+            try (CategoryDAO dao = new CategoryDAO()) {
+                dao.deleteCategory(category.getId());
+                NotificationUtils.showInfo("Success", "Category deleted.");
+                loadCategories();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                if (e.getMessage().contains("SQLITE_CONSTRAINT_FOREIGNKEY")) {
+                    NotificationUtils.showWarning("Error", "Cannot delete category used by products.");
+                } else {
+                    NotificationUtils.showWarning("Error", "Failed to delete category.");
+                }
+            }
+        }
     }
 }

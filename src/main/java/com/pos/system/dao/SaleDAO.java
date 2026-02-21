@@ -128,10 +128,11 @@ public class SaleDAO extends BaseDAO {
         }
     }
 
-    public double getTotalSalesSince(LocalDateTime since) throws SQLException {
-        String sql = "SELECT SUM(total_amount) FROM sales WHERE sale_date >= ?";
+    public double getTotalSalesBetween(LocalDateTime start, LocalDateTime end) throws SQLException {
+        String sql = "SELECT SUM(total_amount) FROM sales WHERE sale_date >= ? AND sale_date <= ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, since.toString());
+            stmt.setString(1, start.toString());
+            stmt.setString(2, end.toString());
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getDouble(1);
@@ -141,10 +142,11 @@ public class SaleDAO extends BaseDAO {
         return 0.0;
     }
 
-    public double getTotalProfitSince(LocalDateTime since) throws SQLException {
-        String sql = "SELECT SUM(total_profit) FROM sales WHERE sale_date >= ?";
+    public double getTotalProfitBetween(LocalDateTime start, LocalDateTime end) throws SQLException {
+        String sql = "SELECT SUM(total_profit) FROM sales WHERE sale_date >= ? AND sale_date <= ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, since.toString());
+            stmt.setString(1, start.toString());
+            stmt.setString(2, end.toString());
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getDouble(1);
@@ -157,7 +159,10 @@ public class SaleDAO extends BaseDAO {
     // Get all sales ordered by date desc
     public List<Sale> getAllSales() throws SQLException {
         List<Sale> sales = new java.util.ArrayList<>();
-        String sql = "SELECT * FROM sales ORDER BY sale_date DESC LIMIT 100"; // Limit for performance
+        String sql = "SELECT s.*, " +
+                "(SELECT GROUP_CONCAT(p.name || ' (x' || si.quantity || ')', ', ') " +
+                " FROM sale_items si JOIN products p ON si.product_id = p.id WHERE si.sale_id = s.id) AS details " +
+                "FROM sales s ORDER BY s.sale_date DESC LIMIT 100"; // Limit for performance
         try (Statement stmt = connection.createStatement();
                 ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
@@ -166,9 +171,9 @@ public class SaleDAO extends BaseDAO {
                         rs.getInt("user_id"),
                         rs.getDouble("total_amount"),
                         rs.getDouble("total_profit"),
-                        java.time.LocalDateTime.parse(rs.getString("sale_date").replace(" ", "T")) // Basic robust
-                                                                                                   // parsing
-                ));
+                        java.time.LocalDateTime.parse(rs.getString("sale_date").replace(" ", "T")), // Basic robust
+                                                                                                    // parsing
+                        rs.getString("details")));
             }
         } catch (Exception e) {
             // Try parsing standard SQLite format if above fails or use simple string
@@ -178,18 +183,21 @@ public class SaleDAO extends BaseDAO {
         return sales;
     }
 
-    public List<Sale> getRecentSales(int limit) throws SQLException {
+    public List<Sale> getSalesBetween(LocalDateTime start, LocalDateTime end) throws SQLException {
         List<Sale> sales = new java.util.ArrayList<>();
-        String sql = "SELECT * FROM sales ORDER BY sale_date DESC LIMIT ?";
+        String sql = "SELECT s.*, " +
+                "(SELECT GROUP_CONCAT(p.name || ' (x' || si.quantity || ')', ', ') " +
+                " FROM sale_items si JOIN products p ON si.product_id = p.id WHERE si.sale_id = s.id) AS details " +
+                "FROM sales s WHERE s.sale_date >= ? AND s.sale_date <= ? ORDER BY s.sale_date DESC";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, limit);
+            stmt.setString(1, start.toString());
+            stmt.setString(2, end.toString());
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     LocalDateTime date;
                     try {
                         date = LocalDateTime.parse(rs.getString("sale_date"));
                     } catch (Exception e) {
-                        // Fallback for space instead of T
                         date = LocalDateTime.parse(rs.getString("sale_date").replace(" ", "T"));
                     }
                     sales.add(new Sale(
@@ -197,7 +205,8 @@ public class SaleDAO extends BaseDAO {
                             rs.getInt("user_id"),
                             rs.getDouble("total_amount"),
                             rs.getDouble("total_profit"),
-                            date));
+                            date,
+                            rs.getString("details")));
                 }
             }
         }

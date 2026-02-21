@@ -47,10 +47,9 @@ public class PDFReportGenerator {
 
             document.add(table);
             document.close();
-            System.out.println("Inventory Report created: " + dest);
 
         } catch (FileNotFoundException | SQLException e) {
-            e.printStackTrace();
+            // Ignored, handled by caller
         }
     }
 }

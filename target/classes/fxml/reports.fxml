@@ -2,51 +2,85 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.pos.system.controllers.ReportsController"
-      spacing="20" style="-fx-padding: 20;" stylesheets="@../css/styles.css">
+<VBox prefHeight="600.0" prefWidth="900.0" spacing="20.0" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.ReportsController">
+   <children>
+      <Label styleClass="header-label" text="%reports.title" />
+      
+      <!-- Date Filter Controls -->
+      <javafx.scene.layout.HBox spacing="10.0" alignment="CENTER_LEFT">
+         <children>
+            <javafx.scene.control.ComboBox fx:id="dateRangeComboBox" promptText="Select Date Range" prefWidth="150.0" />
+            <javafx.scene.control.DatePicker fx:id="startDatePicker" promptText="Start Date" visible="false" managed="false"/>
+            <javafx.scene.control.DatePicker fx:id="endDatePicker" promptText="End Date" visible="false" managed="false"/>
+         </children>
+      </javafx.scene.layout.HBox>
 
-    <Label text="Reports &amp; Analytics" styleClass="header-label"/>
-
-    <HBox spacing="20">
-        <!-- Card 1: Today's Sales -->
-        <VBox styleClass="report-card, card-blue" prefWidth="250">
-            <Label text="Today's Sales" styleClass="card-title"/>
-            <Label fx:id="todaySalesLabel" text="0.00 MMK" styleClass="card-value"/>
-        </VBox>
-
-        <!-- Card 2: Today's Profit -->
-        <VBox styleClass="report-card, card-green" prefWidth="250">
-            <Label text="Today's Profit" styleClass="card-title"/>
-            <Label fx:id="todayProfitLabel" text="0.00 MMK" styleClass="card-value"/>
-        </VBox>
-
-        <!-- Card 3: Total Sales All Time -->
-        <VBox styleClass="report-card, card-purple" prefWidth="250">
-            <Label text="Total Sales (All Time)" styleClass="card-title"/>
-            <Label fx:id="totalSalesLabel" text="0.00 MMK" styleClass="card-value"/>
-        </VBox>
-    </HBox>
-
-    <Label text="Recent Transactions" styleClass="sub-header-label"/>
-
-    <TableView fx:id="recentSalesTable" VBox.vgrow="ALWAYS">
+      <FlowPane hgap="20.0" vgap="20.0" prefWrapLength="800.0">
+         <children>
+            <VBox minWidth="200.0" maxWidth="400.0" styleClass="report-card" style="-fx-background-color: white;">
+               <children>
+                  <FontIcon iconLiteral="fas-calendar-day" iconSize="24" iconColor="#3498db">
+                     <VBox.margin><Insets bottom="10.0"/></VBox.margin>
+                  </FontIcon>
+                  <Label text="%reports.todaySales" textFill="#7f8c8d" />
+                  <Label fx:id="todaySalesLabel" text="0.00 MMK" wrapText="true">
+                     <font><Font name="System Bold" size="24.0" /></font>
+                  </Label>
+               </children>
+            </VBox>
+            
+            <VBox minWidth="200.0" maxWidth="400.0" styleClass="report-card" style="-fx-background-color: white;">
+               <children>
+                  <FontIcon iconLiteral="fas-chart-line" iconSize="24" iconColor="#2ecc71">
+                     <VBox.margin><Insets bottom="10.0"/></VBox.margin>
+                  </FontIcon>
+                  <Label text="%reports.todayProfit" textFill="#7f8c8d" />
+                  <Label fx:id="todayProfitLabel" text="0.00 MMK" wrapText="true" textFill="#2ecc71">
+                     <font><Font name="System Bold" size="24.0" /></font>
+                  </Label>
+               </children>
+            </VBox>
+            
+            <VBox minWidth="200.0" maxWidth="400.0" styleClass="report-card" style="-fx-background-color: white;">
+               <children>
+                  <FontIcon iconLiteral="fas-wallet" iconSize="24" iconColor="#9b59b6">
+                     <VBox.margin><Insets bottom="10.0"/></VBox.margin>
+                  </FontIcon>
+                  <Label text="%reports.totalSales" textFill="#7f8c8d" />
+                  <Label fx:id="totalSalesLabel" text="0.00 MMK" wrapText="true">
+                     <font><Font name="System Bold" size="24.0" /></font>
+                  </Label>
+               </children>
+            </VBox>
+         </children>
+      </FlowPane>
+      
+      <Label styleClass="sub-header-label" text="%reports.recentTransactions">
+         <VBox.margin><Insets top="10.0" /></VBox.margin>
+      </Label>
+      
+      <TableView fx:id="recentSalesTable" VBox.vgrow="ALWAYS">
         <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
         </columnResizePolicy>
         <columns>
-            <TableColumn fx:id="idCol" text="ID" prefWidth="50"/>
-            <TableColumn fx:id="dateCol" text="Date/Time"/>
-            <TableColumn fx:id="amountCol" text="Total Amount (MMK)"/>
-            <TableColumn fx:id="profitCol" text="Profit (MMK)"/>
+          <TableColumn fx:id="idCol" prefWidth="50.0" text="%reports.id" />
+          <TableColumn fx:id="dateCol" prefWidth="150.0" text="%reports.dateTime" />
+          <TableColumn fx:id="detailsCol" prefWidth="350.0" text="%reports.details" />
+          <TableColumn fx:id="amountCol" prefWidth="120.0" text="%reports.amount" />
+          <TableColumn fx:id="profitCol" prefWidth="120.0" text="%reports.profit" />
         </columns>
-    </TableView>
-
+      </TableView>
+   </children>
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
 </VBox>

@@ -32,8 +32,10 @@ public class CheckoutService {
                 logger.info("Sale items inserted for Sale ID: {}", saleId);
 
                 // 3. Update Inventory (Atomic Decrement)
+                com.pos.system.services.InventoryService inventoryService = new com.pos.system.services.InventoryService();
                 for (SaleItem item : items) {
-                    productDAO.updateStockQuantity(item.getProductId(), item.getQuantity());
+                    inventoryService.deductStock(connection, item.getProductId(), item.getQuantity(),
+                            com.pos.system.models.TransactionType.SALE, "SALE-" + saleId, sale.getUserId());
                 }
                 logger.info("Inventory updated for {} items.", items.size());
 

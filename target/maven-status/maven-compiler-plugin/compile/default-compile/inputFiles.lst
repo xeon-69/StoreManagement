@@ -1,4 +1,5 @@
 C:\POS\src\main\java\com\pos\system\App.java
+C:\POS\src\main\java\com\pos\system\controllers\AdjustStockController.java
 C:\POS\src\main\java\com\pos\system\controllers\AddProductController.java
 C:\POS\src\main\java\com\pos\system\controllers\LoginController.java
 C:\POS\src\main\java\com\pos\system\services\StoreEvents.java
@@ -6,6 +7,7 @@ C:\POS\src\main\java\com\pos\system\services\ShiftAnalytics.java
 C:\POS\src\main\java\com\pos\system\dao\ProductDAO.java
 C:\POS\src\main\java\com\pos\system\controllers\CategoryController.java
 C:\POS\src\main\java\com\pos\system\services\ReportingService.java
+C:\POS\src\main\java\com\pos\system\controllers\AddCategoryController.java
 C:\POS\src\main\java\com\pos\system\utils\PDFReportGenerator.java
 C:\POS\src\main\java\com\pos\system\services\StoreMonitorService.java
 C:\POS\src\main\java\com\pos\system\utils\SessionManager.java
@@ -13,6 +15,8 @@ C:\POS\src\main\java\com\pos\system\models\Category.java
 C:\POS\src\main\java\com\pos\system\dao\ExpenseDAO.java
 C:\POS\src\main\java\com\pos\system\models\SaleItem.java
 C:\POS\src\main\java\com\pos\system\Launcher.java
+C:\POS\src\main\java\com\pos\system\dao\BatchDAO.java
+C:\POS\src\main\java\com\pos\system\services\InventoryService.java
 C:\POS\src\main\java\com\pos\system\controllers\DashboardController.java
 C:\POS\src\main\java\com\pos\system\database\DatabaseManager.java
 C:\POS\src\main\java\com\pos\system\models\Product.java
@@ -20,13 +24,17 @@ C:\POS\src\main\java\com\pos\system\models\Sale.java
 C:\POS\src\main\java\com\pos\system\controllers\ReportsController.java
 C:\POS\src\main\java\com\pos\system\services\StockAdjustmentService.java
 C:\POS\src\main\java\com\pos\system\controllers\FinanceController.java
+C:\POS\src\main\java\com\pos\system\models\InventoryTransaction.java
 C:\POS\src\main\java\com\pos\system\models\User.java
 C:\POS\src\main\java\com\pos\system\dao\CategoryDAO.java
+C:\POS\src\main\java\com\pos\system\dao\InventoryTransactionDAO.java
 C:\POS\src\main\java\com\pos\system\services\CheckoutService.java
 C:\POS\src\main\java\com\pos\system\dao\UserDAO.java
 C:\POS\src\main\java\com\pos\system\utils\NotificationUtils.java
 C:\POS\src\main\java\com\pos\system\controllers\InventoryController.java
+C:\POS\src\main\java\com\pos\system\models\TransactionType.java
 C:\POS\src\main\java\com\pos\system\viewmodels\ProductCatalogViewModel.java
+C:\POS\src\main\java\com\pos\system\models\Batch.java
 C:\POS\src\main\java\com\pos\system\models\Expense.java
 C:\POS\src\main\java\com\pos\system\controllers\POSController.java
 C:\POS\src\main\java\com\pos\system\dao\BaseDAO.java

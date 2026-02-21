@@ -26,8 +26,8 @@ public class ShiftAnalytics {
             // Note: SaleDAO needs a getTotalSalesSince method.
             // If it doesn't exist yet, we might need to add it or this will fail
             // compilation.
-            // Checking previous steps, "getTotalSalesSince" was mentioned.
-            return saleDAO.getTotalSalesSince(shiftStartTime);
+            // Use safe upper bounds for currently ongoing shifts.
+            return saleDAO.getTotalSalesBetween(shiftStartTime, LocalDateTime.now());
 
         } catch (Exception e) {
             logger.error("Failed to calculate shift analytics", e);

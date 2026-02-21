@@ -55,6 +55,36 @@ CREATE TABLE IF NOT EXISTS sale_items (
     FOREIGN KEY (sale_id) REFERENCES sales(id),
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
+-- Batches Table (For Expiry, Costing, FIFO/FEFO tracking)
+CREATE TABLE IF NOT EXISTS batches (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id INTEGER NOT NULL,
+    batch_number TEXT NOT NULL,
+    expiry_date TEXT,
+    -- ISO-8601 Format
+    cost_price REAL NOT NULL,
+    remaining_quantity INTEGER NOT NULL CHECK (remaining_quantity >= 0),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+-- Inventory Transactions Table (Append-only Ledger)
+CREATE TABLE IF NOT EXISTS inventory_transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id INTEGER NOT NULL,
+    batch_id INTEGER,
+    -- Nullable for generic adjustments if batch is unknown
+    quantity_change INTEGER NOT NULL,
+    -- Positive (In) or Negative (Out)
+    transaction_type TEXT NOT NULL,
+    -- PURCHASE, SALE, EXPIRE, ADJUSTMENT, RETURN
+    reference_id TEXT,
+    -- e.g., 'SALE-1025' or 'INV-PO-99'
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER,
+    -- User ID executing the action
+    FOREIGN KEY(product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY(batch_id) REFERENCES batches(id)
+);
 -- Expenses Table (New for Finance)
 CREATE TABLE IF NOT EXISTS expenses (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

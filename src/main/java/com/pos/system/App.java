@@ -8,6 +8,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * JavaFX App
@@ -15,13 +17,21 @@ import java.io.IOException;
 public class App extends Application {
 
     private static Scene scene;
+    private static Locale currentLocale;
+    private static ResourceBundle bundle;
+    private static String currentFxml;
 
     @Override
     public void start(Stage stage) throws IOException {
+        // Init default locale
+        currentLocale = Locale.forLanguageTag("en");
+        bundle = ResourceBundle.getBundle("bundle.messages", currentLocale);
+
         // Apply AtlantaFX Theme
         Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
 
         // We will start with the Login Screen
+        currentFxml = "login";
         scene = new Scene(loadFXML("login"), 640, 480);
 
         // Load CSS if available?
@@ -40,11 +50,31 @@ public class App extends Application {
     }
 
     public static void setRoot(String fxml) throws IOException {
+        currentFxml = fxml;
         scene.setRoot(loadFXML(fxml));
+    }
+
+    public static void setLocale(String language) {
+        currentLocale = Locale.forLanguageTag(language);
+        bundle = ResourceBundle.getBundle("bundle.messages", currentLocale);
+
+        try {
+            // Reload the current scene with the new bundle
+            if (currentFxml != null) {
+                scene.setRoot(loadFXML(currentFxml));
+            }
+        } catch (IOException e) {
+            // Error handled by caller if needed
+        }
+    }
+
+    public static ResourceBundle getBundle() {
+        return bundle;
     }
 
     private static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/fxml/" + fxml + ".fxml"));
+        fxmlLoader.setResources(bundle);
         return fxmlLoader.load();
     }
 

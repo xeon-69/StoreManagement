@@ -8,6 +8,7 @@ public class Sale {
     private double totalAmount;
     private double totalProfit;
     private LocalDateTime saleDate;
+    private String transactionDetails;
 
     public Sale(int id, int userId, double totalAmount, double totalProfit, LocalDateTime saleDate) {
         this.id = id;
@@ -15,6 +16,12 @@ public class Sale {
         this.totalAmount = totalAmount;
         this.totalProfit = totalProfit;
         this.saleDate = saleDate;
+    }
+
+    public Sale(int id, int userId, double totalAmount, double totalProfit, LocalDateTime saleDate,
+            String transactionDetails) {
+        this(id, userId, totalAmount, totalProfit, saleDate);
+        this.transactionDetails = transactionDetails;
     }
 
     public int getId() {
@@ -55,5 +62,13 @@ public class Sale {
 
     public void setSaleDate(LocalDateTime saleDate) {
         this.saleDate = saleDate;
+    }
+
+    public String getTransactionDetails() {
+        return transactionDetails;
+    }
+
+    public void setTransactionDetails(String transactionDetails) {
+        this.transactionDetails = transactionDetails;
     }
 }

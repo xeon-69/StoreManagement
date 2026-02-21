@@ -4,17 +4,20 @@ public class Product {
     private int id;
     private String barcode;
     private String name;
+    private int categoryId;
     private String category;
     private double costPrice;
     private double sellingPrice;
     private int stock;
     private byte[] imageData;
 
-    public Product(int id, String barcode, String name, String category, double costPrice, double sellingPrice,
+    public Product(int id, String barcode, String name, int categoryId, String category, double costPrice,
+            double sellingPrice,
             int stock, byte[] imageData) {
         this.id = id;
         this.barcode = barcode;
         this.name = name;
+        this.categoryId = categoryId;
         this.category = category;
         this.costPrice = costPrice;
         this.sellingPrice = sellingPrice;
@@ -22,10 +25,23 @@ public class Product {
         this.imageData = imageData;
     }
 
+    public Product(int id, String barcode, String name, String category, double costPrice, double sellingPrice,
+            int stock, byte[] imageData) {
+        this(id, barcode, name, 0, category, costPrice, sellingPrice, stock, imageData);
+    }
+
     // Constructor overload for backward compatibility (optional but helpful)
     public Product(int id, String barcode, String name, String category, double costPrice, double sellingPrice,
             int stock) {
-        this(id, barcode, name, category, costPrice, sellingPrice, stock, null);
+        this(id, barcode, name, 0, category, costPrice, sellingPrice, stock, null);
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
     }
 
     public int getId() {

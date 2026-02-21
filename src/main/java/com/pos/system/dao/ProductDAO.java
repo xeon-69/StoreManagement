@@ -17,11 +17,11 @@ public class ProductDAO extends BaseDAO {
     }
 
     public void addProduct(Product product) throws SQLException {
-        String sql = "INSERT INTO products (barcode, name, category, cost_price, selling_price, stock, image_blob) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO products (barcode, name, category_id, cost_price, selling_price, stock, image_blob) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, product.getBarcode());
             pstmt.setString(2, product.getName());
-            pstmt.setString(3, product.getCategory());
+            pstmt.setInt(3, product.getCategoryId());
             pstmt.setDouble(4, product.getCostPrice());
             pstmt.setDouble(5, product.getSellingPrice());
             pstmt.setInt(6, product.getStock());
@@ -31,16 +31,15 @@ public class ProductDAO extends BaseDAO {
     }
 
     public void updateProduct(Product product) throws SQLException {
-        String sql = "UPDATE products SET barcode=?, name=?, category=?, cost_price=?, selling_price=?, stock=?, image_blob=? WHERE id=?";
+        String sql = "UPDATE products SET barcode=?, name=?, category_id=?, cost_price=?, selling_price=?, image_blob=? WHERE id=?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, product.getBarcode());
             pstmt.setString(2, product.getName());
-            pstmt.setString(3, product.getCategory());
+            pstmt.setInt(3, product.getCategoryId());
             pstmt.setDouble(4, product.getCostPrice());
             pstmt.setDouble(5, product.getSellingPrice());
-            pstmt.setInt(6, product.getStock());
-            pstmt.setBytes(7, product.getImageData());
-            pstmt.setInt(8, product.getId());
+            pstmt.setBytes(6, product.getImageData());
+            pstmt.setInt(7, product.getId());
             pstmt.executeUpdate();
         }
     }
@@ -55,7 +54,9 @@ public class ProductDAO extends BaseDAO {
 
     public List<Product> getAllProducts() throws SQLException {
         List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM products";
+        String sql = "SELECT p.id, p.barcode, p.name, p.category_id, c.name AS category_name, p.cost_price, p.selling_price, p.stock, p.image_blob "
+                +
+                "FROM products p LEFT JOIN categories c ON p.category_id = c.id";
 
         try (Statement stmt = connection.createStatement();
                 ResultSet rs = stmt.executeQuery(sql)) {
@@ -65,7 +66,8 @@ public class ProductDAO extends BaseDAO {
                         rs.getInt("id"),
                         rs.getString("barcode"),
                         rs.getString("name"),
-                        rs.getString("category"),
+                        rs.getInt("category_id"),
+                        rs.getString("category_name"),
                         rs.getDouble("cost_price"),
                         rs.getDouble("selling_price"),
                         rs.getInt("stock"),
@@ -76,7 +78,9 @@ public class ProductDAO extends BaseDAO {
     }
 
     public Product getProductByBarcode(String barcode) throws SQLException {
-        String sql = "SELECT * FROM products WHERE barcode = ?";
+        String sql = "SELECT p.id, p.barcode, p.name, p.category_id, c.name AS category_name, p.cost_price, p.selling_price, p.stock, p.image_blob "
+                +
+                "FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.barcode = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, barcode);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -85,7 +89,8 @@ public class ProductDAO extends BaseDAO {
                             rs.getInt("id"),
                             rs.getString("barcode"),
                             rs.getString("name"),
-                            rs.getString("category"),
+                            rs.getInt("category_id"),
+                            rs.getString("category_name"),
                             rs.getDouble("cost_price"),
                             rs.getDouble("selling_price"),
                             rs.getInt("stock"),
@@ -96,12 +101,4 @@ public class ProductDAO extends BaseDAO {
         return null; // Not found
     }
 
-    public void updateStockQuantity(int productId, int quantityChange) throws SQLException {
-        String sql = "UPDATE products SET stock = stock - ? WHERE id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, quantityChange);
-            pstmt.setInt(2, productId);
-            pstmt.executeUpdate();
-        }
-    }
 }

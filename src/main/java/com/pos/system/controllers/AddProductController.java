@@ -53,9 +53,9 @@ public class AddProductController {
             nameField.setText(product.getName());
 
             // Set Category
-            if (product.getCategory() != null) {
+            if (product.getCategoryId() > 0) {
                 for (com.pos.system.models.Category c : categoryComboBox.getItems()) {
-                    if (c.getName().equalsIgnoreCase(product.getCategory())) {
+                    if (c.getId() == product.getCategoryId()) {
                         categoryComboBox.setValue(c);
                         break;
                     }
@@ -65,6 +65,7 @@ public class AddProductController {
             costPriceField.setText(String.valueOf(product.getCostPrice()));
             sellingPriceField.setText(String.valueOf(product.getSellingPrice()));
             stockField.setText(String.valueOf(product.getStock()));
+            stockField.setDisable(true); // Disable manual stock overrides for Ledger integrity
 
             selectedImageData = product.getImageData();
             if (selectedImageData != null && selectedImageData.length > 0) {
@@ -113,28 +114,43 @@ public class AddProductController {
 
         try (ProductDAO productDAO = new ProductDAO()) {
             String categoryName = "";
+            int categoryId = 0;
             if (categoryComboBox.getValue() != null) {
                 categoryName = categoryComboBox.getValue().getName();
+                categoryId = categoryComboBox.getValue().getId();
             }
 
             // If editing, keep ID, else 0 (auto-generated)
             int id = (productToEdit != null) ? productToEdit.getId() : 0;
 
-            Product product = new Product(
-                    id,
-                    barcodeField.getText().trim(),
-                    nameField.getText().trim(),
-                    categoryName,
-                    Double.parseDouble(costPriceField.getText().trim()),
-                    Double.parseDouble(sellingPriceField.getText().trim()),
-                    Integer.parseInt(stockField.getText().trim()),
-                    selectedImageData);
+            int parsedStock = Integer.parseInt(stockField.getText().trim());
+            Product product; // Added line
 
             if (productToEdit != null) {
+                // Editing existing product: Force retain existing stock from cache
+                product = new Product(id, barcodeField.getText().trim(), nameField.getText().trim(), categoryId,
+                        categoryName, Double.parseDouble(costPriceField.getText().trim()),
+                        Double.parseDouble(sellingPriceField.getText().trim()), productToEdit.getStock(),
+                        selectedImageData);
                 productDAO.updateProduct(product); // Update
                 messageLabel.setText("Product updated!");
             } else {
-                productDAO.addProduct(product); // Add
+                // Adding an entirely new product
+                product = new Product(id, barcodeField.getText().trim(), nameField.getText().trim(), categoryId,
+                        categoryName, Double.parseDouble(costPriceField.getText().trim()),
+                        Double.parseDouble(sellingPriceField.getText().trim()), 0, selectedImageData);
+                productDAO.addProduct(product); // Add with 0 stock natively
+
+                if (parsedStock > 0) {
+                    Product newlyCreated = productDAO.getProductByBarcode(product.getBarcode());
+                    try (java.sql.Connection conn = com.pos.system.database.DatabaseManager.getInstance()
+                            .getConnection()) {
+                        com.pos.system.services.InventoryService invService = new com.pos.system.services.InventoryService();
+                        invService.addStock(conn, newlyCreated.getId(), parsedStock, newlyCreated.getCostPrice(), null,
+                                "INITIAL-ADD", null);
+                    }
+                }
+
                 messageLabel.setText("Product saved!");
             }
 

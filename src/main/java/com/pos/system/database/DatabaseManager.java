@@ -53,6 +53,7 @@ public class DatabaseManager {
             // Initialize tables
             try (Connection conn = dataSource.getConnection()) {
                 initializeTables(conn);
+                migrateLegacyStock(conn);
             }
 
             // Ensure backup on shutdown
@@ -99,6 +100,76 @@ public class DatabaseManager {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
             logger.info("Database connection pool closed.");
+        }
+    }
+
+    private void migrateLegacyStock(Connection conn) {
+        try {
+            // Check if batches table exists and is empty
+            try (var checkStmt = conn.createStatement();
+                    var rs = checkStmt.executeQuery("SELECT count(*) FROM batches")) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    // Already migrated or has data
+                    return;
+                }
+            } catch (Exception e) {
+                // Table might not exist yet if schema failed, or just ignore
+                return;
+            }
+
+            // Migrate positive stock products
+            String selectProducts = "SELECT id, stock, cost_price FROM products WHERE stock > 0";
+            String insertBatch = "INSERT INTO batches (product_id, batch_number, cost_price, remaining_quantity) VALUES (?, ?, ?, ?)";
+            String insertTx = "INSERT INTO inventory_transactions (product_id, batch_id, quantity_change, transaction_type, reference_id) VALUES (?, ?, ?, ?, ?)";
+
+            try (var pstmtSelect = conn.prepareStatement(selectProducts);
+                    var rsProducts = pstmtSelect.executeQuery();
+                    var pstmtBatch = conn.prepareStatement(insertBatch, java.sql.Statement.RETURN_GENERATED_KEYS);
+                    var pstmtTx = conn.prepareStatement(insertTx)) {
+
+                conn.setAutoCommit(false);
+                int migrationCount = 0;
+
+                while (rsProducts.next()) {
+                    int productId = rsProducts.getInt("id");
+                    int stock = rsProducts.getInt("stock");
+                    double costPrice = rsProducts.getDouble("cost_price");
+
+                    // 1. Create Batch
+                    pstmtBatch.setInt(1, productId);
+                    pstmtBatch.setString(2, "INIT-MIGRATE");
+                    pstmtBatch.setDouble(3, costPrice);
+                    pstmtBatch.setInt(4, stock);
+                    pstmtBatch.executeUpdate();
+
+                    int batchId = -1;
+                    try (var keys = pstmtBatch.getGeneratedKeys()) {
+                        if (keys.next())
+                            batchId = keys.getInt(1);
+                    }
+
+                    // 2. Create Transaction
+                    pstmtTx.setInt(1, productId);
+                    pstmtTx.setInt(2, batchId);
+                    pstmtTx.setInt(3, stock);
+                    pstmtTx.setString(4, "ADJUSTMENT");
+                    pstmtTx.setString(5, "SYSTEM-MIGRATION");
+                    pstmtTx.executeUpdate();
+
+                    migrationCount++;
+                }
+                conn.commit();
+                if (migrationCount > 0) {
+                    logger.info("Successfully migrated {} legacy stock items to inventory ledger.", migrationCount);
+                }
+            } catch (SQLException e) {
+                conn.rollback();
+                logger.error("Failed to migrate legacy stock", e);
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            logger.error("Legacy stock migration check failed", e);
         }
     }
 

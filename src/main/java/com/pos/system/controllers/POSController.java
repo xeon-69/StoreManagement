@@ -4,6 +4,7 @@ import com.pos.system.models.Product;
 import com.pos.system.models.Sale;
 import com.pos.system.models.SaleItem;
 import com.pos.system.utils.SessionManager;
+import com.pos.system.utils.NotificationUtils;
 import com.pos.system.viewmodels.ProductCatalogViewModel;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -17,7 +18,9 @@ import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 
-import java.sql.SQLException;
+import org.controlsfx.control.GridView;
+import org.controlsfx.control.GridCell;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +30,7 @@ public class POSController {
     @FXML
     private TextField searchField;
     @FXML
-    private TilePane productTilePane; // Added TilePane
+    private GridView<Product> productGridView;
 
     // Removed TableView and Columns for products
 
@@ -59,10 +62,20 @@ public class POSController {
         searchField.textProperty().addListener((obs, oldVal, newVal) -> catalogViewModel.search(newVal));
 
         // Bind List Updates
-        catalogViewModel.getFilteredProducts()
-                .addListener((javafx.collections.ListChangeListener.Change<? extends Product> c) -> {
-                    renderProductTiles(catalogViewModel.getFilteredProducts());
-                });
+        productGridView.setItems(catalogViewModel.getFilteredProducts());
+
+        // Setup Virtualized Cell Factory
+        productGridView.setCellFactory(gridView -> new GridCell<Product>() {
+            @Override
+            protected void updateItem(Product item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(createProductTile(item));
+                }
+            }
+        });
 
         // Cart Table Setup - Receipt Style
         cNameCol.setCellValueFactory(new PropertyValueFactory<>("productName"));
@@ -75,15 +88,6 @@ public class POSController {
         cartTable.setItems(cartItems);
         // Ensure catalog loads
         catalogViewModel.loadProducts();
-    }
-
-    private void renderProductTiles(List<Product> products) {
-        Platform.runLater(() -> {
-            productTilePane.getChildren().clear();
-            for (Product p : products) {
-                productTilePane.getChildren().add(createProductTile(p));
-            }
-        });
     }
 
     private VBox createProductTile(Product p) {
@@ -122,7 +126,7 @@ public class POSController {
         Label priceLbl = new Label(String.format("%.0f MMK", p.getSellingPrice()));
         priceLbl.getStyleClass().add("product-price");
 
-        Label stockLbl = new Label("Stock: " + p.getStock());
+        Label stockLbl = new Label(com.pos.system.App.getBundle().getString("pos.stockLabel") + p.getStock());
         stockLbl.getStyleClass().add("stock-label");
         if (p.getStock() < 10) {
             stockLbl.getStyleClass().add("stock-low");
@@ -149,7 +153,7 @@ public class POSController {
             stockLbl.setText("Out of Stock");
         }
 
-        stepper.getChildren().addAll(minusBtn, qtyLbl, plusBtn);
+        stepper.getChildren().addAll(plusBtn, qtyLbl, minusBtn);
 
         // Sync Logic: Update qtyLbl when cart changes
         Runnable updateLabel = () -> {
@@ -199,7 +203,8 @@ public class POSController {
                 cartItems.remove(existingItem);
             } else {
                 if (newQty > p.getStock()) {
-                    showAlert("Error", "Not enough stock!");
+                    NotificationUtils.showWarning(com.pos.system.App.getBundle().getString("dialog.warning"),
+                            "Not enough stock!");
                     return;
                 }
                 existingItem.setQuantity(newQty);
@@ -211,7 +216,8 @@ public class POSController {
         } else if (change > 0) {
             // Add new
             if (p.getStock() <= 0) {
-                showAlert("Error", "Out of stock!");
+                NotificationUtils.showWarning(com.pos.system.App.getBundle().getString("dialog.warning"),
+                        "Out of stock!");
                 return;
             }
             SaleItem item = new SaleItem(
@@ -239,7 +245,7 @@ public class POSController {
     @FXML
     private void handleCheckout() {
         if (cartItems.isEmpty()) {
-            showAlert("Error", "Cart is empty!");
+            NotificationUtils.showWarning(com.pos.system.App.getBundle().getString("dialog.warning"), "Cart is empty!");
             return;
         }
 
@@ -251,21 +257,30 @@ public class POSController {
 
         Sale sale = new Sale(0, userId, totalAmount, totalProfit, LocalDateTime.now());
 
-        try {
-            com.pos.system.services.CheckoutService checkoutService = new com.pos.system.services.CheckoutService();
-            checkoutService.processCheckout(sale, new ArrayList<>(cartItems));
+        javafx.concurrent.Task<Void> checkoutTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                com.pos.system.services.CheckoutService checkoutService = new com.pos.system.services.CheckoutService();
+                checkoutService.processCheckout(sale, new ArrayList<>(cartItems));
+                return null;
+            }
+        };
 
-            showAlert("Success", "Transaction Completed!");
+        checkoutTask.setOnSucceeded(e -> {
+            NotificationUtils.showSuccess(com.pos.system.App.getBundle().getString("dialog.success"),
+                    "Transaction Completed!");
             cartItems.clear();
             updateTotal();
-
-            // Refresh stock via ViewModel
             catalogViewModel.loadProducts();
+        });
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-            showAlert("Error", "Checkout Failed: " + e.getMessage());
-        }
+        checkoutTask.setOnFailed(e -> {
+            e.getSource().getException().printStackTrace();
+            NotificationUtils.showError(com.pos.system.App.getBundle().getString("dialog.error"),
+                    "Checkout Failed: " + e.getSource().getException().getMessage());
+        });
+
+        new Thread(checkoutTask).start();
     }
 
     private void updateTotal() {
@@ -273,10 +288,5 @@ public class POSController {
         totalLabel.setText(String.format("%.2f MMK", total));
     }
 
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.show();
-    }
+    // Removed showAlert in favor of NotificationUtils
 }

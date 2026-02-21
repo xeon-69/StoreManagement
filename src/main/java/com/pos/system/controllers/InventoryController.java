@@ -10,7 +10,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public class InventoryController {
@@ -31,6 +30,8 @@ public class InventoryController {
     private TableColumn<Product, Double> priceCol;
     @FXML
     private TableColumn<Product, Integer> stockCol;
+    @FXML
+    private TableColumn<Product, Void> actionCol;
     @FXML
     private TextField searchField;
 
@@ -71,65 +72,162 @@ public class InventoryController {
         priceCol.setCellValueFactory(new PropertyValueFactory<>("sellingPrice"));
         stockCol.setCellValueFactory(new PropertyValueFactory<>("stock"));
 
+        setupActionColumn();
+
         // Auto-resize columns
         productTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
 
         loadProducts();
     }
 
-    @FXML
-    private void handleDeleteProduct() {
-        Product selectedProduct = productTable.getSelectionModel().getSelectedItem();
+    private void setupActionColumn() {
+        actionCol.setCellFactory(param -> new javafx.scene.control.TableCell<Product, Void>() {
+            private final javafx.scene.control.Button editBtn = new javafx.scene.control.Button();
+            private final javafx.scene.control.Button adjustBtn = new javafx.scene.control.Button();
+            private final javafx.scene.control.Button deleteBtn = new javafx.scene.control.Button();
+            private final javafx.scene.control.Button ledgerBtn = new javafx.scene.control.Button();
+            private final javafx.scene.layout.HBox pane = new javafx.scene.layout.HBox(8, ledgerBtn, adjustBtn, editBtn,
+                    deleteBtn);
+
+            {
+                org.kordamp.ikonli.javafx.FontIcon ledgerIcon = new org.kordamp.ikonli.javafx.FontIcon("fas-book");
+                ledgerIcon.setIconColor(javafx.scene.paint.Color.BLACK);
+                ledgerBtn.setGraphic(ledgerIcon);
+                ledgerBtn.getStyleClass().add("btn-secondary");
+                ledgerBtn.setOnAction(event -> {
+                    Product product = getTableView().getItems().get(getIndex());
+                    handleViewLedger(product);
+                });
+
+                org.kordamp.ikonli.javafx.FontIcon adjustIcon = new org.kordamp.ikonli.javafx.FontIcon("fas-sliders-h");
+                adjustIcon.setIconColor(javafx.scene.paint.Color.WHITE);
+                adjustBtn.setGraphic(adjustIcon);
+                adjustBtn.getStyleClass().add("btn-success");
+                adjustBtn.setOnAction(event -> {
+                    Product product = getTableView().getItems().get(getIndex());
+                    handleAdjustStock(product);
+                });
+
+                org.kordamp.ikonli.javafx.FontIcon editIcon = new org.kordamp.ikonli.javafx.FontIcon("fas-edit");
+                editIcon.setIconColor(javafx.scene.paint.Color.WHITE);
+                editBtn.setGraphic(editIcon);
+                editBtn.getStyleClass().add("btn-primary");
+                editBtn.setOnAction(event -> {
+                    Product product = getTableView().getItems().get(getIndex());
+                    handleEditProduct(product);
+                });
+
+                org.kordamp.ikonli.javafx.FontIcon deleteIcon = new org.kordamp.ikonli.javafx.FontIcon("fas-trash-alt");
+                deleteIcon.setIconColor(javafx.scene.paint.Color.WHITE);
+                deleteBtn.setGraphic(deleteIcon);
+                deleteBtn.getStyleClass().add("btn-danger");
+                deleteBtn.setOnAction(event -> {
+                    Product product = getTableView().getItems().get(getIndex());
+                    handleDeleteProduct(product);
+                });
+
+                pane.setStyle("-fx-alignment: CENTER;");
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : pane);
+            }
+        });
+    }
+
+    private void handleDeleteProduct(Product selectedProduct) {
         if (selectedProduct == null) {
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                    javafx.scene.control.Alert.AlertType.WARNING);
-            alert.setTitle("Selection Error");
-            alert.setHeaderText(null);
-            alert.setContentText("Please select a product to delete.");
-            alert.showAndWait();
             return;
         }
 
-        javafx.scene.control.Alert confirm = new javafx.scene.control.Alert(
-                javafx.scene.control.Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Delete Product");
-        confirm.setHeaderText("Delete " + selectedProduct.getName() + "?");
-        confirm.setContentText("Are you sure you want to delete this product?");
+        boolean confirm = com.pos.system.utils.NotificationUtils.showConfirmation(
+                com.pos.system.App.getBundle().getString("dialog.confirm"),
+                "Delete " + selectedProduct.getName() + "? Are you sure you want to delete this product?");
 
-        if (confirm.showAndWait()
-                .orElse(javafx.scene.control.ButtonType.CANCEL) == javafx.scene.control.ButtonType.OK) {
-            try (ProductDAO productDAO = new ProductDAO()) {
-                productDAO.deleteProduct(selectedProduct.getId());
+        if (confirm) {
+
+            javafx.concurrent.Task<Void> deleteTask = new javafx.concurrent.Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    try (ProductDAO productDAO = new ProductDAO()) {
+                        productDAO.deleteProduct(selectedProduct.getId());
+                    }
+                    return null;
+                }
+            };
+
+            deleteTask.setOnSucceeded(e -> {
                 loadProducts();
-            } catch (SQLException e) {
-                e.printStackTrace();
-                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                        javafx.scene.control.Alert.AlertType.ERROR);
-                alert.setTitle("Database Error");
-                alert.setHeaderText(null);
-                alert.setContentText("Failed to delete product: " + e.getMessage());
-                alert.showAndWait();
-            }
+            });
+
+            deleteTask.setOnFailed(e -> {
+                e.getSource().getException().printStackTrace();
+                com.pos.system.utils.NotificationUtils.showError("Database Error",
+                        "Failed to delete product: " + e.getSource().getException().getMessage());
+            });
+
+            new Thread(deleteTask).start();
         }
     }
 
     private void loadProducts() {
-        try (ProductDAO productDAO = new ProductDAO()) {
-            List<Product> products = productDAO.getAllProducts();
-            ObservableList<Product> observableProducts = FXCollections.observableArrayList(products);
+        javafx.concurrent.Task<List<Product>> loadTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<Product> call() throws Exception {
+                try (ProductDAO productDAO = new ProductDAO()) {
+                    return productDAO.getAllProducts();
+                }
+            }
+        };
+
+        loadTask.setOnSucceeded(e -> {
+            ObservableList<Product> observableProducts = FXCollections.observableArrayList(loadTask.getValue());
             productTable.setItems(observableProducts);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        });
+
+        loadTask.setOnFailed(e -> {
+            e.getSource().getException().printStackTrace();
             // In a real app, show an Alert
-        }
+        });
+
+        new Thread(loadTask).start();
     }
 
     @FXML
     private void handleSearch() {
-        // String query = searchField.getText().toLowerCase(); // Unused for now
-        // Simple search: Re-query DB or filter current list.
-        // For simplicity, let's just refresh for now or implement filter later.
-        loadProducts(); // placeholder
+        String query = searchField.getText();
+        if (query == null || query.trim().isEmpty()) {
+            loadProducts();
+            return;
+        }
+
+        String lowerCaseQuery = query.toLowerCase();
+
+        javafx.concurrent.Task<List<Product>> searchTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<Product> call() throws Exception {
+                try (ProductDAO productDAO = new ProductDAO()) {
+                    List<Product> allProducts = productDAO.getAllProducts();
+                    return allProducts.stream()
+                            .filter(p -> p.getName().toLowerCase().contains(lowerCaseQuery) ||
+                                    (p.getBarcode() != null && p.getBarcode().toLowerCase().contains(lowerCaseQuery)))
+                            .toList();
+                }
+            }
+        };
+
+        searchTask.setOnSucceeded(e -> {
+            ObservableList<Product> observableProducts = FXCollections.observableArrayList(searchTask.getValue());
+            productTable.setItems(observableProducts);
+        });
+
+        searchTask.setOnFailed(e -> {
+            e.getSource().getException().printStackTrace();
+        });
+
+        new Thread(searchTask).start();
     }
 
     @FXML
@@ -138,22 +236,116 @@ public class InventoryController {
     }
 
     @FXML
-    private void handleEditProduct() {
-        Product selectedProduct = productTable.getSelectionModel().getSelectedItem();
+    private void handleExpireStock() {
+        javafx.concurrent.Task<Void> expireTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                try (java.sql.Connection conn = com.pos.system.database.DatabaseManager.getInstance().getConnection()) {
+                    com.pos.system.services.InventoryService invService = new com.pos.system.services.InventoryService();
+                    invService.expireItems(conn, null);
+                }
+                return null;
+            }
+        };
+
+        expireTask.setOnSucceeded(e -> {
+            com.pos.system.utils.NotificationUtils.showInfo("Expiry Check Complete",
+                    "Successfully scanned and retired expired batches.");
+            loadProducts();
+        });
+
+        expireTask.setOnFailed(e -> {
+            e.getSource().getException().printStackTrace();
+            com.pos.system.utils.NotificationUtils.showError("Expiry Scan Failed",
+                    e.getSource().getException().getMessage());
+        });
+
+        new Thread(expireTask).start();
+    }
+
+    private void handleViewLedger(Product selectedProduct) {
         if (selectedProduct == null) {
-            // Show warning
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                    javafx.scene.control.Alert.AlertType.WARNING);
-            alert.setTitle("Selection Error");
-            alert.setHeaderText(null);
-            alert.setContentText("Please select a product to edit.");
-            alert.showAndWait();
+            return;
+        }
+
+        javafx.concurrent.Task<List<com.pos.system.models.InventoryTransaction>> ledgerTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<com.pos.system.models.InventoryTransaction> call() throws Exception {
+                try (java.sql.Connection conn = com.pos.system.database.DatabaseManager.getInstance().getConnection()) {
+                    com.pos.system.services.InventoryService invService = new com.pos.system.services.InventoryService();
+                    return invService.getTransactionHistory(conn, selectedProduct.getId());
+                }
+            }
+        };
+
+        ledgerTask.setOnSucceeded(e -> {
+            List<com.pos.system.models.InventoryTransaction> history = ledgerTask.getValue();
+
+            javafx.scene.control.Dialog<Void> dialog = new javafx.scene.control.Dialog<>();
+            dialog.setTitle(com.pos.system.App.getBundle().getString("inventory.ledger.title") + " - "
+                    + selectedProduct.getName());
+            dialog.setHeaderText(com.pos.system.App.getBundle().getString("inventory.ledger.history"));
+
+            javafx.scene.control.TableView<com.pos.system.models.InventoryTransaction> table = new javafx.scene.control.TableView<>();
+
+            TableColumn<com.pos.system.models.InventoryTransaction, String> dateCol = new TableColumn<>(
+                    com.pos.system.App.getBundle().getString("inventory.ledger.date"));
+            dateCol.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+            dateCol.setPrefWidth(180);
+            dateCol.setMinWidth(150);
+
+            TableColumn<com.pos.system.models.InventoryTransaction, String> typeCol = new TableColumn<>(
+                    com.pos.system.App.getBundle().getString("inventory.ledger.type"));
+            typeCol.setCellValueFactory(new PropertyValueFactory<>("transactionType"));
+            typeCol.setPrefWidth(140);
+            typeCol.setMinWidth(120);
+
+            TableColumn<com.pos.system.models.InventoryTransaction, Integer> qtyCol = new TableColumn<>(
+                    com.pos.system.App.getBundle().getString("inventory.ledger.qtyChange"));
+            qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantityChange"));
+            qtyCol.setPrefWidth(180);
+            qtyCol.setMinWidth(150);
+
+            TableColumn<com.pos.system.models.InventoryTransaction, String> refCol = new TableColumn<>(
+                    com.pos.system.App.getBundle().getString("inventory.ledger.reference"));
+            refCol.setCellValueFactory(new PropertyValueFactory<>("referenceId"));
+            refCol.setPrefWidth(220);
+            refCol.setMinWidth(150);
+
+            TableColumn<com.pos.system.models.InventoryTransaction, Integer> batchCol = new TableColumn<>(
+                    com.pos.system.App.getBundle().getString("inventory.ledger.batchId"));
+            batchCol.setCellValueFactory(new PropertyValueFactory<>("batchId"));
+            batchCol.setPrefWidth(100);
+            batchCol.setMinWidth(80);
+
+            table.getColumns().addAll(dateCol, typeCol, qtyCol, refCol, batchCol);
+            table.setItems(FXCollections.observableArrayList(history));
+            table.setPrefWidth(900);
+            table.setPrefHeight(450);
+
+            dialog.getDialogPane().setContent(table);
+            dialog.getDialogPane().getButtonTypes().add(javafx.scene.control.ButtonType.CLOSE);
+            dialog.showAndWait();
+        });
+
+        ledgerTask.setOnFailed(e -> {
+            e.getSource().getException().printStackTrace();
+            com.pos.system.utils.NotificationUtils.showError("Failed to load ledger",
+                    e.getSource().getException().getMessage());
+        });
+
+        new Thread(ledgerTask).start();
+    }
+
+    private void handleEditProduct(Product selectedProduct) {
+        if (selectedProduct == null) {
             return;
         }
 
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/fxml/add_product.fxml"));
+            loader.setResources(com.pos.system.App.getBundle());
             javafx.scene.Parent root = loader.load();
 
             AddProductController controller = loader.getController();
@@ -177,6 +369,7 @@ public class InventoryController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/fxml/add_product.fxml"));
+            loader.setResources(com.pos.system.App.getBundle());
             javafx.scene.Parent root = loader.load();
 
             AddProductController controller = loader.getController();
@@ -191,6 +384,30 @@ public class InventoryController {
 
         } catch (java.io.IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void handleAdjustStock(Product selectedProduct) {
+        if (selectedProduct == null)
+            return;
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/fxml/adjust_stock.fxml"));
+            loader.setResources(com.pos.system.App.getBundle());
+            javafx.scene.Parent root = loader.load();
+
+            AdjustStockController controller = loader.getController();
+            controller.setProductContext(selectedProduct);
+            controller.setOnSaveCallback(this::handleRefresh); // Assuming there's a refresh or loadProducts
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(root);
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.setTitle("Adjust Stock");
+            stage.setScene(scene);
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+        } catch (java.io.IOException e) {
+            com.pos.system.utils.NotificationUtils.showError("Error", "Could not load adjust stock form.");
         }
     }
 }

@@ -4,55 +4,54 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="400.0" spacing="10.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.AddProductController">
+<VBox alignment="TOP_CENTER" minWidth="350.0" maxWidth="600.0" spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.AddProductController" stylesheets="@../css/styles.css" styleClass="root">
    <children>
-      <Label fx:id="titleLabel" text="Add New Product">
-         <font>
-            <Font size="18.0" />
-         </font>
-         <VBox.margin>
-            <Insets bottom="10.0" />
-         </VBox.margin>
+      <Label fx:id="titleLabel" text="%product.addTitle" styleClass="header-label">
+         <VBox.margin><Insets bottom="10.0" /></VBox.margin>
       </Label>
       <VBox alignment="CENTER" spacing="5.0">
          <children>
              <javafx.scene.image.ImageView fx:id="productImageView" fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true" />
-             <Button mnemonicParsing="false" onAction="#handleBrowseImage" text="Browse Image" />
+             <Button mnemonicParsing="false" onAction="#handleBrowseImage" text="%product.browseImg">
+                 <graphic><FontIcon iconLiteral="fas-image" /></graphic>
+                 <tooltip><Tooltip text="%product.browseImg"/></tooltip>
+             </Button>
          </children>
       </VBox>
       <VBox spacing="5.0">
          <children>
-            <Label text="Barcode" />
-            <TextField fx:id="barcodeField" promptText="Scan or enter barcode" />
+            <Label text="%product.barcode" />
+            <TextField fx:id="barcodeField" promptText="%product.barcode" />
          </children>
       </VBox>
       <VBox spacing="5.0">
          <children>
-            <Label text="Name" />
-            <TextField fx:id="nameField" promptText="Product Name" />
+            <Label text="%product.name" />
+            <TextField fx:id="nameField" promptText="%product.name" />
          </children>
       </VBox>
       <VBox spacing="5.0">
          <children>
-            <Label text="Category" />
-            <javafx.scene.control.ComboBox fx:id="categoryComboBox" prefWidth="150.0" promptText="Select Category" maxWidth="Infinity" />
+            <Label text="%product.category" />
+            <javafx.scene.control.ComboBox fx:id="categoryComboBox" prefWidth="150.0" promptText="%product.category" maxWidth="Infinity" />
          </children>
       </VBox>
       <HBox spacing="10.0">
          <children>
             <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                <children>
-                  <Label text="Cost Price" />
+                  <Label text="%product.costPrice" />
                   <TextField fx:id="costPriceField" promptText="0.00" />
                </children>
             </VBox>
             <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                <children>
-                  <Label text="Selling Price" />
+                  <Label text="%product.sellingPrice" />
                   <TextField fx:id="sellingPriceField" promptText="0.00" />
                </children>
             </VBox>
@@ -60,22 +59,24 @@
       </HBox>
       <VBox spacing="5.0">
          <children>
-            <Label text="Initial Stock" />
+            <Label text="%product.stock" />
             <TextField fx:id="stockField" promptText="0" />
          </children>
       </VBox>
-      <Label fx:id="messageLabel" textFill="RED" />
+      <Label fx:id="messageLabel" textFill="RED" wrapText="true" />
       <HBox alignment="CENTER_RIGHT" spacing="10.0">
          <children>
-            <Button mnemonicParsing="false" onAction="#handleCancel" text="Cancel" />
-            <Button mnemonicParsing="false" onAction="#handleSave" prefWidth="80.0" style="-fx-background-color: #2ecc71; -fx-text-fill: white;" text="Save" />
+            <Button mnemonicParsing="false" onAction="#handleCancel" text="%product.cancel" styleClass="btn-danger" prefWidth="130.0">
+                <graphic><FontIcon iconLiteral="fas-times" iconColor="white"/></graphic>
+                <tooltip><Tooltip text="%product.cancel"/></tooltip>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#handleSave" prefWidth="130.0" styleClass="btn-success" text="%product.save">
+                <graphic><FontIcon iconLiteral="fas-save" iconColor="white"/></graphic>
+                <tooltip><Tooltip text="%product.save"/></tooltip>
+            </Button>
          </children>
-         <VBox.margin>
-            <Insets top="10.0" />
-         </VBox.margin>
+         <VBox.margin><Insets top="10.0" /></VBox.margin>
       </HBox>
    </children>
-   <padding>
-      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-   </padding>
+   <padding><Insets bottom="20.0" left="20.0" right="20.0" top="20.0" /></padding>
 </VBox>
