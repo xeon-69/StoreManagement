@@ -66,13 +66,13 @@
       <Label fx:id="messageLabel" textFill="RED" wrapText="true" />
       <HBox alignment="CENTER_RIGHT" spacing="10.0">
          <children>
-            <Button mnemonicParsing="false" onAction="#handleCancel" text="%product.cancel" styleClass="btn-danger" prefWidth="130.0">
-                <graphic><FontIcon iconLiteral="fas-times" iconColor="white"/></graphic>
-                <tooltip><Tooltip text="%product.cancel"/></tooltip>
-            </Button>
             <Button mnemonicParsing="false" onAction="#handleSave" prefWidth="130.0" styleClass="btn-success" text="%product.save">
                 <graphic><FontIcon iconLiteral="fas-save" iconColor="white"/></graphic>
                 <tooltip><Tooltip text="%product.save"/></tooltip>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#handleCancel" text="%product.cancel" styleClass="btn-danger" prefWidth="130.0">
+                <graphic><FontIcon iconLiteral="fas-times" iconColor="white"/></graphic>
+                <tooltip><Tooltip text="%product.cancel"/></tooltip>
             </Button>
          </children>
          <VBox.margin><Insets top="10.0" /></VBox.margin>
