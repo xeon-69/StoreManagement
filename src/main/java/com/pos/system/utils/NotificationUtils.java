@@ -11,6 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -71,7 +72,15 @@ public class NotificationUtils {
         root.setPadding(new Insets(30, 40, 30, 40));
         root.setAlignment(Pos.CENTER);
         root.setStyle(
-                "-fx-background-color: white; -fx-background-radius: 12px; -fx-border-radius: 12px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 15, 0, 0, 5);");
+                "-fx-background-color: #becee8; -fx-background-radius: 12px; -fx-border-radius: 12px;");
+
+        // Clip the node to the same radius so the scene corners stay rounded (no pointy bits)
+        Rectangle clip = new Rectangle();
+        clip.setArcWidth(24);
+        clip.setArcHeight(24);
+        clip.widthProperty().bind(root.widthProperty());
+        clip.heightProperty().bind(root.heightProperty());
+        root.setClip(clip);
 
         FontIcon icon = new FontIcon();
         icon.setIconSize(56);
