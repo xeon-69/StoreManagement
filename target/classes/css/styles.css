@@ -171,3 +171,126 @@
     -fx-background-color: rgba(52, 152, 219, 0.1);
     -fx-text-background-color: #2c3e50;
 }
+
+/* ===== Login Page ===== */
+
+.login-background {
+    -fx-background-color: #f0f2f5;
+}
+
+.login-card {
+    /* -fx-background-color: white; */
+    -fx-background-radius: 12;
+    /* -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 20, 0, 0, 10); */
+    -fx-padding: 30;
+}
+
+/* Branding icon circle */
+.login-icon-circle {
+    -fx-background-color: #e3f2fd;
+    -fx-background-radius: 50%;
+    -fx-min-width: 64;
+    -fx-min-height: 64;
+    -fx-max-width: 64;
+    -fx-max-height: 64;
+    -fx-alignment: CENTER;
+}
+
+.login-brand-icon {
+    -fx-icon-color: #2196f3;
+}
+
+/* Title & subtitle */
+.login-title {
+    -fx-font-family: "Segoe UI Semibold", "Segoe UI", sans-serif;
+    -fx-font-size: 24px;
+    -fx-text-fill: #1a202c;
+}
+
+.login-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #718096;
+}
+
+/* Field label */
+.login-field-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4a5568;
+}
+
+/* Input container */
+.login-input-box {
+    -fx-background-color: white;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.login-input-box:focused-within {
+    -fx-border-color: #3182ce;
+    -fx-effect: dropshadow(three-pass-box, rgba(66, 153, 225, 0.2), 4, 0, 0, 0);
+}
+
+.login-field-icon {
+    -fx-icon-color: #a0aec0;
+}
+
+/* Text field inside input box */
+.login-text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2d3748;
+    -fx-prompt-text-fill: #cbd5e0;
+}
+
+.login-text-field:focused {
+    -fx-background-color: transparent;
+}
+
+/* Login button */
+.login-btn {
+    -fx-background-color: #3182ce;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.login-btn:hover {
+    -fx-background-color: #2b6cb0;
+}
+
+.login-btn:pressed {
+    -fx-background-color: #2c5282;
+}
+
+.login-btn .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
+/* Error label */
+.login-error {
+    -fx-text-fill: #e53e3e;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* Language combo box */
+.login-lang-combo {
+    -fx-background-color: transparent;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 4;
+    -fx-padding: 2 6;
+    -fx-font-size: 12px;
+}
+
+.login-lang-combo:hover {
+    -fx-border-color: #cbd5e0;
+}

@@ -17,6 +17,9 @@ import javafx.scene.control.Button;
 public class DashboardController {
 
     private static String currentActiveView = null;
+    // View cache to avoid re-creating controllers + connections on every page
+    // switch
+    private final java.util.Map<String, Parent> viewCache = new java.util.HashMap<>();
 
     @FXML
     private BorderPane mainPane;
@@ -35,6 +38,9 @@ public class DashboardController {
 
     @FXML
     private Button navSettingsBtn;
+
+    @FXML
+    private Label shiftTotalLabel;
 
     @FXML
     public void initialize() {
@@ -77,6 +83,20 @@ public class DashboardController {
 
         if (currentActiveView != null) {
             loadView(currentActiveView);
+        }
+
+        // Shift Analytics - show current shift total if shift is active
+        if (SessionManager.getInstance().getCurrentShift() != null) {
+            try {
+                com.pos.system.services.ShiftAnalytics analytics = new com.pos.system.services.ShiftAnalytics();
+                double shiftTotal = analytics.getCurrentShiftTotal();
+                shiftTotalLabel.setText(getString("dashboard.shiftTotal", "Current Shift Sales: ")
+                        + String.format("%,.2f MMK", shiftTotal));
+                shiftTotalLabel.setVisible(true);
+                shiftTotalLabel.setManaged(true);
+            } catch (Exception e) {
+                // Silently fail if analytics can't be loaded
+            }
         }
     }
 
@@ -136,20 +156,36 @@ public class DashboardController {
     @FXML
     private void logout() throws IOException {
         SessionManager.getInstance().logout();
-        currentActiveView = null; // Clear view on logout
+        currentActiveView = null;
+        viewCache.clear(); // Clear cached views on logout
         App.setRoot("login");
     }
 
     private void loadView(String fxml) {
         currentActiveView = fxml;
+
+        // Pages with live data should always reload fresh
+        boolean shouldCache = !fxml.equals("reports") && !fxml.equals("inventory")
+                && !fxml.equals("cash_drawer") && !fxml.equals("pos") && !fxml.equals("finance");
+
+        if (shouldCache) {
+            Parent cached = viewCache.get(fxml);
+            if (cached != null) {
+                mainPane.setCenter(cached);
+                return;
+            }
+        }
+
         try {
             FXMLLoader loader = new FXMLLoader(App.class.getResource("/fxml/" + fxml + ".fxml"));
             loader.setResources(App.getBundle());
             Parent view = loader.load();
+            if (shouldCache) {
+                viewCache.put(fxml, view);
+            }
             mainPane.setCenter(view);
         } catch (IOException e) {
             e.printStackTrace();
-            // Show error in center if view missing
             Label errorLabel = new Label("Failed to load view: " + fxml);
             mainPane.setCenter(errorLabel);
         }

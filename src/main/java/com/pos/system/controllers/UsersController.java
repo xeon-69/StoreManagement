@@ -50,12 +50,13 @@ public class UsersController {
     @FXML
     private Button saveBtn;
 
-    private UserDAO userDAO;
+    // For Dependency Injection in Tests only
+    private UserDAO injectedUserDAO;
     private SecurityService securityService;
     private User selectedUserForEdit = null;
 
     public void setUserDAO(UserDAO userDAO) {
-        this.userDAO = userDAO;
+        this.injectedUserDAO = userDAO;
     }
 
     public void setSecurityService(SecurityService securityService) {
@@ -64,28 +65,26 @@ public class UsersController {
 
     @FXML
     public void initialize() {
-        try {
-            if (userDAO == null)
-                userDAO = new UserDAO();
-            if (securityService == null)
+        if (securityService == null) {
+            try {
                 securityService = new SecurityService();
-
-            roleComboBox.setItems(FXCollections.observableArrayList("CASHIER", "MANAGER", "ADMIN"));
-            roleComboBox.getSelectionModel().selectFirst();
-
-            idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
-            usernameCol.setCellValueFactory(new PropertyValueFactory<>("username"));
-            roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
-            forceChangeCol.setCellValueFactory(
-                    cellData -> new SimpleStringProperty(cellData.getValue().isForcePasswordChange() ? "Yes" : "No"));
-
-            setupActionColumn();
-
-            loadUsers();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            NotificationUtils.showError("Database Error", "Could not initialize User Management.");
+            } catch (java.sql.SQLException e) {
+                e.printStackTrace();
+            }
         }
+
+        roleComboBox.setItems(FXCollections.observableArrayList("CASHIER", "MANAGER", "ADMIN"));
+        roleComboBox.getSelectionModel().selectFirst();
+
+        idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
+        usernameCol.setCellValueFactory(new PropertyValueFactory<>("username"));
+        roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
+        forceChangeCol.setCellValueFactory(
+                cellData -> new SimpleStringProperty(cellData.getValue().isForcePasswordChange() ? "Yes" : "No"));
+
+        setupActionColumn();
+
+        loadUsers();
     }
 
     private void setupActionColumn() {
@@ -129,8 +128,13 @@ public class UsersController {
     private void loadUsers() {
         Task<List<User>> loadTask = new Task<>() {
             @Override
-            protected List<User> call() {
-                return userDAO.getAllUsers();
+            protected List<User> call() throws Exception {
+                if (injectedUserDAO != null) {
+                    return injectedUserDAO.getAllUsers();
+                }
+                try (UserDAO dao = new UserDAO()) {
+                    return dao.getAllUsers();
+                }
             }
         };
 
@@ -173,8 +177,13 @@ public class UsersController {
 
             Task<Boolean> saveTask = new Task<>() {
                 @Override
-                protected Boolean call() {
-                    return userDAO.createUser(newUser);
+                protected Boolean call() throws Exception {
+                    if (injectedUserDAO != null) {
+                        return injectedUserDAO.createUser(newUser);
+                    }
+                    try (UserDAO dao = new UserDAO()) {
+                        return dao.createUser(newUser);
+                    }
                 }
             };
 
@@ -194,12 +203,13 @@ public class UsersController {
             // Edit Existing User Role/ForceChange Flags
             Task<Boolean> updateTask = new Task<>() {
                 @Override
-                protected Boolean call() {
-                    boolean success = userDAO.updateUserRole(selectedUserForEdit.getId(), role);
-                    // Force change update logic not separate in original DAO besides full pass
-                    // update, but for now we expect Admin to force reset via "Change Password" or
-                    // just role updates.
-                    return success;
+                protected Boolean call() throws Exception {
+                    if (injectedUserDAO != null) {
+                        return injectedUserDAO.updateUserRole(selectedUserForEdit.getId(), role);
+                    }
+                    try (UserDAO dao = new UserDAO()) {
+                        return dao.updateUserRole(selectedUserForEdit.getId(), role);
+                    }
                 }
             };
 
@@ -268,8 +278,13 @@ public class UsersController {
             String hashed = securityService.hashPassword(newPassword);
             Task<Boolean> pTask = new Task<>() {
                 @Override
-                protected Boolean call() {
-                    return userDAO.updateUserPassword(user.getId(), hashed, forceChangeBox.isSelected());
+                protected Boolean call() throws Exception {
+                    if (injectedUserDAO != null) {
+                        return injectedUserDAO.updateUserPassword(user.getId(), hashed, forceChangeBox.isSelected());
+                    }
+                    try (UserDAO dao = new UserDAO()) {
+                        return dao.updateUserPassword(user.getId(), hashed, forceChangeBox.isSelected());
+                    }
                 }
             };
             pTask.setOnSucceeded(e -> {
@@ -297,8 +312,13 @@ public class UsersController {
         if (confirm) {
             Task<Boolean> delTask = new Task<>() {
                 @Override
-                protected Boolean call() {
-                    return userDAO.deleteUser(user.getId());
+                protected Boolean call() throws Exception {
+                    if (injectedUserDAO != null) {
+                        return injectedUserDAO.deleteUser(user.getId());
+                    }
+                    try (UserDAO dao = new UserDAO()) {
+                        return dao.deleteUser(user.getId());
+                    }
                 }
             };
             delTask.setOnSucceeded(e -> {

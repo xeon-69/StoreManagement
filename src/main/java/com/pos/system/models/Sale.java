@@ -13,6 +13,7 @@ public class Sale {
     private double totalProfit;
     private LocalDateTime saleDate;
     private String transactionDetails;
+    private String paymentMethods; // Transient, for table display
 
     // Legacy constructor compatibility
     public Sale(int id, int userId, double totalAmount, double totalProfit, LocalDateTime saleDate) {
@@ -118,5 +119,13 @@ public class Sale {
 
     public void setTransactionDetails(String transactionDetails) {
         this.transactionDetails = transactionDetails;
+    }
+
+    public String getPaymentMethods() {
+        return paymentMethods;
+    }
+
+    public void setPaymentMethods(String paymentMethods) {
+        this.paymentMethods = paymentMethods;
     }
 }

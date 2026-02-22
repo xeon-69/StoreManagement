@@ -43,8 +43,10 @@ public class DatabaseManager {
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
             // Pool settings for desktop app
-            config.setMaximumPoolSize(10);
+            config.setMaximumPoolSize(20);
             config.setMinimumIdle(2);
+            config.setConnectionTimeout(5000); // 5s - fail fast instead of hanging
+            config.setLeakDetectionThreshold(30000); // Log warning when connection held >30s
             config.setPoolName("POS-HikariPool");
 
             this.dataSource = new HikariDataSource(config);
@@ -54,6 +56,14 @@ public class DatabaseManager {
             try (Connection conn = dataSource.getConnection()) {
                 initializeTables(conn);
                 migrateLegacyStock(conn);
+
+                // Normalize date format: replace 'T' separator with space for consistent SQLite
+                // comparisons
+                try (var stmt = conn.createStatement()) {
+                    stmt.executeUpdate(
+                            "UPDATE sales SET sale_date = REPLACE(sale_date, 'T', ' ') WHERE sale_date LIKE '%T%'");
+                    logger.info("Normalized sale_date format in sales table.");
+                }
             }
 
             // Ensure backup on shutdown

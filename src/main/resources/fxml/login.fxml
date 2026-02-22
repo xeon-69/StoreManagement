@@ -8,47 +8,60 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.Region?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox alignment="TOP_CENTER" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.LoginController" stylesheets="@../css/styles.css" styleClass="root">
-    
-    <HBox alignment="CENTER_RIGHT" style="-fx-padding: 10;">
-        <ComboBox fx:id="languageComboBox" />
-    </HBox>
+<StackPane styleClass="login-background" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.LoginController">
 
-    <VBox alignment="CENTER" spacing="20.0" VBox.vgrow="ALWAYS">
-        <Label text="%login.appTitle" styleClass="header-label"/>
-        
-        <VBox maxWidth="350.0" spacing="15.0" styleClass="report-card" style="-fx-padding: 30; -fx-background-color: white;">
-            <VBox spacing="5">
-                <Label text="%login.username" />
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <FontIcon iconLiteral="fas-user" iconSize="16" />
-                    <TextField fx:id="usernameField" HBox.hgrow="ALWAYS" />
-                </HBox>
-            </VBox>
-            
-            <VBox spacing="5">
-                <Label text="%login.password" />
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <FontIcon iconLiteral="fas-lock" iconSize="16" />
-                    <PasswordField fx:id="passwordField" HBox.hgrow="ALWAYS" />
-                </HBox>
-            </VBox>
+    <!-- Centered Login Card -->
+    <VBox alignment="CENTER" maxWidth="360" prefHeight="415.0" prefWidth="269.0" spacing="15" styleClass="login-card">
+        <padding><Insets bottom="25" left="30" right="30" top="25" /></padding>
+   
+         <!-- Language Selector -->
+         <HBox alignment="CENTER_RIGHT" spacing="8">
+             <ComboBox fx:id="languageComboBox" styleClass="login-lang-combo" />
+         </HBox>
 
-            <Button fx:id="loginButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleLogin" text="%login.button" styleClass="btn-primary">
-                <VBox.margin>
-                    <Insets top="10.0" />
-                </VBox.margin>
-                <graphic>
-                    <FontIcon iconLiteral="fas-sign-in-alt" iconSize="16" iconColor="white"/>
-                </graphic>
-                <tooltip><Tooltip text="%login.button"/></tooltip>
-            </Button>
-            
-            <Label fx:id="errorLabel" textFill="RED" wrapText="true" />
+        <!-- Header Section -->
+        <VBox alignment="CENTER" spacing="5">
+            <StackPane alignment="CENTER" styleClass="login-icon-circle">
+                <FontIcon iconLiteral="fas-store" iconSize="32" styleClass="login-brand-icon" />
+            </StackPane>
+            <Label styleClass="login-title" text="%login.appTitle" />
+            <!-- <Label styleClass="login-subtitle" text="Sign in to continue" /> -->
         </VBox>
+
+        <!-- Username Field -->
+        <VBox spacing="5">
+            <Label styleClass="login-field-label" text="%login.username" />
+            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="login-input-box">
+                <FontIcon iconLiteral="fas-user" iconSize="14" styleClass="login-field-icon" />
+                <TextField fx:id="usernameField" promptText="Enter your username" styleClass="login-text-field" HBox.hgrow="ALWAYS" />
+            </HBox>
+        </VBox>
+
+        <!-- Password Field -->
+        <VBox spacing="5">
+            <Label styleClass="login-field-label" text="%login.password" />
+            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="login-input-box">
+                <FontIcon iconLiteral="fas-lock" iconSize="14" styleClass="login-field-icon" />
+                <PasswordField fx:id="passwordField" promptText="Enter your password" styleClass="login-text-field" HBox.hgrow="ALWAYS" />
+            </HBox>
+        </VBox>
+
+        <!-- Error Label (Hidden by default, shown on error) -->
+        <Label fx:id="errorLabel" styleClass="login-error" wrapText="true" />
+
+        <!-- Actions -->
+        <VBox alignment="CENTER" spacing="15">
+            <Button fx:id="loginButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleLogin" styleClass="login-btn" text="%login.button">
+                <graphic>
+                    <FontIcon iconColor="white" iconLiteral="fas-sign-in-alt" iconSize="14" />
+                </graphic>
+                <tooltip><Tooltip text="%login.button" /></tooltip>
+            </Button>
+        </VBox>
+
     </VBox>
-</VBox>
+</StackPane>

@@ -21,24 +21,18 @@ public class SettingsController {
     @FXML
     private TextField printerField;
 
-    private SettingsDAO settingsDAO;
-
     @FXML
     public void initialize() {
-        try {
-            settingsDAO = new SettingsDAO();
-            loadSettings();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            NotificationUtils.showError("Database Error", "Could not initialize Settings.");
-        }
+        loadSettings();
     }
 
     private void loadSettings() {
         Task<Map<String, String>> loadTask = new Task<>() {
             @Override
-            protected Map<String, String> call() {
-                return settingsDAO.getAllSettings();
+            protected Map<String, String> call() throws Exception {
+                try (SettingsDAO dao = new SettingsDAO()) {
+                    return dao.getAllSettings();
+                }
             }
         };
 
@@ -74,12 +68,14 @@ public class SettingsController {
 
         Task<Boolean> saveTask = new Task<>() {
             @Override
-            protected Boolean call() {
-                boolean s1 = settingsDAO.updateSetting("store_name", storeName);
-                boolean s2 = settingsDAO.updateSetting("currency_symbol", currency);
-                boolean s3 = settingsDAO.updateSetting("tax_rate", taxRate);
-                boolean s4 = settingsDAO.updateSetting("printer_id", printer);
-                return s1 && s2 && s3 && s4;
+            protected Boolean call() throws Exception {
+                try (SettingsDAO dao = new SettingsDAO()) {
+                    boolean s1 = dao.updateSetting("store_name", storeName);
+                    boolean s2 = dao.updateSetting("currency_symbol", currency);
+                    boolean s3 = dao.updateSetting("tax_rate", taxRate);
+                    boolean s4 = dao.updateSetting("printer_id", printer);
+                    return s1 && s2 && s3 && s4;
+                }
             }
         };
 

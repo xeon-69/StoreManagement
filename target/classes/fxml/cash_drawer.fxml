@@ -8,7 +8,17 @@
 
 <VBox prefHeight="600.0" prefWidth="900.0" spacing="20.0" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.CashDrawerController">
    <children>
-      <Label styleClass="header-label" text="%drawer.title" />
+      <javafx.scene.layout.HBox alignment="CENTER_LEFT" spacing="20.0">
+         <children>
+            <Label styleClass="header-label" text="%drawer.title" />
+            <javafx.scene.layout.Region>
+               <javafx.scene.layout.HBox.hgrow><javafx.scene.layout.Priority fx:constant="ALWAYS" /></javafx.scene.layout.HBox.hgrow>
+            </javafx.scene.layout.Region>
+            <javafx.scene.control.Button fx:id="openDrawerBtn" mnemonicParsing="false" onAction="#handleOpenDrawer" styleClass="btn-primary" text="%drawer.open">
+               <graphic><org.kordamp.ikonli.javafx.FontIcon iconLiteral="fas-cash-register" iconSize="16" iconColor="white"/></graphic>
+            </javafx.scene.control.Button>
+         </children>
+      </javafx.scene.layout.HBox>
       
       <TableView fx:id="drawerTable" VBox.vgrow="ALWAYS">
          <columnResizePolicy>

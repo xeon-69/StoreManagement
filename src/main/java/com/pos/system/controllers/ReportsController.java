@@ -1,11 +1,11 @@
 package com.pos.system.controllers;
 
 import com.pos.system.dao.SaleDAO;
-import com.pos.system.database.DatabaseManager;
+import com.pos.system.dao.SalePaymentDAO;
+import com.pos.system.models.SalePayment;
 import com.pos.system.models.Sale;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -13,13 +13,14 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
-import javafx.application.Platform;
-import javafx.concurrent.Task;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.io.File;
+import java.util.List;
+
+import com.pos.system.services.ReportingService;
+import com.pos.system.utils.NotificationUtils;
 
 public class ReportsController {
 
@@ -44,22 +45,26 @@ public class ReportsController {
     @FXML
     private TableColumn<Sale, String> detailsCol;
     @FXML
+    private TableColumn<Sale, Double> subtotalCol;
+    @FXML
+    private TableColumn<Sale, Double> discountCol;
+    @FXML
+    private TableColumn<Sale, Double> taxCol;
+    @FXML
     private TableColumn<Sale, Double> amountCol;
     @FXML
     private TableColumn<Sale, Double> profitCol;
+    @FXML
+    private TableColumn<Sale, String> paymentCol;
     @FXML
     private TableColumn<Sale, LocalDateTime> dateCol;
     @FXML
     private TableColumn<Sale, Void> actionCol;
 
-    private SaleDAO saleDAO;
-
     @FXML
     public void initialize() {
         try {
-            saleDAO = new SaleDAO(DatabaseManager.getInstance().getConnection());
-
-            // Setup ComboBox
+            // Setup ComboBox items
             dateRangeComboBox.setItems(FXCollections.observableArrayList(
                     com.pos.system.App.getBundle().getString("reports.filter.today"),
                     com.pos.system.App.getBundle().getString("reports.filter.thisWeek"),
@@ -67,6 +72,7 @@ public class ReportsController {
                     com.pos.system.App.getBundle().getString("reports.filter.allTime"),
                     com.pos.system.App.getBundle().getString("reports.filter.custom")));
 
+            // Listen for filter changes
             dateRangeComboBox.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
                 int index = newVal.intValue();
                 boolean isCustom = (index == 4);
@@ -76,40 +82,73 @@ public class ReportsController {
                 endDatePicker.setManaged(isCustom);
 
                 if (!isCustom && index >= 0) {
-                    handleFilter(); // Auto filter for presets
+                    handleFilter();
                 } else if (isCustom && startDatePicker.getValue() != null && endDatePicker.getValue() != null) {
-                    handleFilter(); // Auto filter if custom dates are already selected
+                    handleFilter();
                 }
             });
 
-            // Re-eval dates strictly within bounds
+            // Date picker constraints — disable invalid dates in the calendar UI
+            final LocalDate today = LocalDate.now();
+
+            startDatePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
+                @Override
+                public void updateItem(LocalDate date, boolean empty) {
+                    super.updateItem(date, empty);
+                    // Disable future dates and dates after end date
+                    LocalDate maxDate = endDatePicker.getValue() != null
+                            ? (endDatePicker.getValue().isBefore(today) ? endDatePicker.getValue() : today)
+                            : today;
+                    if (date.isAfter(maxDate)) {
+                        setDisable(true);
+                        setStyle("-fx-background-color: #e0e0e0;");
+                    }
+                }
+            });
+
+            endDatePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
+                @Override
+                public void updateItem(LocalDate date, boolean empty) {
+                    super.updateItem(date, empty);
+                    // Disable future dates and dates before start date
+                    LocalDate minDate = startDatePicker.getValue();
+                    if (date.isAfter(today) || (minDate != null && date.isBefore(minDate))) {
+                        setDisable(true);
+                        setStyle("-fx-background-color: #e0e0e0;");
+                    }
+                }
+            });
+
+            // Re-filter when date values change
             startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal != null && endDatePicker.getValue() != null) {
-                    if (newVal.isAfter(endDatePicker.getValue())) {
-                        startDatePicker.setValue(endDatePicker.getValue());
-                    } else {
-                        handleFilter();
-                    }
+                    handleFilter();
                 }
             });
 
             endDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal != null && startDatePicker.getValue() != null) {
-                    if (newVal.isBefore(startDatePicker.getValue())) {
-                        endDatePicker.setValue(startDatePicker.getValue());
-                    } else {
-                        handleFilter();
-                    }
+                    handleFilter();
                 }
             });
 
-            // Format Table
+            // Setup table columns
             idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
             detailsCol.setCellValueFactory(new PropertyValueFactory<>("transactionDetails"));
+            subtotalCol.setCellValueFactory(new PropertyValueFactory<>("subtotal"));
+            discountCol.setCellValueFactory(new PropertyValueFactory<>("discountAmount"));
+            taxCol.setCellValueFactory(new PropertyValueFactory<>("taxAmount"));
             amountCol.setCellValueFactory(new PropertyValueFactory<>("totalAmount"));
             profitCol.setCellValueFactory(new PropertyValueFactory<>("totalProfit"));
+            paymentCol.setCellValueFactory(new PropertyValueFactory<>("paymentMethods"));
 
-            // Format Date
+            formatCurrencyColumn(subtotalCol);
+            formatCurrencyColumn(discountCol);
+            formatCurrencyColumn(taxCol);
+            formatCurrencyColumn(amountCol);
+            formatCurrencyColumn(profitCol);
+
+            // Date column formatter
             dateCol.setCellValueFactory(new PropertyValueFactory<>("saleDate"));
             dateCol.setCellFactory(column -> new javafx.scene.control.TableCell<Sale, LocalDateTime>() {
                 private final java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter
@@ -128,10 +167,10 @@ public class ReportsController {
 
             setupActionColumn();
 
-            // Default triggers initial handleFilter() inherently
+            // Select default filter (triggers handleFilter via listener)
             dateRangeComboBox.getSelectionModel().select(0);
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -181,18 +220,23 @@ public class ReportsController {
 
         } catch (java.io.IOException e) {
             e.printStackTrace();
-            com.pos.system.utils.NotificationUtils.showError("Error", "Could not load transaction details.");
+            NotificationUtils.showError("Error", "Could not load transaction details.");
         }
     }
 
+    /**
+     * Runs the filter query SYNCHRONOUSLY on the JavaFX thread.
+     * SQLite queries on a local DB are fast enough for this.
+     * This eliminates all race conditions from background threads.
+     */
     @FXML
     private void handleFilter() {
         int index = dateRangeComboBox.getSelectionModel().getSelectedIndex();
-        LocalDateTime start, end;
-        LocalDateTime now = LocalDateTime.now();
-
         if (index < 0)
             return;
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start, end;
 
         switch (index) {
             case 0: // Today
@@ -203,12 +247,13 @@ public class ReportsController {
                 LocalDate today = now.toLocalDate();
                 start = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
                         .atStartOfDay();
-                end = today.with(java.time.temporal.TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY)).atTime(23,
-                        59, 59);
+                end = today.with(java.time.temporal.TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY))
+                        .atTime(23, 59, 59);
                 break;
             case 2: // This Month
                 start = now.toLocalDate().withDayOfMonth(1).atStartOfDay();
-                end = now.toLocalDate().with(java.time.temporal.TemporalAdjusters.lastDayOfMonth()).atTime(23, 59, 59);
+                end = now.toLocalDate().with(java.time.temporal.TemporalAdjusters.lastDayOfMonth())
+                        .atTime(23, 59, 59);
                 break;
             case 3: // All Time
                 start = LocalDateTime.of(2000, 1, 1, 0, 0);
@@ -219,9 +264,7 @@ public class ReportsController {
                     return;
                 }
                 if (startDatePicker.getValue().isAfter(endDatePicker.getValue())) {
-                    com.pos.system.utils.NotificationUtils.showError(
-                            "Invalid Date Range",
-                            "Start date cannot be after end date.");
+                    NotificationUtils.showError("Invalid Date Range", "Start date cannot be after end date.");
                     return;
                 }
                 start = startDatePicker.getValue().atStartOfDay();
@@ -231,30 +274,75 @@ public class ReportsController {
                 return;
         }
 
-        final LocalDateTime finalStart = start;
-        final LocalDateTime finalEnd = end;
+        // Query synchronously — fast on local SQLite
+        try (SaleDAO saleDAO = new SaleDAO(); SalePaymentDAO paymentDAO = new SalePaymentDAO()) {
+            double filteredSales = saleDAO.getTotalSalesBetween(start, end);
+            double filteredProfit = saleDAO.getTotalProfitBetween(start, end);
+            double totalSales = saleDAO.getTotalSalesBetween(
+                    LocalDateTime.of(2000, 1, 1, 0, 0), LocalDateTime.now());
 
-        Task<Void> filterTask = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                double todaySales = saleDAO.getTotalSalesBetween(finalStart, finalEnd);
-                double todayProfit = saleDAO.getTotalProfitBetween(finalStart, finalEnd);
-                double totalSales = saleDAO.getTotalSalesBetween(LocalDateTime.of(2000, 1, 1, 0, 0),
-                        LocalDateTime.now());
+            List<Sale> salesData = saleDAO.getSalesBetween(start, end);
 
-                java.util.List<Sale> salesData = saleDAO.getSalesBetween(finalStart, finalEnd);
-
-                Platform.runLater(() -> {
-                    todaySalesLabel.setText(String.format("%.2f MMK", todaySales));
-                    todayProfitLabel.setText(String.format("%.2f MMK", todayProfit));
-                    totalSalesLabel.setText(String.format("%.2f MMK", totalSales));
-                    recentSalesTable.setItems(FXCollections.observableArrayList(salesData));
-                });
-                return null;
+            // Populate payment summary for each sale
+            for (Sale sale : salesData) {
+                try {
+                    List<SalePayment> payments = paymentDAO.findBySaleId(sale.getId());
+                    if (!payments.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (SalePayment p : payments) {
+                            if (sb.length() > 0)
+                                sb.append(", ");
+                            sb.append(p.getPaymentMethod())
+                                    .append(" (").append(String.format("%,.0f", p.getAmount())).append(")");
+                        }
+                        double totalPaid = payments.stream().mapToDouble(SalePayment::getAmount).sum();
+                        double change = totalPaid - sale.getTotalAmount();
+                        if (change > 0) {
+                            sb.append(" | Change: ").append(String.format("%,.0f", change));
+                        }
+                        sale.setPaymentMethods(sb.toString());
+                    }
+                } catch (Exception ignored) {
+                }
             }
-        };
 
-        filterTask.setOnFailed(e -> e.getSource().getException().printStackTrace());
-        new Thread(filterTask).start();
+            // Update UI directly (we're already on the FX thread)
+            todaySalesLabel.setText(String.format("%,.2f MMK", filteredSales));
+            todayProfitLabel.setText(String.format("%,.2f MMK", filteredProfit));
+            totalSalesLabel.setText(String.format("%,.2f MMK", totalSales));
+            recentSalesTable.setItems(FXCollections.observableArrayList(salesData));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            NotificationUtils.showError("Error", "Failed to load sales data.");
+        }
+    }
+
+    @FXML
+    private void handleGenerateZReport() {
+        try {
+            ReportingService reportingService = new ReportingService();
+            File reportFile = reportingService.generateDailyZReport();
+            NotificationUtils.showSuccess("Z-Report Generated",
+                    "Report saved to: " + reportFile.getAbsolutePath());
+        } catch (Exception e) {
+            NotificationUtils.showError("Report Failed",
+                    "Failed to generate Z-Report: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void formatCurrencyColumn(TableColumn<Sale, Double> column) {
+        column.setCellFactory(col -> new javafx.scene.control.TableCell<Sale, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("%,.2f", item));
+                }
+            }
+        });
     }
 }

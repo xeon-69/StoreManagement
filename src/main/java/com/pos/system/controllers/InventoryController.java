@@ -14,10 +14,11 @@ import java.util.List;
 
 public class InventoryController {
 
-    private ProductDAO productDAO;
+    // For Dependency Injection in Tests only
+    private ProductDAO injectedProductDAO;
 
     public void setProductDAO(ProductDAO productDAO) {
-        this.productDAO = productDAO;
+        this.injectedProductDAO = productDAO;
     }
 
     @FXML
@@ -78,18 +79,31 @@ public class InventoryController {
         priceCol.setCellValueFactory(new PropertyValueFactory<>("sellingPrice"));
         stockCol.setCellValueFactory(new PropertyValueFactory<>("stock"));
 
+        // Highlight low stock cells with red background
+        stockCol.setCellFactory(col -> new javafx.scene.control.TableCell<Product, Integer>() {
+            @Override
+            protected void updateItem(Integer stock, boolean empty) {
+                super.updateItem(stock, empty);
+                if (empty || stock == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(stock.toString());
+                    if (stock <= 10) {
+                        setStyle("-fx-background-color: #ffcccc; -fx-text-fill: #cc0000; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("");
+                    }
+                }
+            }
+        });
+
         setupActionColumn();
 
         // Auto-resize columns
         productTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
 
-        if (productDAO == null) {
-            try {
-                productDAO = new ProductDAO();
-            } catch (java.sql.SQLException e) {
-                e.printStackTrace();
-            }
-        }
+        // No longer create a stored productDAO here - use try-with-resources in tasks
 
         loadProducts();
     }
@@ -190,8 +204,9 @@ public class InventoryController {
         javafx.concurrent.Task<List<Product>> loadTask = new javafx.concurrent.Task<>() {
             @Override
             protected List<Product> call() throws Exception {
-                try {
-                    return productDAO.getAllProducts();
+                try (ProductDAO dao = injectedProductDAO != null ? null : new ProductDAO()) {
+                    ProductDAO activeDAO = injectedProductDAO != null ? injectedProductDAO : dao;
+                    return activeDAO.getAllProducts();
                 } catch (java.sql.SQLException e) {
                     e.printStackTrace();
                     return java.util.Collections.emptyList();
@@ -225,8 +240,9 @@ public class InventoryController {
         javafx.concurrent.Task<List<Product>> searchTask = new javafx.concurrent.Task<>() {
             @Override
             protected List<Product> call() throws Exception {
-                try {
-                    List<Product> allProducts = productDAO.getAllProducts();
+                try (ProductDAO dao = injectedProductDAO != null ? null : new ProductDAO()) {
+                    ProductDAO activeDAO = injectedProductDAO != null ? injectedProductDAO : dao;
+                    List<Product> allProducts = activeDAO.getAllProducts();
                     return allProducts.stream()
                             .filter(p -> p.getName().toLowerCase().contains(lowerCaseQuery) ||
                                     (p.getBarcode() != null && p.getBarcode().toLowerCase().contains(lowerCaseQuery)))

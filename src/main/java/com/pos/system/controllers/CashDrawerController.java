@@ -2,6 +2,8 @@ package com.pos.system.controllers;
 
 import com.pos.system.dao.CashDrawerTransactionDAO;
 import com.pos.system.models.CashDrawerTransaction;
+import com.pos.system.services.PrinterService;
+import com.pos.system.utils.NotificationUtils;
 import com.pos.system.utils.SessionManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -46,7 +48,7 @@ public class CashDrawerController {
         typeCol.setCellValueFactory(new PropertyValueFactory<>("transactionType"));
 
         amountCol.setCellValueFactory(
-                cellData -> new SimpleStringProperty(String.format("%.2f", cellData.getValue().getAmount())));
+                cellData -> new SimpleStringProperty(String.format("%,.2f", cellData.getValue().getAmount())));
 
         descCol.setCellValueFactory(new PropertyValueFactory<>("description"));
 
@@ -57,9 +59,6 @@ public class CashDrawerController {
     private void loadTransactions() {
         trxList.clear();
         try (CashDrawerTransactionDAO dao = new CashDrawerTransactionDAO()) {
-            // Load for current shift if open, otherwise maybe we should load all.
-            // For now, load all for the current shift. If none open, leave empty or show
-            // history.
             com.pos.system.models.Shift currentShift = SessionManager.getInstance().getCurrentShift();
             if (currentShift != null) {
                 trxList.addAll(dao.findByShiftId(currentShift.getId()));
@@ -67,5 +66,12 @@ public class CashDrawerController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void handleOpenDrawer() {
+        PrinterService printerService = new PrinterService();
+        printerService.openCashDrawer();
+        NotificationUtils.showSuccess("Cash Drawer", "Cash drawer command sent.");
     }
 }

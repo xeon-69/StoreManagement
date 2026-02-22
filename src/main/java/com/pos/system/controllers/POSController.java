@@ -1,9 +1,11 @@
 package com.pos.system.controllers;
 
+import com.pos.system.dao.ProductDAO;
 import com.pos.system.models.Product;
 import com.pos.system.models.SaleItem;
 import com.pos.system.utils.NotificationUtils;
 import com.pos.system.viewmodels.ProductCatalogViewModel;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
@@ -12,9 +14,11 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.util.Duration;
 
 import org.controlsfx.control.GridView;
 import org.controlsfx.control.GridCell;
@@ -45,7 +49,8 @@ public class POSController {
     // private final SaleDAO saleDAO = new SaleDAO();
 
     private final ObservableList<SaleItem> cartItems = FXCollections.observableArrayList();
-    private ProductCatalogViewModel catalogViewModel; // Added ViewModel
+    private ProductCatalogViewModel catalogViewModel;
+    private PauseTransition searchDebounce;
 
     // For Dependency Injection in Tests
     public void setCatalogViewModel(ProductCatalogViewModel catalogViewModel) {
@@ -59,8 +64,37 @@ public class POSController {
             catalogViewModel = new ProductCatalogViewModel();
         }
 
-        // Bind Search
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> catalogViewModel.search(newVal));
+        // Debounced search — waits 300ms after last keystroke before filtering
+        searchDebounce = new PauseTransition(Duration.millis(300));
+        searchDebounce.setOnFinished(event -> {
+            String query = searchField.getText();
+            if (query != null) {
+                query = query.replace("\n", "").replace("\r", "").trim();
+            }
+            // Only trigger filter if query >= 2 chars or empty (reset)
+            if (query == null || query.isEmpty() || query.length() >= 2) {
+                catalogViewModel.search(query);
+            }
+        });
+
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+            searchDebounce.playFromStart();
+        });
+
+        // Enter key = Barcode scanner input → look up product by barcode and add to
+        // cart
+        searchField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                String barcode = searchField.getText();
+                if (barcode != null) {
+                    barcode = barcode.replace("\n", "").replace("\r", "").trim();
+                }
+                if (barcode != null && !barcode.isEmpty()) {
+                    handleBarcodeInput(barcode);
+                }
+                event.consume();
+            }
+        });
 
         // Bind List Updates
         productGridView.setItems(catalogViewModel.getFilteredProducts());
@@ -89,6 +123,34 @@ public class POSController {
         cartTable.setItems(cartItems);
         // Ensure catalog loads
         catalogViewModel.loadProducts();
+
+        // Auto-focus search field on load
+        Platform.runLater(() -> searchField.requestFocus());
+    }
+
+    /**
+     * Handles barcode scanner input: looks up product by barcode,
+     * adds it to cart (or increments qty), clears field, and re-focuses.
+     */
+    private void handleBarcodeInput(String barcode) {
+        try (ProductDAO productDAO = new ProductDAO()) {
+            Product product = productDAO.getProductByBarcode(barcode);
+            if (product != null) {
+                updateCartQuantity(product, 1);
+            } else {
+                NotificationUtils.showWarning(
+                        com.pos.system.App.getBundle().getString("dialog.warning"),
+                        "No product found for barcode: " + barcode);
+            }
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+            NotificationUtils.showError(
+                    com.pos.system.App.getBundle().getString("dialog.error"),
+                    "Failed to look up barcode.");
+        }
+        // Clear and re-focus for next scan
+        searchField.clear();
+        searchField.requestFocus();
     }
 
     private VBox createProductTile(Product p) {
@@ -124,7 +186,7 @@ public class POSController {
         nameLbl.getStyleClass().add("product-name");
         nameLbl.setWrapText(true);
 
-        Label priceLbl = new Label(String.format("%.0f MMK", p.getSellingPrice()));
+        Label priceLbl = new Label(String.format("%,.0f MMK", p.getSellingPrice()));
         priceLbl.getStyleClass().add("product-price");
 
         Label stockLbl = new Label(com.pos.system.App.getBundle().getString("pos.stockLabel") + p.getStock());
@@ -233,7 +295,12 @@ public class POSController {
 
     @FXML
     private void handleSearch() {
-        catalogViewModel.search(searchField.getText());
+        String query = searchField.getText();
+        if (query != null) {
+            query = query.replace("\n", "").replace("\r", "").trim();
+        }
+        catalogViewModel.search(query);
+        searchField.requestFocus();
     }
 
     // addToCart removed, replaced by updateCartQuantity
@@ -275,6 +342,9 @@ public class POSController {
             stage.setScene(new javafx.scene.Scene(root));
             stage.showAndWait();
 
+            // Re-focus search field after checkout modal closes
+            Platform.runLater(() -> searchField.requestFocus());
+
         } catch (java.io.IOException e) {
             e.printStackTrace();
             NotificationUtils.showError(com.pos.system.App.getBundle().getString("dialog.error"),
@@ -284,7 +354,7 @@ public class POSController {
 
     private void updateTotal() {
         double total = cartItems.stream().mapToDouble(SaleItem::getTotal).sum();
-        totalLabel.setText(String.format("%.2f MMK", total));
+        totalLabel.setText(String.format("%,.2f MMK", total));
     }
 
     // Removed showAlert in favor of NotificationUtils

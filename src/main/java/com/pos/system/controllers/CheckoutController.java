@@ -3,6 +3,8 @@ package com.pos.system.controllers;
 import com.pos.system.models.Sale;
 import com.pos.system.models.SaleItem;
 import com.pos.system.models.SalePayment;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -95,7 +97,7 @@ public class CheckoutController {
         this.onSuccessCallback = onSuccessCallback;
 
         this.subtotal = cartItems.stream().mapToDouble(SaleItem::getTotal).sum();
-        subtotalLabel.setText(String.format("%.2f", subtotal));
+        subtotalLabel.setText(String.format("%,.2f", subtotal));
 
         recalculateTotal();
     }
@@ -109,7 +111,7 @@ public class CheckoutController {
             double taxAmt = (subtotal - discountAmt) * (taxPct / 100.0);
 
             this.calculatedTotal = subtotal - discountAmt + taxAmt;
-            totalLabel.setText(String.format("%.2f", calculatedTotal));
+            totalLabel.setText(String.format("%,.2f", calculatedTotal));
 
             updatePayments();
         } catch (NumberFormatException e) {
@@ -120,7 +122,7 @@ public class CheckoutController {
     @FXML
     private void handleAddPayment() {
         try {
-            double amount = Double.parseDouble(paymentAmountField.getText());
+            double amount = parseAmount(paymentAmountField.getText());
             if (amount <= 0)
                 return;
 
@@ -134,6 +136,28 @@ public class CheckoutController {
         }
     }
 
+    /**
+     * Parses a currency-like string that may include grouping separators (e.g. "14,000.00").
+     * Falls back to stripping commas/spaces before Double parsing.
+     */
+    private double parseAmount(String raw) throws NumberFormatException {
+        if (raw == null) {
+            throw new NumberFormatException("Null amount");
+        }
+        String trimmed = raw.trim();
+        if (trimmed.isEmpty()) {
+            throw new NumberFormatException("Empty amount");
+        }
+
+        try {
+            Number parsed = NumberFormat.getNumberInstance(java.util.Locale.US).parse(trimmed);
+            return parsed.doubleValue();
+        } catch (ParseException ignore) {
+            String normalized = trimmed.replace(",", "").replace(" ", "");
+            return Double.parseDouble(normalized);
+        }
+    }
+
     private void updatePayments() {
         errorLabel.setText("");
         double totalPaid = payments.stream().mapToDouble(SalePayment::getAmount).sum();
@@ -141,17 +165,17 @@ public class CheckoutController {
 
         if (remaining <= 0) {
             remainingLabel.setText("0.00");
-            changeLabel.setText(String.format("%.2f", Math.abs(remaining)));
+            changeLabel.setText(String.format("%,.2f", Math.abs(remaining)));
             confirmButton.setDisable(false);
         } else {
-            remainingLabel.setText(String.format("%.2f", remaining));
+            remainingLabel.setText(String.format("%,.2f", remaining));
             changeLabel.setText("0.00");
             confirmButton.setDisable(true);
         }
 
         // Suggest remaining balance in the input field
         if (remaining > 0) {
-            paymentAmountField.setText(String.format("%.2f", remaining));
+            paymentAmountField.setText(String.format("%,.2f", remaining));
         }
     }
 
@@ -201,11 +225,24 @@ public class CheckoutController {
                 ex.printStackTrace(); // Non-fatal for the sale
             }
 
-            // Print receipt
+            // Print receipt asynchronously — don't block the FX thread
             double amountTendered = payments.stream().mapToDouble(SalePayment::getAmount).sum();
-            double changeDue = Double.parseDouble(changeLabel.getText());
-            com.pos.system.services.PrinterService printer = new com.pos.system.services.PrinterService();
-            printer.printReceipt(sale, cartItems, amountTendered, changeDue);
+            double changeDue = parseAmount(changeLabel.getText());
+            // Capture sale data for background thread
+            final Sale printSale = sale;
+            final java.util.List<SaleItem> printItems = new java.util.ArrayList<>(cartItems);
+            final double printTendered = amountTendered;
+            final double printChange = changeDue;
+
+            new Thread(() -> {
+                com.pos.system.services.PrinterService printer = new com.pos.system.services.PrinterService();
+                boolean success = printer.printReceipt(printSale, printItems, printTendered, printChange);
+                if (!success) {
+                    javafx.application.Platform
+                            .runLater(() -> com.pos.system.utils.NotificationUtils.showWarning("Print Failed",
+                                    "Receipt could not be printed. Sale was saved successfully."));
+                }
+            }).start();
 
             if (onSuccessCallback != null)
                 onSuccessCallback.run();

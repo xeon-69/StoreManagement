@@ -1,7 +1,9 @@
 com\pos\system\models\SalePayment.class
 TestLoad.class
 com\pos\system\controllers\LoginController.class
+com\pos\system\controllers\FinanceController$5.class
 com\pos\system\controllers\POSController$1.class
+com\pos\system\controllers\InventoryController$8.class
 com\pos\system\TestLoad.class
 com\pos\system\controllers\InventoryController$5.class
 com\pos\system\viewmodels\ProductCatalogViewModel$1.class
@@ -9,6 +11,8 @@ com\pos\system\services\StoreEvents.class
 FixAdmin.class
 CheckAdmin.class
 com\pos\system\services\InventoryService.class
+com\pos\system\controllers\FinanceController$2.class
+com\pos\system\controllers\ReportsController$4.class
 com\pos\system\models\AuditLog.class
 com\pos\system\Launcher.class
 com\pos\system\controllers\ReportsController$1.class
@@ -17,6 +21,7 @@ com\pos\system\dao\UserDAO.class
 com\pos\system\dao\ShiftDAO.class
 com\pos\system\controllers\CategoryController.class
 com\pos\system\dao\SaleDAO.class
+com\pos\system\controllers\ReportsController$5.class
 com\pos\system\controllers\AddCategoryController.class
 com\pos\system\controllers\InventoryController$3.class
 com\pos\system\services\PrinterService.class
@@ -43,11 +48,13 @@ com\pos\system\controllers\ReportsController$3.class
 com\pos\system\models\Product.class
 com\pos\system\services\ReportingService.class
 com\pos\system\models\User.class
+com\pos\system\controllers\FinanceController$1.class
 com\pos\system\controllers\UsersController.class
 com\pos\system\models\SaleItem.class
 com\pos\system\controllers\InventoryController.class
 com\pos\system\controllers\SettingsController$1.class
 com\pos\system\models\Shift.class
+com\pos\system\controllers\FinanceController$4.class
 com\pos\system\controllers\AddProductController.class
 com\pos\system\controllers\InventoryController$7.class
 com\pos\system\controllers\TransactionDetailsController.class
@@ -88,4 +95,5 @@ com\pos\system\services\CheckoutService.class
 com\pos\system\viewmodels\ProductCatalogViewModel.class
 com\pos\system\controllers\SettingsController.class
 com\pos\system\models\Sale.class
+com\pos\system\controllers\FinanceController$3.class
 com\pos\system\controllers\InventoryController$6.class

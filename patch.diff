@@ -1,0 +1,69 @@
+*** Begin Patch
+*** Update File: src/main/java/com/pos/system/controllers/CheckoutController.java
+@@
+ import com.pos.system.models.Sale;
+ import com.pos.system.models.SaleItem;
+ import com.pos.system.models.SalePayment;
++import java.text.NumberFormat;
++import java.text.ParseException;
+ import javafx.beans.property.SimpleDoubleProperty;
+ import javafx.beans.property.SimpleStringProperty;
+ import javafx.collections.FXCollections;
+ import javafx.collections.ObservableList;
+ import javafx.fxml.FXML;
+@@
+     @FXML
+     private void handleAddPayment() {
+         try {
+-            double amount = Double.parseDouble(paymentAmountField.getText());
++            double amount = parseAmount(paymentAmountField.getText());
+             if (amount <= 0)
+                 return;
+@@
+             payments.add(payment);
+             paymentAmountField.clear();
+             updatePayments();
+         } catch (NumberFormatException e) {
+             errorLabel.setText("Invalid amount.");
+         }
+     }
++
++    /**
++     * Parses a currency-like string that may contain grouping separators (e.g. "14,000.00").
++     * Falls back to stripping commas and whitespace before standard Double parsing.
++     */
++    private double parseAmount(String raw) throws NumberFormatException {
++        if (raw == null) {
++            throw new NumberFormatException("Null amount");
++        }
++        String trimmed = raw.trim();
++        if (trimmed.isEmpty()) {
++            throw new NumberFormatException("Empty amount");
++        }
++
++        try {
++            Number parsed = NumberFormat.getNumberInstance(java.util.Locale.US).parse(trimmed);
++            return parsed.doubleValue();
++        } catch (ParseException ignore) {
++            // Fallback: remove commas/spaces and parse
++            String normalized = trimmed.replace(",", "").replace(" ", "");
++            return Double.parseDouble(normalized);
++        }
++    }
+@@
+     @FXML
+     private void handleConfirm() {
+         double totalCost = cartItems.stream().mapToDouble(i -> i.getCostAtSale() * i.getQuantity()).sum();
+         double discountPct = Double.parseDouble(discountField.getText().isEmpty() ? "0" : discountField.getText());
+         double taxPct = Double.parseDouble(taxField.getText().isEmpty() ? "0" : taxField.getText());
+@@
+             // Print receipt asynchronously — don't block the FX thread
+             double amountTendered = payments.stream().mapToDouble(SalePayment::getAmount).sum();
+-            double changeDue = Double.parseDouble(changeLabel.getText());
++            double changeDue = parseAmount(changeLabel.getText());
+             // Capture sale data for background thread
+             final Sale printSale = sale;
+             final java.util.List<SaleItem> printItems = new java.util.ArrayList<>(cartItems);
+             final double printTendered = amountTendered;
+             final double printChange = changeDue;
+*** End Patch

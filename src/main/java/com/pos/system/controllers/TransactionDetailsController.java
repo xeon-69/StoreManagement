@@ -59,13 +59,13 @@ public class TransactionDetailsController {
         itemCol.setCellValueFactory(new PropertyValueFactory<>("productName"));
         qtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         priceCol.setCellValueFactory(
-                cellData -> new SimpleStringProperty(String.format("%.2f", cellData.getValue().getPriceAtSale())));
+                cellData -> new SimpleStringProperty(String.format("%,.2f", cellData.getValue().getPriceAtSale())));
         itemTotalCol.setCellValueFactory(
-                cellData -> new SimpleStringProperty(String.format("%.2f", cellData.getValue().getTotal())));
+                cellData -> new SimpleStringProperty(String.format("%,.2f", cellData.getValue().getTotal())));
 
         methodCol.setCellValueFactory(new PropertyValueFactory<>("paymentMethod"));
         amountCol.setCellValueFactory(
-                cellData -> new SimpleStringProperty(String.format("%.2f", cellData.getValue().getAmount())));
+                cellData -> new SimpleStringProperty(String.format("%,.2f", cellData.getValue().getAmount())));
     }
 
     public void setSale(Sale sale) {
@@ -79,10 +79,10 @@ public class TransactionDetailsController {
 
         saleIdLabel.setText("Sale ID: " + sale.getId());
         dateLabel.setText("Date: " + sale.getSaleDate().toString().replace("T", " "));
-        subtotalLabel.setText(String.format("%.2f", sale.getSubtotal()));
-        taxLabel.setText(String.format("%.2f", sale.getTaxAmount()));
-        discountLabel.setText(String.format("%.2f", sale.getDiscountAmount()));
-        totalLabel.setText(String.format("%.2f", sale.getTotalAmount()));
+        subtotalLabel.setText(String.format("%,.2f", sale.getSubtotal()));
+        taxLabel.setText(String.format("%,.2f", sale.getTaxAmount()));
+        discountLabel.setText(String.format("%,.2f", sale.getDiscountAmount()));
+        totalLabel.setText(String.format("%,.2f", sale.getTotalAmount()));
         userLabel.setText("User ID: " + sale.getUserId());
 
         try (SaleDAO saleDAO = new SaleDAO(); SalePaymentDAO paymentDAO = new SalePaymentDAO()) {

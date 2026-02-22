@@ -120,6 +120,12 @@
                   <Font size="32.0" />
                </font>
             </Label>
+            <Label fx:id="shiftTotalLabel" textFill="#2ecc71" wrapText="true" textAlignment="CENTER" visible="false" managed="false">
+               <font>
+                  <Font name="System Bold" size="20.0" />
+               </font>
+               <VBox.margin><Insets top="20.0" /></VBox.margin>
+            </Label>
          </children>
       </VBox>
    </center>

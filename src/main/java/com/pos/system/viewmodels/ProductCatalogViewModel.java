@@ -38,17 +38,10 @@ public class ProductCatalogViewModel {
     private volatile Runnable pendingSearch;
 
     // Internal state
-    private ProductDAO productDAO;
-    private CategoryDAO categoryDAO;
+    private ProductDAO productDAO; // only used when injected for tests
+    private CategoryDAO categoryDAO; // only used when injected for tests
 
     public ProductCatalogViewModel() {
-        try {
-            this.productDAO = new ProductDAO();
-            this.categoryDAO = new CategoryDAO();
-        } catch (java.sql.SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to initialize DAOs", e);
-        }
         loadProducts();
     }
 
@@ -62,8 +55,9 @@ public class ProductCatalogViewModel {
         Task<List<Product>> loadTask = new Task<>() {
             @Override
             protected List<Product> call() throws Exception {
-                try {
-                    return productDAO.getAllProducts();
+                try (ProductDAO dao = productDAO != null ? null : new ProductDAO()) {
+                    ProductDAO activeDAO = productDAO != null ? productDAO : dao;
+                    return activeDAO.getAllProducts();
                 } catch (java.sql.SQLException e) {
                     e.printStackTrace();
                     return FXCollections.observableArrayList();
@@ -85,8 +79,9 @@ public class ProductCatalogViewModel {
         Task<List<Category>> loadTask = new Task<>() {
             @Override
             protected List<Category> call() throws Exception {
-                try {
-                    return categoryDAO.getAllCategories();
+                try (CategoryDAO dao = categoryDAO != null ? null : new CategoryDAO()) {
+                    CategoryDAO activeDAO = categoryDAO != null ? categoryDAO : dao;
+                    return activeDAO.getAllCategories();
                 } catch (java.sql.SQLException e) {
                     e.printStackTrace();
                     return FXCollections.observableArrayList();

@@ -118,7 +118,7 @@ public class SaleDAO extends BaseDAO {
             stmt.setDouble(5, sale.getDiscountAmount());
             stmt.setDouble(6, sale.getTotalAmount());
             stmt.setDouble(7, sale.getTotalProfit());
-            stmt.setString(8, sale.getSaleDate().toString());
+            stmt.setString(8, sale.getSaleDate().toString().replace("T", " "));
             stmt.executeUpdate();
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
@@ -152,8 +152,8 @@ public class SaleDAO extends BaseDAO {
     public double getTotalSalesBetween(LocalDateTime start, LocalDateTime end) throws SQLException {
         String sql = "SELECT SUM(total_amount) FROM sales WHERE sale_date >= ? AND sale_date <= ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, start.toString());
-            stmt.setString(2, end.toString());
+            stmt.setString(1, start.toString().replace("T", " "));
+            stmt.setString(2, end.toString().replace("T", " "));
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getDouble(1);
@@ -166,8 +166,8 @@ public class SaleDAO extends BaseDAO {
     public double getTotalProfitBetween(LocalDateTime start, LocalDateTime end) throws SQLException {
         String sql = "SELECT SUM(total_profit) FROM sales WHERE sale_date >= ? AND sale_date <= ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, start.toString());
-            stmt.setString(2, end.toString());
+            stmt.setString(1, start.toString().replace("T", " "));
+            stmt.setString(2, end.toString().replace("T", " "));
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getDouble(1);
@@ -199,8 +199,8 @@ public class SaleDAO extends BaseDAO {
                 " FROM sale_items si JOIN products p ON si.product_id = p.id WHERE si.sale_id = s.id) AS details " +
                 "FROM sales s WHERE s.sale_date >= ? AND s.sale_date <= ? ORDER BY s.sale_date DESC";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, start.toString());
-            stmt.setString(2, end.toString());
+            stmt.setString(1, start.toString().replace("T", " "));
+            stmt.setString(2, end.toString().replace("T", " "));
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     sales.add(mapResultSetToSale(rs));

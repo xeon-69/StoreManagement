@@ -1,0 +1,175 @@
+========================================
+Z-REPORT — 2026-02-22
+Generated: 2026-02-22 10:19:16
+========================================
+
+DAILY SUMMARY
+Total Revenue,25260.00
+Total Profit,5230.00
+Transaction Count,7
+
+----------------------------------------
+TRANSACTION #20
+Date/Time,2026-02-22 10:17:12
+User ID,1
+Shift ID,5
+
+ITEMS
+Product,Qty,Unit Price,Cost,Item Discount,Item Tax,Line Total
+Coca-Cola,2,6000.00,4000.00,0.00,0.00,12000.00
+Oreo Roll,2,8000.00,6000.00,0.00,0.00,16000.00
+
+SALE TOTALS
+Subtotal,28000.00
+Discount,2800.00
+Tax,0.00
+Grand Total,25200.00
+Profit,5200.00
+
+PAYMENTS
+Method,Amount
+CASH,20000.00
+MOBILE_MONEY,5200.00
+Total Paid,25200.00
+
+----------------------------------------
+TRANSACTION #19
+Date/Time,2026-02-22 09:26:15
+User ID,1
+Shift ID,1
+
+ITEMS
+Product,Qty,Unit Price,Cost,Item Discount,Item Tax,Line Total
+Coca-Cola,5,2.00,1.00,0.00,0.00,10.00
+
+SALE TOTALS
+Subtotal,10.00
+Discount,0.00
+Tax,0.00
+Grand Total,10.00
+Profit,5.00
+
+PAYMENTS
+Method,Amount
+CASH,15.00
+Total Paid,15.00
+Change,5.00
+
+----------------------------------------
+TRANSACTION #18
+Date/Time,2026-02-22 09:01:05
+User ID,1
+Shift ID,1
+
+ITEMS
+Product,Qty,Unit Price,Cost,Item Discount,Item Tax,Line Total
+Coca-Cola,5,2.00,1.00,0.00,0.00,10.00
+
+SALE TOTALS
+Subtotal,10.00
+Discount,0.00
+Tax,0.00
+Grand Total,10.00
+Profit,5.00
+
+PAYMENTS
+Method,Amount
+CASH,15.00
+Total Paid,15.00
+Change,5.00
+
+----------------------------------------
+TRANSACTION #17
+Date/Time,2026-02-22 09:00:37
+User ID,1
+Shift ID,1
+
+ITEMS
+Product,Qty,Unit Price,Cost,Item Discount,Item Tax,Line Total
+Coca-Cola,5,2.00,1.00,0.00,0.00,10.00
+
+SALE TOTALS
+Subtotal,10.00
+Discount,0.00
+Tax,0.00
+Grand Total,10.00
+Profit,5.00
+
+PAYMENTS
+Method,Amount
+CASH,15.00
+Total Paid,15.00
+Change,5.00
+
+----------------------------------------
+TRANSACTION #16
+Date/Time,2026-02-22 08:59:34
+User ID,1
+Shift ID,1
+
+ITEMS
+Product,Qty,Unit Price,Cost,Item Discount,Item Tax,Line Total
+Coca-Cola,5,2.00,1.00,0.00,0.00,10.00
+
+SALE TOTALS
+Subtotal,10.00
+Discount,0.00
+Tax,0.00
+Grand Total,10.00
+Profit,5.00
+
+PAYMENTS
+Method,Amount
+CASH,15.00
+Total Paid,15.00
+Change,5.00
+
+----------------------------------------
+TRANSACTION #15
+Date/Time,2026-02-22 08:59:02
+User ID,1
+Shift ID,1
+
+ITEMS
+Product,Qty,Unit Price,Cost,Item Discount,Item Tax,Line Total
+Coca-Cola,5,2.00,1.00,0.00,0.00,10.00
+
+SALE TOTALS
+Subtotal,10.00
+Discount,0.00
+Tax,0.00
+Grand Total,10.00
+Profit,5.00
+
+PAYMENTS
+Method,Amount
+CASH,15.00
+Total Paid,15.00
+Change,5.00
+
+----------------------------------------
+TRANSACTION #14
+Date/Time,2026-02-22 08:58:20
+User ID,1
+Shift ID,1
+
+ITEMS
+Product,Qty,Unit Price,Cost,Item Discount,Item Tax,Line Total
+Coca-Cola,5,2.00,1.00,0.00,0.00,10.00
+
+SALE TOTALS
+Subtotal,10.00
+Discount,0.00
+Tax,0.00
+Grand Total,10.00
+Profit,5.00
+
+PAYMENTS
+Method,Amount
+CASH,15.00
+Total Paid,15.00
+Change,5.00
+
+========================================
+END OF Z-REPORT
+========================================

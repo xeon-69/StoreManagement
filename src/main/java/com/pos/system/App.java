@@ -57,7 +57,11 @@ public class App extends Application {
     }
 
     public static void setLocale(String language) {
-        currentLocale = Locale.forLanguageTag(language);
+        Locale newLocale = Locale.forLanguageTag(language);
+        if (newLocale.equals(currentLocale))
+            return; // No change, skip reload
+
+        currentLocale = newLocale;
         bundle = ResourceBundle.getBundle("bundle.messages", currentLocale);
 
         try {
