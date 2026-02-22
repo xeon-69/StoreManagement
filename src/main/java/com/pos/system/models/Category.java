@@ -39,4 +39,21 @@ public class Category {
     public String toString() {
         return name;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Category category = (Category) o;
+        return id == category.id &&
+                java.util.Objects.equals(name, category.name) &&
+                java.util.Objects.equals(description, category.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id, name, description);
+    }
 }

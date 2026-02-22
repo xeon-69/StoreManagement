@@ -51,7 +51,9 @@ public class App extends Application {
 
     public static void setRoot(String fxml) throws IOException {
         currentFxml = fxml;
-        scene.setRoot(loadFXML(fxml));
+        if (scene != null) {
+            scene.setRoot(loadFXML(fxml));
+        }
     }
 
     public static void setLocale(String language) {
@@ -60,7 +62,7 @@ public class App extends Application {
 
         try {
             // Reload the current scene with the new bundle
-            if (currentFxml != null) {
+            if (scene != null && currentFxml != null) {
                 scene.setRoot(loadFXML(currentFxml));
             }
         } catch (IOException e) {

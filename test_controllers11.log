@@ -1,0 +1,84 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------------< com.pos:store-manager >------------------------
+[INFO] Building store-manager 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] 6 problems were encountered while building the effective model for org.openjfx:javafx-controls:jar:21 during dependency collection step for project (use -X to see details)
+[WARNING] 6 problems were encountered while building the effective model for org.openjfx:javafx-controls:jar:20 during dependency collection step for project (use -X to see details)
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ store-manager ---
+[INFO] Copying 22 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ store-manager ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ store-manager ---
+[INFO] skip non existing resourceDirectory C:\POS\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ store-manager ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ store-manager ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+WARNING: Unknown module: javafx.graphics specified to --add-exports
+[INFO] Running com.pos.system.controllers.UsersControllerTest
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by com.sun.glass.utils.NativeLibLoader in an unnamed module (file:/C:/Users/User/.m2/repository/org/openjfx/javafx-graphics/21/javafx-graphics-21-win.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+Feb 22, 2026 9:16:02 AM com.sun.javafx.application.PlatformImpl startup
+WARNING: Unsupported JavaFX configuration: classes were loaded from 'unnamed module @7113b13f'
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction (file:/C:/Users/User/.m2/repository/net/bytebuddy/byte-buddy/1.14.12/byte-buddy-1.14.12.jar)
+WARNING: Please consider reporting this to the maintainers of class net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[ERROR] Tests run: 2, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 11.07 s <<< FAILURE! -- in com.pos.system.controllers.UsersControllerTest
+[ERROR] com.pos.system.controllers.UsersControllerTest.testAddUser(FxRobot) -- Time elapsed: 10.76 s <<< ERROR!
+java.lang.ClassCastException: class javafx.scene.control.SplitPane cannot be cast to class javafx.scene.layout.VBox (javafx.scene.control.SplitPane and javafx.scene.layout.VBox are in unnamed module of loader 'app')
+	at com.pos.system.controllers.UsersControllerTest.loadFXMLWithFactory(UsersControllerTest.java:79)
+	at com.pos.system.controllers.UsersControllerTest.testAddUser(UsersControllerTest.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+[ERROR] com.pos.system.controllers.UsersControllerTest.testLoadUsers(FxRobot) -- Time elapsed: 0.284 s <<< ERROR!
+java.lang.ClassCastException: class javafx.scene.control.SplitPane cannot be cast to class javafx.scene.layout.VBox (javafx.scene.control.SplitPane and javafx.scene.layout.VBox are in unnamed module of loader 'app')
+	at com.pos.system.controllers.UsersControllerTest.loadFXMLWithFactory(UsersControllerTest.java:79)
+	at com.pos.system.controllers.UsersControllerTest.testLoadUsers(UsersControllerTest.java:90)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   UsersControllerTest.testAddUser:103->loadFXMLWithFactory:79 ClassCast class javafx.scene.control.SplitPane cannot be cast to class javafx.scene.layout.VBox (javafx.scene.control.SplitPane and javafx.scene.layout.VBox are in unnamed module of loader 'app')
+[ERROR]   UsersControllerTest.testLoadUsers:90->loadFXMLWithFactory:79 ClassCast class javafx.scene.control.SplitPane cannot be cast to class javafx.scene.layout.VBox (javafx.scene.control.SplitPane and javafx.scene.layout.VBox are in unnamed module of loader 'app')
+[INFO] 
+[ERROR] Tests run: 2, Failures: 0, Errors: 2, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  12.986 s
+[INFO] Finished at: 2026-02-22T09:16:13+06:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.1.2:test (default-test) on project store-manager: 
+[ERROR] 
+[ERROR] Please refer to C:\POS\target\surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

@@ -14,6 +14,10 @@ public class SecurityService {
         this.auditLogDAO = new AuditLogDAO();
     }
 
+    public SecurityService(AuditLogDAO auditLogDAO) {
+        this.auditLogDAO = auditLogDAO;
+    }
+
     public String hashPassword(String plaintext) {
         return BCrypt.hashpw(plaintext, BCrypt.gensalt(10));
     }

@@ -1,0 +1,181 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------------< com.pos:store-manager >------------------------
+[INFO] Building store-manager 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] 6 problems were encountered while building the effective model for org.openjfx:javafx-controls:jar:21 during dependency collection step for project (use -X to see details)
+[WARNING] 6 problems were encountered while building the effective model for org.openjfx:javafx-controls:jar:20 during dependency collection step for project (use -X to see details)
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ store-manager ---
+[INFO] Deleting C:\POS\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ store-manager ---
+[INFO] Copying 22 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ store-manager ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 64 source files with javac [debug target 17] to target\classes
+[WARNING] location of system modules is not set in conjunction with -source 17
+  not setting the location of system modules may lead to class files that cannot run on JDK 17
+    --release 17 is recommended instead of -source 17 -target 17 because it sets the location of system modules automatically
+[INFO] /C:/POS/src/main/java/com/pos/system/controllers/CheckoutController.java: C:\POS\src\main\java\com\pos\system\controllers\CheckoutController.java uses or overrides a deprecated API.
+[INFO] /C:/POS/src/main/java/com/pos/system/controllers/CheckoutController.java: Recompile with -Xlint:deprecation for details.
+[INFO] /C:/POS/src/main/java/com/pos/system/controllers/InventoryController.java: C:\POS\src\main\java\com\pos\system\controllers\InventoryController.java uses unchecked or unsafe operations.
+[INFO] /C:/POS/src/main/java/com/pos/system/controllers/InventoryController.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ store-manager ---
+[INFO] skip non existing resourceDirectory C:\POS\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ store-manager ---
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 38 source files with javac [debug target 17] to target\test-classes
+[WARNING] location of system modules is not set in conjunction with -source 17
+  not setting the location of system modules may lead to class files that cannot run on JDK 17
+    --release 17 is recommended instead of -source 17 -target 17 because it sets the location of system modules automatically
+[INFO] /C:/POS/src/test/java/com/pos/system/controllers/FinanceControllerTest.java: Some input files use unchecked or unsafe operations.
+[INFO] /C:/POS/src/test/java/com/pos/system/controllers/FinanceControllerTest.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ store-manager ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+WARNING: Unknown module: javafx.graphics specified to --add-exports
+[INFO] Running com.pos.system.controllers.CashDrawerControllerTest
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by com.sun.glass.utils.NativeLibLoader in an unnamed module (file:/C:/Users/User/.m2/repository/org/openjfx/javafx-graphics/21/javafx-graphics-21-win.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+Feb 22, 2026 9:12:59 AM com.sun.javafx.application.PlatformImpl startup
+WARNING: Unsupported JavaFX configuration: classes were loaded from 'unnamed module @6043cd28'
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction (file:/C:/Users/User/.m2/repository/net/bytebuddy/byte-buddy/1.14.12/byte-buddy-1.14.12.jar)
+WARNING: Please consider reporting this to the maintainers of class net.bytebuddy.dynamic.loading.ClassInjector$UsingUnsafe$Dispatcher$CreationAction
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.123 s -- in com.pos.system.controllers.CashDrawerControllerTest
+[INFO] Running com.pos.system.controllers.ShiftControllerTest
+09:13:02.921 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- Driver class org.sqlite.JDBC found in Thread context class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5bc2b487
+09:13:02.925 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- POS-HikariPool - configuration:
+09:13:02.928 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- allowPoolSuspension.............false
+09:13:02.928 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- autoCommit......................true
+09:13:02.928 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- catalog.........................none
+09:13:02.928 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- connectionInitSql...............none
+09:13:02.928 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- connectionTestQuery.............none
+09:13:02.928 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- connectionTimeout...............30000
+09:13:02.928 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- dataSource......................none
+09:13:02.928 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- dataSourceClassName.............none
+09:13:02.928 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- dataSourceJNDI..................none
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- dataSourceProperties............{password=<masked>, prepStmtCacheSqlLimit=2048, cachePrepStmts=true, prepStmtCacheSize=250}
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- driverClassName................."org.sqlite.JDBC"
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- exceptionOverrideClassName......none
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- healthCheckProperties...........{}
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- healthCheckRegistry.............none
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- idleTimeout.....................600000
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- initializationFailTimeout.......1
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- isolateInternalQueries..........false
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- jdbcUrl.........................jdbc:sqlite:store.db
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- keepaliveTime...................0
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- leakDetectionThreshold..........0
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- maxLifetime.....................1800000
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- maximumPoolSize.................10
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- metricRegistry..................none
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- metricsTrackerFactory...........none
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- minimumIdle.....................2
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- password........................<masked>
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- poolName........................"POS-HikariPool"
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- readOnly........................false
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- registerMbeans..................false
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- scheduledExecutor...............none
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- schema..........................none
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- threadFactory...................internal
+09:13:02.929 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- transactionIsolation............default
+09:13:02.930 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- username........................none
+09:13:02.930 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- validationTimeout...............5000
+09:13:02.933 [JavaFX Application Thread] INFO com.zaxxer.hikari.HikariDataSource -- POS-HikariPool - Starting...
+09:13:03.016 [JavaFX Application Thread] INFO com.zaxxer.hikari.pool.HikariPool -- POS-HikariPool - Added connection org.sqlite.jdbc4.JDBC4Connection@289f71c4
+09:13:03.017 [JavaFX Application Thread] INFO com.zaxxer.hikari.HikariDataSource -- POS-HikariPool - Start completed.
+09:13:03.017 [JavaFX Application Thread] INFO com.pos.system.database.DatabaseManager -- Database connection pool initialized.
+09:13:03.025 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): -- Migration for existing databases
+ALTER TABLE users
+ADD COLUMN force_password_change BOOLEAN DEFAULT 0 - [SQLITE_ERROR] SQL error or missing database (duplicate column name: force_password_change)
+09:13:03.026 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): -- Migration: Add image_path if missing (for existing databases)
+ALTER TABLE products
+ADD COLUMN image_path TEXT - [SQLITE_ERROR] SQL error or missing database (duplicate column name: image_path)
+09:13:03.026 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): ALTER TABLE products
+ADD COLUMN image_blob BLOB - [SQLITE_ERROR] SQL error or missing database (duplicate column name: image_blob)
+09:13:03.026 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): -- Migrations for existing databases
+ALTER TABLE sales
+ADD COLUMN shift_id INTEGER - [SQLITE_ERROR] SQL error or missing database (duplicate column name: shift_id)
+09:13:03.026 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): ALTER TABLE sales
+ADD COLUMN subtotal REAL DEFAULT 0.0 - [SQLITE_ERROR] SQL error or missing database (duplicate column name: subtotal)
+09:13:03.026 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): ALTER TABLE sales
+ADD COLUMN tax_amount REAL DEFAULT 0.0 - [SQLITE_ERROR] SQL error or missing database (duplicate column name: tax_amount)
+09:13:03.026 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): ALTER TABLE sales
+ADD COLUMN discount_amount REAL DEFAULT 0.0 - [SQLITE_ERROR] SQL error or missing database (duplicate column name: discount_amount)
+09:13:03.026 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): -- Migrations for existing databases
+ALTER TABLE sale_items
+ADD COLUMN discount_amount REAL DEFAULT 0.0 - [SQLITE_ERROR] SQL error or missing database (duplicate column name: discount_amount)
+09:13:03.026 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): ALTER TABLE sale_items
+ADD COLUMN tax_amount REAL DEFAULT 0.0 - [SQLITE_ERROR] SQL error or missing database (duplicate column name: tax_amount)
+09:13:03.035 [JavaFX Application Thread] INFO com.pos.system.database.DatabaseManager -- Database tables/schema initialized.
+09:13:03.118 [POS-HikariPool housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool -- POS-HikariPool - Before cleanup stats (total=1, active=0, idle=1, waiting=0)
+09:13:03.119 [POS-HikariPool housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool -- POS-HikariPool - After cleanup  stats (total=1, active=0, idle=1, waiting=0)
+09:13:03.121 [POS-HikariPool connection adder] DEBUG com.zaxxer.hikari.pool.HikariPool -- POS-HikariPool - Added connection org.sqlite.jdbc4.JDBC4Connection@563478f3
+09:13:03.152 [POS-HikariPool connection adder] DEBUG com.zaxxer.hikari.pool.HikariPool -- POS-HikariPool - After adding stats (total=2, active=0, idle=2, waiting=0)
+[ERROR] Tests run: 2, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 3.074 s <<< FAILURE! -- in com.pos.system.controllers.ShiftControllerTest
+[ERROR] com.pos.system.controllers.ShiftControllerTest.testOpenShift(FxRobot) -- Time elapsed: 1.742 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <1> but was: <0>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:145)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:531)
+	at com.pos.system.controllers.ShiftControllerTest.testOpenShift(ShiftControllerTest.java:129)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+[ERROR] com.pos.system.controllers.ShiftControllerTest.testCloseShift(FxRobot) -- Time elapsed: 1.325 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <1> but was: <0>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:145)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:531)
+	at com.pos.system.controllers.ShiftControllerTest.testCloseShift(ShiftControllerTest.java:156)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   ShiftControllerTest.testCloseShift:156 expected: <1> but was: <0>
+[ERROR]   ShiftControllerTest.testOpenShift:129 expected: <1> but was: <0>
+[INFO] 
+[ERROR] Tests run: 3, Failures: 2, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  9.973 s
+[INFO] Finished at: 2026-02-22T09:13:05+06:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.1.2:test (default-test) on project store-manager: There are test failures.
+[ERROR] 
+[ERROR] Please refer to C:\POS\target\surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

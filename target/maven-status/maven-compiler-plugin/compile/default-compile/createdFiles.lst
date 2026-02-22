@@ -82,6 +82,7 @@ com\pos\system\utils\NotificationUtils.class
 com\pos\system\controllers\UsersController$5.class
 com\pos\system\models\TransactionType.class
 com\pos\system\controllers\CashDrawerController.class
+com\pos\system\services\CategoryService.class
 com\pos\system\services\StoreEvents$LowStockEvent.class
 com\pos\system\services\CheckoutService.class
 com\pos\system\viewmodels\ProductCatalogViewModel.class

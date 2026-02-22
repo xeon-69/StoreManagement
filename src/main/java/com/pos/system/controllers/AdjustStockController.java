@@ -24,6 +24,11 @@ public class AdjustStockController {
 
     private Product product;
     private Runnable onSaveCallback;
+    private StockAdjustmentService adjustmentService;
+
+    public void setStockAdjustmentService(StockAdjustmentService adjustmentService) {
+        this.adjustmentService = adjustmentService;
+    }
 
     public void setProductContext(Product product) {
         this.product = product;
@@ -49,7 +54,8 @@ public class AdjustStockController {
             if (reason.isEmpty())
                 reason = "Manual Adjustment";
 
-            StockAdjustmentService service = new StockAdjustmentService();
+            StockAdjustmentService service = this.adjustmentService != null ? this.adjustmentService
+                    : new StockAdjustmentService();
             service.adjustStock(product.getId(), qtyChange, reason);
 
             NotificationUtils.showSuccess("Stock Adjusted", "Ledger updated successfully.");

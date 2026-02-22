@@ -14,6 +14,12 @@ import java.util.List;
 
 public class InventoryController {
 
+    private ProductDAO productDAO;
+
+    public void setProductDAO(ProductDAO productDAO) {
+        this.productDAO = productDAO;
+    }
+
     @FXML
     private TableView<Product> productTable;
     @FXML
@@ -76,6 +82,14 @@ public class InventoryController {
 
         // Auto-resize columns
         productTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+
+        if (productDAO == null) {
+            try {
+                productDAO = new ProductDAO();
+            } catch (java.sql.SQLException e) {
+                e.printStackTrace();
+            }
+        }
 
         loadProducts();
     }
@@ -176,8 +190,11 @@ public class InventoryController {
         javafx.concurrent.Task<List<Product>> loadTask = new javafx.concurrent.Task<>() {
             @Override
             protected List<Product> call() throws Exception {
-                try (ProductDAO productDAO = new ProductDAO()) {
+                try {
                     return productDAO.getAllProducts();
+                } catch (java.sql.SQLException e) {
+                    e.printStackTrace();
+                    return java.util.Collections.emptyList();
                 }
             }
         };
@@ -208,12 +225,15 @@ public class InventoryController {
         javafx.concurrent.Task<List<Product>> searchTask = new javafx.concurrent.Task<>() {
             @Override
             protected List<Product> call() throws Exception {
-                try (ProductDAO productDAO = new ProductDAO()) {
+                try {
                     List<Product> allProducts = productDAO.getAllProducts();
                     return allProducts.stream()
                             .filter(p -> p.getName().toLowerCase().contains(lowerCaseQuery) ||
                                     (p.getBarcode() != null && p.getBarcode().toLowerCase().contains(lowerCaseQuery)))
                             .toList();
+                } catch (java.sql.SQLException e) {
+                    e.printStackTrace();
+                    return java.util.Collections.emptyList();
                 }
             }
         };

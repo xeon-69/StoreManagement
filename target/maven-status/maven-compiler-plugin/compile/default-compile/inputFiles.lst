@@ -51,6 +51,7 @@ C:\POS\src\main\java\com\pos\system\dao\BatchDAO.java
 C:\POS\src\main\java\com\pos\system\models\Product.java
 C:\POS\src\main\java\com\pos\system\models\CashDrawerTransaction.java
 C:\POS\src\main\java\com\pos\system\controllers\TransactionDetailsController.java
+C:\POS\src\main\java\com\pos\system\services\CategoryService.java
 C:\POS\src\main\java\com\pos\system\models\User.java
 C:\POS\src\main\java\com\pos\system\dao\CategoryDAO.java
 C:\POS\src\main\java\com\pos\system\dao\InventoryTransactionDAO.java

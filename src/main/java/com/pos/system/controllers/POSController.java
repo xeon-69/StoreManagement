@@ -47,10 +47,17 @@ public class POSController {
     private final ObservableList<SaleItem> cartItems = FXCollections.observableArrayList();
     private ProductCatalogViewModel catalogViewModel; // Added ViewModel
 
+    // For Dependency Injection in Tests
+    public void setCatalogViewModel(ProductCatalogViewModel catalogViewModel) {
+        this.catalogViewModel = catalogViewModel;
+    }
+
     @FXML
     public void initialize() {
-        // Initialize ViewModel
-        catalogViewModel = new ProductCatalogViewModel();
+        // Initialize ViewModel if not injected
+        if (catalogViewModel == null) {
+            catalogViewModel = new ProductCatalogViewModel();
+        }
 
         // Bind Search
         searchField.textProperty().addListener((obs, oldVal, newVal) -> catalogViewModel.search(newVal));
@@ -137,6 +144,7 @@ public class POSController {
         qtyLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;"); // Could move to CSS
 
         Button plusBtn = new Button("+");
+        plusBtn.setId("add-btn-" + p.getId());
         plusBtn.getStyleClass().addAll("stepper-btn", "stepper-btn-plus");
 
         minusBtn.setOnAction(e -> updateCartQuantity(p, -1));

@@ -2,6 +2,7 @@ package com.pos.system.controllers;
 
 import com.pos.system.dao.CategoryDAO;
 import com.pos.system.models.Category;
+import com.pos.system.services.CategoryService;
 import com.pos.system.utils.NotificationUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
@@ -56,8 +57,9 @@ public class CategoryController {
     }
 
     private void loadCategories() {
-        try (CategoryDAO dao = new CategoryDAO()) {
-            categoryTable.setItems(FXCollections.observableArrayList(dao.getAllCategories()));
+        try {
+            CategoryService service = new CategoryService();
+            categoryTable.setItems(FXCollections.observableArrayList(service.getAllCategories()));
         } catch (SQLException e) {
             e.printStackTrace();
             NotificationUtils.showWarning("Error", "Failed to load categories.");
@@ -71,9 +73,10 @@ public class CategoryController {
         }
 
         String lowerCaseKeyword = keyword.toLowerCase();
-        try (CategoryDAO dao = new CategoryDAO()) {
+        try {
+            CategoryService service = new CategoryService();
             FilteredList<Category> filteredList = new FilteredList<>(
-                    FXCollections.observableArrayList(dao.getAllCategories()), category -> {
+                    FXCollections.observableArrayList(service.getAllCategories()), category -> {
                         if (category.getName().toLowerCase().contains(lowerCaseKeyword))
                             return true;
                         if (category.getDescription() != null
@@ -162,8 +165,9 @@ public class CategoryController {
                 "Delete category: " + category.getName() + "? This action cannot be undone.");
 
         if (confirm) {
-            try (CategoryDAO dao = new CategoryDAO()) {
-                dao.deleteCategory(category.getId());
+            try {
+                CategoryService service = new CategoryService();
+                service.deleteCategory(category.getId());
                 NotificationUtils.showInfo("Success", "Category deleted.");
                 loadCategories();
             } catch (SQLException e) {

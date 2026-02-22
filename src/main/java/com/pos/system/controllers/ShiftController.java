@@ -11,9 +11,30 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 public class ShiftController {
+
+    private ShiftDAO shiftDAO;
+    private com.pos.system.dao.SaleDAO saleDAO;
+
+    public void setShiftDAO(ShiftDAO shiftDAO) {
+        this.shiftDAO = shiftDAO;
+    }
+
+    public void setSaleDAO(com.pos.system.dao.SaleDAO saleDAO) {
+        this.saleDAO = saleDAO;
+    }
+
+    protected ShiftDAO createShiftDAO() throws SQLException {
+        return shiftDAO != null ? shiftDAO : new ShiftDAO();
+    }
+
+    protected com.pos.system.dao.SaleDAO createSaleDAO() throws SQLException {
+        return saleDAO != null ? saleDAO : new com.pos.system.dao.SaleDAO();
+    }
 
     @FXML
     private VBox openShiftContainer;
@@ -65,7 +86,7 @@ public class ShiftController {
             shift.setStatus("OPEN");
             shift.setStartTime(LocalDateTime.now());
 
-            try (ShiftDAO dao = new ShiftDAO()) {
+            try (ShiftDAO dao = createShiftDAO()) {
                 shift = dao.create(shift);
                 SessionManager.getInstance().setCurrentShift(shift);
                 com.pos.system.App.setRoot("dashboard");
@@ -96,14 +117,14 @@ public class ShiftController {
             // For now we set it to 0 as a placeholder, or we calculate it.
             // Let's just calculate expected cash simply: opening cash + total sales.
             double expectedCash = currentShift.getOpeningCash();
-            try (com.pos.system.dao.SaleDAO saleDAO = new com.pos.system.dao.SaleDAO()) {
-                double totalSales = saleDAO.getTotalSalesBetween(currentShift.getStartTime(),
+            try (com.pos.system.dao.SaleDAO saleDao = createSaleDAO()) {
+                double totalSales = saleDao.getTotalSalesBetween(currentShift.getStartTime(),
                         currentShift.getEndTime());
                 expectedCash += totalSales;
             }
             currentShift.setExpectedClosingCash(expectedCash);
 
-            try (ShiftDAO dao = new ShiftDAO()) {
+            try (ShiftDAO dao = createShiftDAO()) {
                 dao.update(currentShift);
                 SessionManager.getInstance().setCurrentShift(null);
                 SessionManager.getInstance().logout();

@@ -54,11 +54,21 @@ public class UsersController {
     private SecurityService securityService;
     private User selectedUserForEdit = null;
 
+    public void setUserDAO(UserDAO userDAO) {
+        this.userDAO = userDAO;
+    }
+
+    public void setSecurityService(SecurityService securityService) {
+        this.securityService = securityService;
+    }
+
     @FXML
     public void initialize() {
         try {
-            userDAO = new UserDAO();
-            securityService = new SecurityService();
+            if (userDAO == null)
+                userDAO = new UserDAO();
+            if (securityService == null)
+                securityService = new SecurityService();
 
             roleComboBox.setItems(FXCollections.observableArrayList("CASHIER", "MANAGER", "ADMIN"));
             roleComboBox.getSelectionModel().selectFirst();

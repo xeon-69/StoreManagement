@@ -42,8 +42,12 @@ public class FinanceController {
         loadExpenses();
     }
 
+    protected ExpenseDAO createExpenseDAO() throws SQLException {
+        return new ExpenseDAO();
+    }
+
     private void loadExpenses() {
-        try (ExpenseDAO expenseDAO = new ExpenseDAO()) {
+        try (ExpenseDAO expenseDAO = createExpenseDAO()) {
             expenseTable.setItems(FXCollections.observableArrayList(expenseDAO.getAllExpenses()));
         } catch (SQLException e) {
             e.printStackTrace();
@@ -60,7 +64,7 @@ public class FinanceController {
             if (category.isEmpty())
                 return;
 
-            try (ExpenseDAO expenseDAO = new ExpenseDAO()) {
+            try (ExpenseDAO expenseDAO = createExpenseDAO()) {
                 Expense expense = new Expense(0, category, amount, desc, LocalDateTime.now());
                 expenseDAO.addExpense(expense);
             }

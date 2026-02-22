@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     barcode TEXT UNIQUE,
     name TEXT NOT NULL,
-    category TEXT,
+    category_id INTEGER,
     cost_price REAL NOT NULL DEFAULT 0.0,
     selling_price REAL NOT NULL,
     stock INTEGER NOT NULL DEFAULT 0,

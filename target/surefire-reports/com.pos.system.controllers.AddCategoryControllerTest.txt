@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.pos.system.controllers.AddCategoryControllerTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.030 s -- in com.pos.system.controllers.AddCategoryControllerTest
