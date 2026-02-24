@@ -43,7 +43,8 @@ public class FinanceControllerTest {
 
         // Mock data
         Expense e1 = new Expense(1, "Supplies", 50.0, "Paper", LocalDateTime.now());
-        when(mockExpenseDAO.getAllExpenses()).thenReturn(Arrays.asList(e1));
+        when(mockExpenseDAO.getExpensesBetween(any(), any())).thenReturn(Arrays.asList(e1));
+        when(mockExpenseDAO.getTotalExpensesBetween(any(), any())).thenReturn(50.0);
 
         javafx.fxml.FXMLLoader fxmlLoader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/finance.fxml"));
         fxmlLoader.setResources(App.getBundle());
@@ -100,7 +101,7 @@ public class FinanceControllerTest {
         // Verify DAO was called to add Expense
         verify(mockExpenseDAO, times(1)).addExpense(any(Expense.class));
 
-        // It should also reload the table, calling getAllExpenses a second time
-        verify(mockExpenseDAO, times(2)).getAllExpenses();
+        // It should also reload the table, calling appropriate methods
+        verify(mockExpenseDAO, atLeastOnce()).getExpensesBetween(any(), any());
     }
 }

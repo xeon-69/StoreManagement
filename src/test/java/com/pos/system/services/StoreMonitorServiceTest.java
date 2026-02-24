@@ -24,16 +24,11 @@ import static org.mockito.Mockito.*;
 public class StoreMonitorServiceTest {
 
     private MockedConstruction<ProductDAO> mockedProductDAO;
-    private MockedConstruction<ShiftAnalytics> mockedShiftAnalytics;
     private MockedStatic<Platform> mockedPlatform;
     private MockedStatic<NotificationUtils> mockedNotificationUtils;
 
     @BeforeEach
     public void setUp() {
-        // Mock the ShiftAnalytics constructor
-        mockedShiftAnalytics = mockConstruction(ShiftAnalytics.class, (mock, context) -> {
-            when(mock.getCurrentShiftTotal()).thenReturn(500.0);
-        });
 
         // Mock ProductDAO
         mockedProductDAO = mockConstruction(ProductDAO.class, (mock, context) -> {
@@ -64,8 +59,6 @@ public class StoreMonitorServiceTest {
     public void tearDown() {
         if (mockedProductDAO != null)
             mockedProductDAO.close();
-        if (mockedShiftAnalytics != null)
-            mockedShiftAnalytics.close();
         if (mockedPlatform != null)
             mockedPlatform.close();
         if (mockedNotificationUtils != null)

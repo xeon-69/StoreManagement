@@ -25,7 +25,7 @@
     <HBox spacing="10">
         <ComboBox fx:id="paymentMethodCombo" promptText="%checkout.method"/>
         <TextField fx:id="paymentAmountField" promptText="%checkout.amount" prefWidth="120"/>
-        <Button text="%checkout.addBtn" onAction="#handleAddPayment" styleClass="btn-primary"/>
+        <Button fx:id="addPaymentButton" text="%checkout.addBtn" onAction="#handleAddPayment" styleClass="btn-primary"/>
     </HBox>
     <TableView fx:id="paymentsTable" prefHeight="150" VBox.vgrow="ALWAYS">
         <columns>

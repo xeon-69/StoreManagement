@@ -7,19 +7,18 @@ import com.pos.system.models.Sale;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.io.File;
 import java.util.List;
-
-import com.pos.system.services.ReportingService;
 import com.pos.system.utils.NotificationUtils;
 
 public class ReportsController {
@@ -321,13 +320,17 @@ public class ReportsController {
     @FXML
     private void handleGenerateZReport() {
         try {
-            ReportingService reportingService = new ReportingService();
-            File reportFile = reportingService.generateDailyZReport();
-            NotificationUtils.showSuccess("Z-Report Generated",
-                    "Report saved to: " + reportFile.getAbsolutePath());
-        } catch (Exception e) {
-            NotificationUtils.showError("Report Failed",
-                    "Failed to generate Z-Report: " + e.getMessage());
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/date_range_report_modal.fxml"));
+            loader.setResources(com.pos.system.App.getBundle()); // Added missing resource bundle
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle(com.pos.system.App.getBundle().getString("report.modal.title")); // Localize title
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (IOException e) {
+            NotificationUtils.showError("UI Error", "Could not open date range selector: " + e.getMessage());
             e.printStackTrace();
         }
     }

@@ -11,6 +11,8 @@ public class InventoryTransaction {
     private String referenceId;
     private LocalDateTime createdAt;
     private Integer createdBy;
+    private String productName;
+    private double amount;
 
     public InventoryTransaction() {
     }
@@ -25,6 +27,22 @@ public class InventoryTransaction {
         this.referenceId = referenceId;
         this.createdAt = createdAt;
         this.createdBy = createdBy;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
     }
 
     public int getId() {

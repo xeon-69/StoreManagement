@@ -37,50 +37,19 @@ CREATE TABLE IF NOT EXISTS settings (
     setting_key TEXT PRIMARY KEY,
     setting_value TEXT
 );
--- Shifts Table (New for Shift Management)
-CREATE TABLE IF NOT EXISTS shifts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    start_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-    end_time DATETIME,
-    opening_cash REAL NOT NULL DEFAULT 0.0,
-    expected_closing_cash REAL,
-    actual_closing_cash REAL,
-    status TEXT NOT NULL DEFAULT 'OPEN',
-    -- 'OPEN', 'CLOSED'
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
--- Cash Drawer Transactions Table (New for manual ins/outs)
-CREATE TABLE IF NOT EXISTS cash_drawer_transactions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    shift_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
-    amount REAL NOT NULL,
-    -- Positive for IN, Negative for OUT
-    transaction_type TEXT NOT NULL,
-    -- 'OPENING_FLOAT', 'CASH_SALE', 'CASH_REFUND', 'MANUAL_IN', 'MANUAL_OUT', 'CLOSING_WITHDRAWAL'
-    description TEXT,
-    transaction_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (shift_id) REFERENCES shifts(id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
 -- Sales Header Table
 CREATE TABLE IF NOT EXISTS sales (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
-    shift_id INTEGER,
     subtotal REAL DEFAULT 0.0,
     tax_amount REAL DEFAULT 0.0,
     discount_amount REAL DEFAULT 0.0,
     total_amount REAL NOT NULL,
     total_profit REAL,
     sale_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (shift_id) REFERENCES shifts(id)
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 -- Migrations for existing databases
-ALTER TABLE sales
-ADD COLUMN shift_id INTEGER;
 ALTER TABLE sales
 ADD COLUMN subtotal REAL DEFAULT 0.0;
 ALTER TABLE sales

@@ -41,7 +41,7 @@ public class ReportsControllerTest {
 
         // Mock DAO
         mockedSaleDAO = mockConstruction(SaleDAO.class, (mock, context) -> {
-            Sale s1 = new Sale(1, 1, 1, 100.0, 0.0, 0.0, 100.0, 20.0, LocalDateTime.now());
+            Sale s1 = new Sale(1, 1, 100.0, 10.0, LocalDateTime.now());
             when(mock.getTotalSalesBetween(any(), any())).thenReturn(100.0);
             when(mock.getTotalProfitBetween(any(), any())).thenReturn(20.0);
             when(mock.getSalesBetween(any(), any())).thenReturn(Arrays.asList(s1));

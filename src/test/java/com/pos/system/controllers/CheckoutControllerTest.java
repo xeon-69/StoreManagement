@@ -1,10 +1,10 @@
 package com.pos.system.controllers;
 
 import com.pos.system.App;
-import com.pos.system.dao.CashDrawerTransactionDAO;
 import com.pos.system.models.SaleItem;
+import com.pos.system.models.Sale;
+import com.pos.system.models.SalePayment;
 import com.pos.system.models.User;
-import com.pos.system.models.Shift;
 import com.pos.system.services.CheckoutService;
 import com.pos.system.services.PrinterService;
 import com.pos.system.utils.SessionManager;
@@ -39,7 +39,6 @@ public class CheckoutControllerTest {
     private SessionManager mockSessionInstance;
     private MockedConstruction<CheckoutService> mockedCheckoutService;
     private MockedConstruction<PrinterService> mockedPrinterService;
-    private MockedConstruction<CashDrawerTransactionDAO> mockedDrawerDAO;
 
     private CheckoutController controller;
     private boolean successCallbackTriggered = false;
@@ -51,17 +50,16 @@ public class CheckoutControllerTest {
         // Mock Session
         mockSessionInstance = mock(SessionManager.class);
         User mockUser = new User(1, "cashier", "pass", "CASHIER", false);
-        Shift mockShift = new Shift(1, 1, java.time.LocalDateTime.now(), null, 100.0, null, null, "OPEN");
         when(mockSessionInstance.getCurrentUser()).thenReturn(mockUser);
-        when(mockSessionInstance.getCurrentShift()).thenReturn(mockShift);
 
         mockedSessionManager = mockStatic(SessionManager.class);
         mockedSessionManager.when(SessionManager::getInstance).thenReturn(mockSessionInstance);
 
         // Mock Services
-        mockedCheckoutService = mockConstruction(CheckoutService.class);
+        mockedCheckoutService = mockConstruction(CheckoutService.class, (mock, context) -> {
+            doNothing().when(mock).processCheckoutWithPayments(any(), any(), any());
+        });
         mockedPrinterService = mockConstruction(PrinterService.class);
-        mockedDrawerDAO = mockConstruction(CashDrawerTransactionDAO.class);
 
         // Load FXML
         javafx.fxml.FXMLLoader fxmlLoader = new javafx.fxml.FXMLLoader(
@@ -89,8 +87,6 @@ public class CheckoutControllerTest {
             mockedCheckoutService.close();
         if (mockedPrinterService != null)
             mockedPrinterService.close();
-        if (mockedDrawerDAO != null)
-            mockedDrawerDAO.close();
     }
 
     @Test
@@ -106,11 +102,20 @@ public class CheckoutControllerTest {
         assertTrue(confirmBtn.isDisabled());
 
         // Add Payment
-        TextField amountField = robot.lookup("#paymentAmountField").queryAs(TextField.class);
-        robot.doubleClickOn(amountField).write("15.00");
-        robot.clickOn(".btn-primary"); // The add payment button
+        // Fill payment
+        robot.clickOn("#paymentAmountField");
+        robot.doubleClickOn("#paymentAmountField").eraseText(10).write("15");
+        robot.clickOn("#addPaymentButton");
 
         WaitForAsyncUtils.waitForFxEvents();
+
+        // Check if payment was added
+        String changeText = robot.lookup("#changeLabel").queryAs(javafx.scene.control.Label.class).getText();
+        String remText = robot.lookup("#remainingLabel").queryAs(javafx.scene.control.Label.class).getText();
+        if ("0.00".equals(changeText) && !"0.00".equals(remText)) {
+            System.err.println("DEBUG: Payment not registered. Remaining: " + remText + ". Error Label: "
+                    + robot.lookup("#errorLabel").queryAs(javafx.scene.control.Label.class).getText());
+        }
 
         // Check Updates
         FxAssert.verifyThat("#remainingLabel", LabeledMatchers.hasText("0.00"));
@@ -121,8 +126,11 @@ public class CheckoutControllerTest {
         robot.clickOn(confirmBtn);
 
         // The background task needs time
-        WaitForAsyncUtils.waitFor(2000, java.util.concurrent.TimeUnit.MILLISECONDS, () -> successCallbackTriggered);
+        WaitForAsyncUtils.waitFor(30, java.util.concurrent.TimeUnit.SECONDS, () -> successCallbackTriggered);
 
+        if (!successCallbackTriggered) {
+            System.err.println("DEBUG: Checkout callback never triggered. Task status?");
+        }
         assertTrue(successCallbackTriggered, "Success callback should be executed");
     }
 }

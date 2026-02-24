@@ -58,6 +58,21 @@ public class AuditLogDAO extends BaseDAO {
         return list;
     }
 
+    public List<AuditLog> getLogsByDateRange(LocalDateTime start, LocalDateTime end) throws SQLException {
+        List<AuditLog> list = new ArrayList<>();
+        String sql = "SELECT * FROM audit_logs WHERE created_at BETWEEN ? AND ? ORDER BY created_at ASC";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, start.format(FORMATTER));
+            stmt.setString(2, end.format(FORMATTER));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToLog(rs));
+                }
+            }
+        }
+        return list;
+    }
+
     private AuditLog mapResultSetToLog(ResultSet rs) throws SQLException {
         AuditLog log = new AuditLog();
         log.setId(rs.getInt("id"));

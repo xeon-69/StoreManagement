@@ -40,9 +40,6 @@ public class DashboardController {
     private Button navSettingsBtn;
 
     @FXML
-    private Label shiftTotalLabel;
-
-    @FXML
     public void initialize() {
         if (SessionManager.getInstance().isLoggedIn()) {
             currentUserLabel.setText(
@@ -79,25 +76,14 @@ public class DashboardController {
             } else if ("中文".equals(selected)) {
                 com.pos.system.App.setLocale("zh");
             }
+            // The provided snippet had a syntax error and an unrelated redirect.
+            // Keeping the original logic for language change without redirecting.
         });
 
         if (currentActiveView != null) {
             loadView(currentActiveView);
         }
 
-        // Shift Analytics - show current shift total if shift is active
-        if (SessionManager.getInstance().getCurrentShift() != null) {
-            try {
-                com.pos.system.services.ShiftAnalytics analytics = new com.pos.system.services.ShiftAnalytics();
-                double shiftTotal = analytics.getCurrentShiftTotal();
-                shiftTotalLabel.setText(getString("dashboard.shiftTotal", "Current Shift Sales: ")
-                        + String.format("%,.2f MMK", shiftTotal));
-                shiftTotalLabel.setVisible(true);
-                shiftTotalLabel.setManaged(true);
-            } catch (Exception e) {
-                // Silently fail if analytics can't be loaded
-            }
-        }
     }
 
     private String getString(String key, String defaultVal) {
@@ -134,11 +120,6 @@ public class DashboardController {
     }
 
     @FXML
-    private void showCashDrawer() {
-        loadView("cash_drawer");
-    }
-
-    @FXML
     private void showAuditLogs() {
         loadView("audit_logs");
     }
@@ -166,7 +147,7 @@ public class DashboardController {
 
         // Pages with live data should always reload fresh
         boolean shouldCache = !fxml.equals("reports") && !fxml.equals("inventory")
-                && !fxml.equals("cash_drawer") && !fxml.equals("pos") && !fxml.equals("finance");
+                && !fxml.equals("pos") && !fxml.equals("finance");
 
         if (shouldCache) {
             Parent cached = viewCache.get(fxml);

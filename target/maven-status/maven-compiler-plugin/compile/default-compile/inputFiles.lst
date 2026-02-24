@@ -7,7 +7,6 @@ C:\POS\src\main\java\com\pos\system\dao\ProductDAO.java
 C:\POS\src\main\java\com\pos\system\controllers\CategoryController.java
 C:\POS\src\main\java\com\pos\system\services\ReportingService.java
 C:\POS\src\main\java\com\pos\system\TestLoad.java
-C:\POS\src\main\java\com\pos\system\controllers\ShiftController.java
 C:\POS\src\main\java\com\pos\system\models\Category.java
 C:\POS\src\main\java\com\pos\system\dao\ExpenseDAO.java
 C:\POS\src\main\java\com\pos\system\services\PrinterService.java
@@ -20,9 +19,7 @@ C:\POS\src\main\java\com\pos\system\models\Sale.java
 C:\POS\src\main\java\com\pos\system\controllers\ReportsController.java
 C:\POS\src\main\java\com\pos\system\services\StockAdjustmentService.java
 C:\POS\src\main\java\com\pos\system\controllers\FinanceController.java
-C:\POS\src\main\java\com\pos\system\dao\ShiftDAO.java
 C:\POS\src\main\java\com\pos\system\models\InventoryTransaction.java
-C:\POS\src\main\java\com\pos\system\dao\CashDrawerTransactionDAO.java
 C:\POS\src\main\java\com\pos\system\services\CheckoutService.java
 C:\POS\src\main\java\com\pos\system\models\SalePayment.java
 C:\POS\src\main\java\com\pos\system\dao\UserDAO.java
@@ -33,8 +30,8 @@ C:\POS\src\main\java\com\pos\system\dao\SaleDAO.java
 C:\POS\src\main\java\com\pos\system\services\SecurityService.java
 C:\POS\src\main\java\com\pos\system\controllers\CheckoutController.java
 C:\POS\src\main\java\com\pos\system\controllers\SettingsController.java
+C:\POS\src\main\java\com\pos\system\controllers\DateRangeReportController.java
 C:\POS\src\main\java\com\pos\system\controllers\AddProductController.java
-C:\POS\src\main\java\com\pos\system\services\ShiftAnalytics.java
 C:\POS\src\main\java\com\pos\system\dao\SalePaymentDAO.java
 C:\POS\src\main\java\com\pos\system\controllers\AddCategoryController.java
 C:\POS\src\main\java\com\pos\system\dao\AuditLogDAO.java
@@ -44,18 +41,15 @@ C:\POS\src\main\java\com\pos\system\services\StoreMonitorService.java
 C:\POS\src\main\java\com\pos\system\utils\SessionManager.java
 C:\POS\src\main\java\com\pos\system\models\SaleItem.java
 C:\POS\src\main\java\com\pos\system\controllers\AuditLogController.java
-C:\POS\src\main\java\com\pos\system\controllers\CashDrawerController.java
 C:\POS\src\main\java\com\pos\system\Launcher.java
 C:\POS\src\main\java\com\pos\system\models\AuditLog.java
 C:\POS\src\main\java\com\pos\system\dao\BatchDAO.java
 C:\POS\src\main\java\com\pos\system\models\Product.java
-C:\POS\src\main\java\com\pos\system\models\CashDrawerTransaction.java
 C:\POS\src\main\java\com\pos\system\controllers\TransactionDetailsController.java
 C:\POS\src\main\java\com\pos\system\services\CategoryService.java
 C:\POS\src\main\java\com\pos\system\models\User.java
 C:\POS\src\main\java\com\pos\system\dao\CategoryDAO.java
 C:\POS\src\main\java\com\pos\system\dao\InventoryTransactionDAO.java
-C:\POS\src\main\java\com\pos\system\models\Shift.java
 C:\POS\src\main\java\com\pos\system\utils\NotificationUtils.java
 C:\POS\src\main\java\com\pos\system\controllers\InventoryController.java
 C:\POS\src\main\java\com\pos\system\models\TransactionType.java

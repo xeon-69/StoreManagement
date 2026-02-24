@@ -10,6 +10,7 @@ public class SaleItem {
     private double costAtSale;
     private double discountAmount;
     private double taxAmount;
+    private String categoryName;
 
     public SaleItem(int id, int saleId, int productId, String productName, int quantity, double priceAtSale,
             double costAtSale) {
@@ -78,6 +79,14 @@ public class SaleItem {
 
     public void setTaxAmount(double taxAmount) {
         this.taxAmount = taxAmount;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
     public double getTotal() {

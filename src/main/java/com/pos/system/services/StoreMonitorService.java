@@ -18,7 +18,6 @@ public class StoreMonitorService extends ScheduledService<Void> {
     private static final Logger logger = LoggerFactory.getLogger(StoreMonitorService.class);
     private static final int LOW_STOCK_THRESHOLD = 10;
 
-    private final ShiftAnalytics analytics = new ShiftAnalytics();
     // Track products already notified so we only alert once per product
     private final Set<Integer> notifiedProductIds = new HashSet<>();
 
@@ -35,7 +34,6 @@ public class StoreMonitorService extends ScheduledService<Void> {
                 logger.debug("Store Monitor: Starting background check...");
 
                 checkLowStock();
-                calculateShiftAnalytics();
 
                 return null;
             }
@@ -65,8 +63,4 @@ public class StoreMonitorService extends ScheduledService<Void> {
         }
     }
 
-    private void calculateShiftAnalytics() {
-        double total = analytics.getCurrentShiftTotal();
-        logger.info("Store Monitor: Current Shift Total: ${}", total);
-    }
 }

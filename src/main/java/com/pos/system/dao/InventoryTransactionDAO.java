@@ -64,41 +64,71 @@ public class InventoryTransactionDAO extends BaseDAO {
         return 0; // Default if no transactions exist
     }
 
+    public List<InventoryTransaction> getTransactionsBetween(LocalDateTime start, LocalDateTime end)
+            throws SQLException {
+        List<InventoryTransaction> transactions = new ArrayList<>();
+        String sql = "SELECT it.*, p.name as product_name FROM inventory_transactions it " +
+                "JOIN products p ON it.product_id = p.id " +
+                "WHERE it.created_at BETWEEN ? AND ? ORDER BY it.created_at ASC";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, start.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            stmt.setString(2, end.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    transactions.add(mapResultSetToTransaction(rs));
+                }
+            }
+        }
+        return transactions;
+    }
+
     public List<InventoryTransaction> getTransactionHistory(int productId) throws SQLException {
         List<InventoryTransaction> transactions = new ArrayList<>();
-        String sql = "SELECT * FROM inventory_transactions WHERE product_id = ? ORDER BY created_at DESC";
+        String sql = "SELECT it.*, p.name as product_name FROM inventory_transactions it " +
+                "JOIN products p ON it.product_id = p.id " +
+                "WHERE it.product_id = ? ORDER BY it.created_at DESC";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, productId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    InventoryTransaction tx = new InventoryTransaction();
-                    tx.setId(rs.getInt("id"));
-                    tx.setProductId(rs.getInt("product_id"));
-
-                    int batchId = rs.getInt("batch_id");
-                    if (!rs.wasNull()) {
-                        tx.setBatchId(batchId);
-                    }
-
-                    tx.setQuantityChange(rs.getInt("quantity_change"));
-                    tx.setTransactionType(TransactionType.valueOf(rs.getString("transaction_type")));
-                    tx.setReferenceId(rs.getString("reference_id"));
-
-                    int createdBy = rs.getInt("created_by");
-                    if (!rs.wasNull()) {
-                        tx.setCreatedBy(createdBy);
-                    }
-
-                    String createdStr = rs.getString("created_at");
-                    if (createdStr != null && !createdStr.isEmpty()) {
-                        tx.setCreatedAt(LocalDateTime.parse(createdStr.replace(" ", "T")));
-                    }
-
-                    transactions.add(tx);
+                    transactions.add(mapResultSetToTransaction(rs));
                 }
             }
         }
         return transactions;
+    }
+
+    private InventoryTransaction mapResultSetToTransaction(ResultSet rs) throws SQLException {
+        InventoryTransaction tx = new InventoryTransaction();
+        tx.setId(rs.getInt("id"));
+        tx.setProductId(rs.getInt("product_id"));
+
+        try {
+            tx.setProductName(rs.getString("product_name"));
+        } catch (SQLException e) {
+            // Field might not exist in all queries
+        }
+
+        int batchId = rs.getInt("batch_id");
+        if (!rs.wasNull()) {
+            tx.setBatchId(batchId);
+        }
+
+        tx.setQuantityChange(rs.getInt("quantity_change"));
+        tx.setTransactionType(TransactionType.valueOf(rs.getString("transaction_type")));
+        tx.setReferenceId(rs.getString("reference_id"));
+
+        int createdBy = rs.getInt("created_by");
+        if (!rs.wasNull()) {
+            tx.setCreatedBy(createdBy);
+        }
+
+        String createdStr = rs.getString("created_at");
+        if (createdStr != null && !createdStr.isEmpty()) {
+            tx.setCreatedAt(LocalDateTime.parse(createdStr.replace(" ", "T")));
+        }
+        return tx;
     }
 }

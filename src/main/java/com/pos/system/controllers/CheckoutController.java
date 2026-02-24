@@ -137,7 +137,8 @@ public class CheckoutController {
     }
 
     /**
-     * Parses a currency-like string that may include grouping separators (e.g. "14,000.00").
+     * Parses a currency-like string that may include grouping separators (e.g.
+     * "14,000.00").
      * Falls back to stripping commas/spaces before Double parsing.
      */
     private double parseAmount(String raw) throws NumberFormatException {
@@ -191,9 +192,8 @@ public class CheckoutController {
 
         // Pass data back or process checkout right here
         com.pos.system.models.User currentUser = com.pos.system.utils.SessionManager.getInstance().getCurrentUser();
-        com.pos.system.models.Shift currentShift = com.pos.system.utils.SessionManager.getInstance().getCurrentShift();
 
-        Sale sale = new Sale(0, currentUser.getId(), currentShift != null ? currentShift.getId() : null, subtotal,
+        Sale sale = new Sale(0, currentUser.getId(), subtotal,
                 taxAmt, discountAmt, calculatedTotal, totalProfit, java.time.LocalDateTime.now());
 
         javafx.concurrent.Task<Void> checkoutTask = new javafx.concurrent.Task<>() {
@@ -206,25 +206,6 @@ public class CheckoutController {
         };
 
         checkoutTask.setOnSucceeded(e -> {
-            // Apply cash drawer transaction if cash is involved and there's a shift
-            try {
-                if (currentShift != null) {
-                    double cashPaid = payments.stream().filter(pm -> "CASH".equals(pm.getPaymentMethod()))
-                            .mapToDouble(SalePayment::getAmount).sum();
-                    double change = Double.parseDouble(changeLabel.getText());
-                    double netCash = cashPaid - change; // Add change if needed
-                    if (netCash > 0) {
-                        try (com.pos.system.dao.CashDrawerTransactionDAO trxDAO = new com.pos.system.dao.CashDrawerTransactionDAO()) {
-                            trxDAO.create(new com.pos.system.models.CashDrawerTransaction(0, currentShift.getId(),
-                                    currentUser.getId(), netCash, "CASH_SALE", "Sale ID " + sale.getId(),
-                                    java.time.LocalDateTime.now()));
-                        }
-                    }
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace(); // Non-fatal for the sale
-            }
-
             // Print receipt asynchronously — don't block the FX thread
             double amountTendered = payments.stream().mapToDouble(SalePayment::getAmount).sum();
             double changeDue = parseAmount(changeLabel.getText());

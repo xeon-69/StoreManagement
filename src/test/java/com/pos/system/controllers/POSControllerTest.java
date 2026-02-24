@@ -98,9 +98,12 @@ public class POSControllerTest {
     }
 
     @Test
-    void testSearchDelegatesToViewModel(FxRobot robot) {
+    void testSearchFunctionality(FxRobot robot) {
         // Act: Type in search field
         robot.clickOn("#searchField").write("Ap");
+
+        // Wait for debounce timer (300ms + margin)
+        WaitForAsyncUtils.sleep(500, java.util.concurrent.TimeUnit.MILLISECONDS);
 
         // Assert: The ViewModel's search method was called
         verify(mockViewModel, atLeastOnce()).search(contains("Ap"));

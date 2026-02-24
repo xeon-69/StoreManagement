@@ -41,7 +41,8 @@ public class TransactionDetailsControllerTest {
     public void start(Stage stage) throws Exception {
         App.setLocale("en");
 
-        dummySale = new Sale(99, 1, 1, 100.0, 10.0, 5.0, 105.0, 25.0, LocalDateTime.now());
+        dummySale = new Sale(99, 1, 100.0, 10.0, LocalDateTime.now());
+        dummySale.setTotalAmount(105.0);
 
         // Mock DAOs
         mockedSaleDAO = mockConstruction(SaleDAO.class, (mock, context) -> {

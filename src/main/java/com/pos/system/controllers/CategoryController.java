@@ -134,12 +134,7 @@ public class CategoryController {
     private void openCategoryForm(Category category) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/add_category.fxml"));
-
-            // Standardize Resource bundles
-            java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("bundle.messages");
-            // Optionally support switching here, omitted for brevity as UI language toggle
-            // usually reloads main scene
-            loader.setResources(bundle);
+            loader.setResources(com.pos.system.App.getBundle());
 
             Parent root = loader.load();
 

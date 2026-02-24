@@ -29,7 +29,7 @@ public class SalePaymentDAOTest extends BaseDAOTest {
         userDAO.createUser(new User(0, "payuser", "pass", "CASHIER", false));
         int testUserId = userDAO.getUserByUsername("payuser").getId();
 
-        Sale sale = new Sale(0, testUserId, null, 100.0, 10.0, 0.0, 110.0, 30.0, LocalDateTime.now());
+        Sale sale = new Sale(1, 1, 100.0, 0.0, LocalDateTime.now());
         testSaleId = saleDAO.insertSale(sale);
     }
 

@@ -64,12 +64,6 @@
                <tooltip><Tooltip text="%nav.reports"/></tooltip>
             </Button>
             
-            <Button mnemonicParsing="false" onAction="#showCashDrawer" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.drawer" alignment="BASELINE_LEFT">
-               <font><Font size="16.0" /></font>
-               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
-               <graphic><FontIcon iconLiteral="fas-cash-register" iconSize="18" iconColor="white"/></graphic>
-               <tooltip><Tooltip text="%nav.drawer"/></tooltip>
-            </Button>
 
             <Button fx:id="navAuditBtn" mnemonicParsing="false" onAction="#showAuditLogs" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.audit" alignment="BASELINE_LEFT">
                <font><Font size="16.0" /></font>
@@ -119,12 +113,6 @@
                <font>
                   <Font size="32.0" />
                </font>
-            </Label>
-            <Label fx:id="shiftTotalLabel" textFill="#2ecc71" wrapText="true" textAlignment="CENTER" visible="false" managed="false">
-               <font>
-                  <Font name="System Bold" size="20.0" />
-               </font>
-               <VBox.margin><Insets top="20.0" /></VBox.margin>
             </Label>
          </children>
       </VBox>

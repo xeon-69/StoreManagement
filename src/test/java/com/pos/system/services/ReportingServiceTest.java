@@ -9,8 +9,9 @@ public class ReportingServiceTest {
     public void testGenerateDailyZReport() {
         ReportingService service = new ReportingService();
 
-        // Currently it's a placeholder method without side effects (except logging).
-        // Asserting that it executes without throwing exceptions.
-        assertDoesNotThrow(() -> service.generateDailyZReport());
+        // Asserting that both CSV and Excel generation execute without throwing
+        // exceptions.
+        assertDoesNotThrow(() -> service.generateDailyZReportCSV());
+        assertDoesNotThrow(() -> service.generateDailyZReportExcel());
     }
 }

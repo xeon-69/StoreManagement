@@ -22,7 +22,7 @@ public class SaleDAO extends BaseDAO {
         PreparedStatement itemStmt = null;
         PreparedStatement updateStockStmt = null;
 
-        String insertSale = "INSERT INTO sales (user_id, shift_id, subtotal, tax_amount, discount_amount, total_amount, total_profit, sale_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertSale = "INSERT INTO sales (user_id, subtotal, tax_amount, discount_amount, total_amount, total_profit, sale_date) VALUES (?, ?, ?, ?, ?, ?, ?)";
         String insertItem = "INSERT INTO sale_items (sale_id, product_id, quantity, price_at_sale, cost_at_sale, discount_amount, tax_amount) VALUES (?, ?, ?, ?, ?, ?, ?)";
         String updateStock = "UPDATE products SET stock = stock - ? WHERE id = ?";
 
@@ -32,17 +32,12 @@ public class SaleDAO extends BaseDAO {
             // 1. Insert Sale Header
             saleStmt = connection.prepareStatement(insertSale, Statement.RETURN_GENERATED_KEYS);
             saleStmt.setInt(1, sale.getUserId());
-            if (sale.getShiftId() != null) {
-                saleStmt.setInt(2, sale.getShiftId());
-            } else {
-                saleStmt.setNull(2, Types.INTEGER);
-            }
-            saleStmt.setDouble(3, sale.getSubtotal());
-            saleStmt.setDouble(4, sale.getTaxAmount());
-            saleStmt.setDouble(5, sale.getDiscountAmount());
-            saleStmt.setDouble(6, sale.getTotalAmount());
-            saleStmt.setDouble(7, sale.getTotalProfit());
-            saleStmt.setString(8,
+            saleStmt.setDouble(2, sale.getSubtotal());
+            saleStmt.setDouble(3, sale.getTaxAmount());
+            saleStmt.setDouble(4, sale.getDiscountAmount());
+            saleStmt.setDouble(5, sale.getTotalAmount());
+            saleStmt.setDouble(6, sale.getTotalProfit());
+            saleStmt.setString(7,
                     sale.getSaleDate() != null ? sale.getSaleDate().toString() : LocalDateTime.now().toString());
             saleStmt.executeUpdate();
 
@@ -105,20 +100,15 @@ public class SaleDAO extends BaseDAO {
     }
 
     public int insertSale(Sale sale) throws SQLException {
-        String sql = "INSERT INTO sales (user_id, shift_id, subtotal, tax_amount, discount_amount, total_amount, total_profit, sale_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO sales (user_id, subtotal, tax_amount, discount_amount, total_amount, total_profit, sale_date) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, sale.getUserId());
-            if (sale.getShiftId() != null) {
-                stmt.setInt(2, sale.getShiftId());
-            } else {
-                stmt.setNull(2, Types.INTEGER);
-            }
-            stmt.setDouble(3, sale.getSubtotal());
-            stmt.setDouble(4, sale.getTaxAmount());
-            stmt.setDouble(5, sale.getDiscountAmount());
-            stmt.setDouble(6, sale.getTotalAmount());
-            stmt.setDouble(7, sale.getTotalProfit());
-            stmt.setString(8, sale.getSaleDate().toString().replace("T", " "));
+            stmt.setDouble(2, sale.getSubtotal());
+            stmt.setDouble(3, sale.getTaxAmount());
+            stmt.setDouble(4, sale.getDiscountAmount());
+            stmt.setDouble(5, sale.getTotalAmount());
+            stmt.setDouble(6, sale.getTotalProfit());
+            stmt.setString(7, sale.getSaleDate().toString().replace("T", " "));
             stmt.executeUpdate();
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
@@ -212,7 +202,11 @@ public class SaleDAO extends BaseDAO {
 
     public List<SaleItem> getItemsBySaleId(int saleId) throws SQLException {
         List<SaleItem> items = new java.util.ArrayList<>();
-        String sql = "SELECT si.*, p.name as product_name FROM sale_items si JOIN products p ON si.product_id = p.id WHERE si.sale_id = ?";
+        String sql = "SELECT si.*, p.name as product_name, c.name as category_name " +
+                "FROM sale_items si " +
+                "JOIN products p ON si.product_id = p.id " +
+                "LEFT JOIN categories c ON p.category_id = c.id " +
+                "WHERE si.sale_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, saleId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -227,6 +221,7 @@ public class SaleDAO extends BaseDAO {
                             rs.getDouble("cost_at_sale"));
                     item.setDiscountAmount(rs.getDouble("discount_amount"));
                     item.setTaxAmount(rs.getDouble("tax_amount"));
+                    item.setCategoryName(rs.getString("category_name"));
                     items.add(item);
                 }
             }
@@ -245,7 +240,6 @@ public class SaleDAO extends BaseDAO {
         Sale sale = new Sale(
                 rs.getInt("id"),
                 rs.getInt("user_id"),
-                rs.getInt("shift_id") != 0 ? rs.getInt("shift_id") : null,
                 rs.getDouble("subtotal"),
                 rs.getDouble("tax_amount"),
                 rs.getDouble("discount_amount"),

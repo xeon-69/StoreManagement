@@ -69,14 +69,14 @@ public class NotificationUtils {
         stage.initStyle(StageStyle.TRANSPARENT);
 
         // Make draggable
-        final double[] xOffset = {0};
-        final double[] yOffset = {0};
+        final double[] xOffset = { 0 };
+        final double[] yOffset = { 0 };
 
         VBox root = new VBox(20);
         root.setPadding(new Insets(30, 40, 30, 40));
         root.setAlignment(Pos.CENTER);
         root.setStyle(
-                "-fx-background-color: #becee8; -fx-background-radius: 12px; -fx-border-radius: 12px;");
+                "-fx-background-color: #2c3e50; -fx-background-radius: 12px; -fx-border-radius: 12px;");
 
         root.setOnMousePressed(event -> {
             xOffset[0] = event.getSceneX();
@@ -87,7 +87,8 @@ public class NotificationUtils {
             stage.setY(event.getScreenY() - yOffset[0]);
         });
 
-        // Clip the node to the same radius so the scene corners stay rounded (no pointy bits)
+        // Clip the node to the same radius so the scene corners stay rounded (no pointy
+        // bits)
         Rectangle clip = new Rectangle();
         clip.setArcWidth(24);
         clip.setArcHeight(24);
@@ -135,14 +136,15 @@ public class NotificationUtils {
                     translatedMessage = App.getBundle().getString(message);
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         Label titleLabel = new Label(translatedTitle);
         titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
         Label messageLabel = new Label(translatedMessage);
         messageLabel.setWrapText(true);
-        messageLabel.setStyle("-fx-font-size: 15px; -fx-text-fill: #7f8c8d;");
+        messageLabel.setStyle("-fx-font-size: 15px; -fx-text-fill: #ffffffff;");
         messageLabel.setAlignment(Pos.CENTER);
         messageLabel.setMaxWidth(300);
 

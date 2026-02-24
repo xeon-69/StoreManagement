@@ -41,7 +41,7 @@ public class SaleDAOTest extends BaseDAOTest {
     @Test
     public void testCreateSaleWithItems() throws SQLException {
         // Arrange
-        Sale sale = new Sale(0, 1, 1, 40.0, 4.0, 0.0, 44.0, 20.0, LocalDateTime.now());
+        Sale sale = new Sale(0, 1, 44.0, 20.0, LocalDateTime.now());
         SaleItem item1 = new SaleItem(0, 0, productId1, "Item 1", 2, 10.0, 5.0);
         SaleItem item2 = new SaleItem(0, 0, productId2, "Item 2", 1, 20.0, 10.0);
 
@@ -66,12 +66,12 @@ public class SaleDAOTest extends BaseDAOTest {
     public void testInsertSaleAndGetSales() throws SQLException {
         // Arrange
         LocalDateTime now = LocalDateTime.now();
-        Sale sale = new Sale(0, 1, 1, 50.0, 5.0, 0.0, 55.0, 25.0, now.minusDays(1));
+        Sale sale = new Sale(0, 1, 55.0, 25.0, now.minusDays(1));
 
         // Act
         int saleId = saleDAO.insertSale(sale);
 
-        Sale sale2 = new Sale(0, 1, 1, 100.0, 10.0, 0.0, 110.0, 50.0, now);
+        Sale sale2 = new Sale(0, 1, 110.0, 50.0, now);
         saleDAO.insertSale(sale2);
 
         List<Sale> allSales = saleDAO.getAllSales();
@@ -88,11 +88,11 @@ public class SaleDAOTest extends BaseDAOTest {
     public void testTotalCalculations() throws SQLException {
         // Arrange
         LocalDateTime now = LocalDateTime.now();
-        Sale sale1 = new Sale(0, 1, null, 100.0, 10.0, 0.0, 110.0, 50.0, now.minusDays(1));
-        Sale sale2 = new Sale(0, 1, null, 200.0, 20.0, 0.0, 220.0, 100.0, now.minusHours(1));
+        Sale s1 = new Sale(0, 1, 110.0, 50.0, now.minusDays(1));
+        Sale s2 = new Sale(0, 1, 220.0, 100.0, now.minusHours(1));
 
-        saleDAO.insertSale(sale1);
-        saleDAO.insertSale(sale2);
+        saleDAO.insertSale(s1);
+        saleDAO.insertSale(s2);
 
         // Act
         double totalSales = saleDAO.getTotalSalesBetween(now.minusDays(2), now.plusDays(1));

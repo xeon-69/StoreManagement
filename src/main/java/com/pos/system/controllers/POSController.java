@@ -9,13 +9,13 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
@@ -29,6 +29,10 @@ public class POSController {
     private TextField searchField;
     @FXML
     private GridView<Product> productGridView;
+    @FXML
+    private Pagination pagination;
+
+    private static final int ITEMS_PER_PAGE = 9;
 
     // Removed TableView and Columns for products
 
@@ -96,8 +100,8 @@ public class POSController {
             }
         });
 
-        // Bind List Updates
-        productGridView.setItems(catalogViewModel.getFilteredProducts());
+        // Setup Pagination and Bind List Updates
+        setupPagination();
 
         // Setup Virtualized Cell Factory
         productGridView.setCellFactory(gridView -> new GridCell<Product>() {
@@ -352,10 +356,43 @@ public class POSController {
         }
     }
 
+    private void setupPagination() {
+        catalogViewModel.getFilteredProducts().addListener((ListChangeListener<Product>) c -> {
+            updatePagination();
+        });
+
+        pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+            showPage(newIndex.intValue());
+        });
+
+        updatePagination();
+    }
+
+    private void updatePagination() {
+        ObservableList<Product> allProducts = catalogViewModel.getFilteredProducts();
+        int pageCount = (int) Math.ceil((double) allProducts.size() / ITEMS_PER_PAGE);
+        if (pageCount <= 0)
+            pageCount = 1;
+
+        pagination.setPageCount(pageCount);
+        pagination.setCurrentPageIndex(0);
+        showPage(0);
+    }
+
+    private void showPage(int pageIndex) {
+        ObservableList<Product> allProducts = catalogViewModel.getFilteredProducts();
+        int fromIndex = pageIndex * ITEMS_PER_PAGE;
+        int toIndex = Math.min(fromIndex + ITEMS_PER_PAGE, allProducts.size());
+
+        if (allProducts.isEmpty() || fromIndex < 0 || fromIndex >= allProducts.size()) {
+            productGridView.setItems(FXCollections.emptyObservableList());
+        } else {
+            productGridView.setItems(FXCollections.observableArrayList(allProducts.subList(fromIndex, toIndex)));
+        }
+    }
+
     private void updateTotal() {
         double total = cartItems.stream().mapToDouble(SaleItem::getTotal).sum();
         totalLabel.setText(String.format("%,.2f MMK", total));
     }
-
-    // Removed showAlert in favor of NotificationUtils
 }

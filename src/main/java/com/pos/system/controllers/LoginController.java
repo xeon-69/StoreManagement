@@ -70,19 +70,8 @@ public class LoginController {
                 securityService.logAction(user.getId(), "LOGIN", "USER", String.valueOf(user.getId()),
                         "Successful login");
 
-                // Check if shift is open
-                com.pos.system.models.Shift openShift;
-                try (com.pos.system.dao.ShiftDAO shiftDAO = new com.pos.system.dao.ShiftDAO()) {
-                    openShift = shiftDAO.findOpenShiftByUser(user.getId());
-                }
-
                 try {
-                    if (openShift != null) {
-                        SessionManager.getInstance().setCurrentShift(openShift);
-                        com.pos.system.App.setRoot("dashboard");
-                    } else {
-                        com.pos.system.App.setRoot("shift_management");
-                    }
+                    com.pos.system.App.setRoot("dashboard");
                 } catch (java.io.IOException e) {
                     e.printStackTrace();
                     errorLabel.setText("Error loading next view.");
