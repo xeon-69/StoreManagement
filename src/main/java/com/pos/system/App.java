@@ -24,7 +24,8 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         // Init default locale
-        currentLocale = Locale.forLanguageTag("en");
+        String savedLang = com.pos.system.utils.ConfigManager.getLanguage();
+        currentLocale = Locale.forLanguageTag(savedLang);
         bundle = ResourceBundle.getBundle("bundle.messages", currentLocale);
 
         // Apply AtlantaFX Theme
@@ -62,6 +63,7 @@ public class App extends Application {
             return; // No change, skip reload
 
         currentLocale = newLocale;
+        com.pos.system.utils.ConfigManager.setLanguage(language);
         bundle = ResourceBundle.getBundle("bundle.messages", currentLocale);
 
         try {

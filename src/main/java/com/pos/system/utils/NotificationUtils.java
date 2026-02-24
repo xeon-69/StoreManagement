@@ -68,11 +68,24 @@ public class NotificationUtils {
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.initStyle(StageStyle.TRANSPARENT);
 
+        // Make draggable
+        final double[] xOffset = {0};
+        final double[] yOffset = {0};
+
         VBox root = new VBox(20);
         root.setPadding(new Insets(30, 40, 30, 40));
         root.setAlignment(Pos.CENTER);
         root.setStyle(
                 "-fx-background-color: #becee8; -fx-background-radius: 12px; -fx-border-radius: 12px;");
+
+        root.setOnMousePressed(event -> {
+            xOffset[0] = event.getSceneX();
+            yOffset[0] = event.getSceneY();
+        });
+        root.setOnMouseDragged(event -> {
+            stage.setX(event.getScreenX() - xOffset[0]);
+            stage.setY(event.getScreenY() - yOffset[0]);
+        });
 
         // Clip the node to the same radius so the scene corners stay rounded (no pointy bits)
         Rectangle clip = new Rectangle();
@@ -110,10 +123,24 @@ public class NotificationUtils {
         }
         icon.setIconColor(Color.web(color));
 
-        Label titleLabel = new Label(title);
+        // Translation Support
+        String translatedTitle = title;
+        String translatedMessage = message;
+        try {
+            if (App.getBundle() != null) {
+                if (App.getBundle().containsKey(title)) {
+                    translatedTitle = App.getBundle().getString(title);
+                }
+                if (App.getBundle().containsKey(message)) {
+                    translatedMessage = App.getBundle().getString(message);
+                }
+            }
+        } catch (Exception ignored) {}
+
+        Label titleLabel = new Label(translatedTitle);
         titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
-        Label messageLabel = new Label(message);
+        Label messageLabel = new Label(translatedMessage);
         messageLabel.setWrapText(true);
         messageLabel.setStyle("-fx-font-size: 15px; -fx-text-fill: #7f8c8d;");
         messageLabel.setAlignment(Pos.CENTER);

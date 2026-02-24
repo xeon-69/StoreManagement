@@ -62,3 +62,4 @@ C:\POS\src\main\java\com\pos\system\models\TransactionType.java
 C:\POS\src\main\java\com\pos\system\models\Batch.java
 C:\POS\src\main\java\com\pos\system\controllers\POSController.java
 C:\POS\src\main\java\com\pos\system\dao\BaseDAO.java
+C:\POS\src\main\java\com\pos\system\utils\ConfigManager.java
