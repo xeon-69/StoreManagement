@@ -107,13 +107,34 @@
                      <content>
                         <VBox spacing="30.0">
                            <children>
+                              <HBox fx:id="analysisFiltersBox" alignment="CENTER_LEFT" spacing="10.0" visible="false" managed="false">
+                                 <children>
+                                    <Label fx:id="analysisYearLabel" text="%reports.analysis.selectYear" />
+                                    <ComboBox fx:id="analysisYearComboBox" prefWidth="120.0" />
+                                    <Label fx:id="analysisViewLabel" text="%reports.analysis.viewBy" />
+                                    <ComboBox fx:id="analysisViewComboBox" prefWidth="120.0" />
+                                 </children>
+                                 <padding>
+                                    <Insets bottom="10.0" />
+                                 </padding>
+                              </HBox>
+                              
                               <VBox styleClass="report-card">
                                  <children>
                                     <Label styleClass="sub-header-label" text="%reports.chart.salesRevenue" />
-                                    <LineChart fx:id="revenueLineChart" prefHeight="300.0">
-                                       <xAxis><CategoryAxis side="BOTTOM" /></xAxis>
-                                       <yAxis><NumberAxis side="LEFT" /></yAxis>
-                                    </LineChart>
+                                    <ScrollPane fx:id="revenueScrollPane" fitToHeight="true" fitToWidth="false" vbarPolicy="NEVER" hbarPolicy="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent;">
+                                       <content>
+                                          <LineChart fx:id="revenueLineChart" prefHeight="300.0" minWidth="800.0">
+                                             <padding>
+                                                <Insets bottom="20.0" />
+                                             </padding>
+                                             <xAxis>
+                                                <CategoryAxis side="BOTTOM" animated="false" />
+                                             </xAxis>
+                                             <yAxis><NumberAxis side="LEFT" /></yAxis>
+                                          </LineChart>
+                                       </content>
+                                    </ScrollPane>
                                  </children>
                               </VBox>
                               
@@ -140,10 +161,19 @@
                               <VBox styleClass="report-card">
                                  <children>
                                     <Label styleClass="sub-header-label" text="%reports.chart.profitStructure" />
-                                    <StackedBarChart fx:id="profitStackedBarChart" prefHeight="300.0">
-                                       <xAxis><CategoryAxis side="BOTTOM" /></xAxis>
-                                       <yAxis><NumberAxis side="LEFT" /></yAxis>
-                                    </StackedBarChart>
+                                    <ScrollPane fx:id="profitScrollPane" fitToHeight="true" fitToWidth="false" vbarPolicy="NEVER" hbarPolicy="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent;">
+                                       <content>
+                                          <StackedBarChart fx:id="profitStackedBarChart" prefHeight="300.0" minWidth="800.0">
+                                             <padding>
+                                                <Insets bottom="20.0" />
+                                             </padding>
+                                             <xAxis>
+                                                <CategoryAxis side="BOTTOM" animated="false" />
+                                             </xAxis>
+                                             <yAxis><NumberAxis side="LEFT" /></yAxis>
+                                          </StackedBarChart>
+                                       </content>
+                                    </ScrollPane>
                                  </children>
                               </VBox>
                            </children>

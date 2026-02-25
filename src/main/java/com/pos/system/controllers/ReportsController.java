@@ -39,6 +39,17 @@ public class ReportsController {
     private DatePicker endDatePicker;
 
     @FXML
+    private javafx.scene.layout.HBox analysisFiltersBox;
+    @FXML
+    private ComboBox<String> analysisYearComboBox;
+    @FXML
+    private ComboBox<String> analysisViewComboBox;
+    @FXML
+    private Label analysisYearLabel;
+    @FXML
+    private Label analysisViewLabel;
+
+    @FXML
     private TableView<Sale> recentSalesTable;
     @FXML
     private TableColumn<Sale, Integer> idCol;
@@ -73,6 +84,10 @@ public class ReportsController {
     private PieChart paymentPieChart;
     @FXML
     private StackedBarChart<String, Number> profitStackedBarChart;
+    @FXML
+    private javafx.scene.control.ScrollPane revenueScrollPane;
+    @FXML
+    private javafx.scene.control.ScrollPane profitScrollPane;
 
     private static final int ROWS_PER_PAGE = 30;
     private List<Sale> allFilteredSales = new java.util.ArrayList<>();
@@ -81,27 +96,66 @@ public class ReportsController {
     public void initialize() {
         try {
             // Setup ComboBox items
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
             dateRangeComboBox.setItems(FXCollections.observableArrayList(
-                    com.pos.system.App.getBundle().getString("reports.filter.today"),
-                    com.pos.system.App.getBundle().getString("reports.filter.thisWeek"),
-                    com.pos.system.App.getBundle().getString("reports.filter.thisMonth"),
-                    com.pos.system.App.getBundle().getString("reports.filter.allTime"),
-                    com.pos.system.App.getBundle().getString("reports.filter.custom")));
+                    b.getString("reports.filter.today"),
+                    b.getString("reports.filter.thisWeek"),
+                    b.getString("reports.filter.thisMonth"),
+                    b.getString("reports.filter.thisYear"),
+                    b.getString("reports.filter.allTime"),
+                    b.getString("reports.filter.custom")));
+
+            analysisViewComboBox.setItems(FXCollections.observableArrayList(
+                    b.getString("reports.analysis.daily"),
+                    b.getString("reports.analysis.monthly")));
+            analysisViewComboBox.getSelectionModel().selectFirst();
+
+            // Populate year combo box (from 2020 to current year)
+            int currentYear = LocalDate.now().getYear();
+            List<String> years = new java.util.ArrayList<>();
+            years.add(b.getString("reports.filter.allTime")); // Default "All"
+            for (int y = currentYear; y >= 2020; y--) {
+                years.add(String.valueOf(y));
+            }
+            analysisYearComboBox.setItems(FXCollections.observableArrayList(years));
+            analysisYearComboBox.getSelectionModel().selectFirst();
 
             // Listen for filter changes
             dateRangeComboBox.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
                 int index = newVal.intValue();
-                boolean isCustom = (index == 4);
+                boolean isCustom = (index == 5); // 5 is Custom now
                 startDatePicker.setVisible(isCustom);
                 startDatePicker.setManaged(isCustom);
                 endDatePicker.setVisible(isCustom);
                 endDatePicker.setManaged(isCustom);
+
+                // Toggle analysis filters
+                boolean showAnalysisFilters = (index == 3 || index == 4); // "This Year" or "All Time"
+                analysisFiltersBox.setVisible(showAnalysisFilters);
+                analysisFiltersBox.setManaged(showAnalysisFilters);
+
+                boolean showYearCombo = (index == 4); // "All Time"
+                analysisYearLabel.setVisible(showYearCombo);
+                analysisYearLabel.setManaged(showYearCombo);
+                analysisYearComboBox.setVisible(showYearCombo);
+                analysisYearComboBox.setManaged(showYearCombo);
 
                 if (!isCustom && index >= 0) {
                     handleFilter();
                 } else if (isCustom && startDatePicker.getValue() != null && endDatePicker.getValue() != null) {
                     handleFilter();
                 }
+            });
+
+            // Listeners for analysis specific combos
+            analysisViewComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null)
+                    handleFilter(); // Re-render charts with new grouping
+            });
+
+            analysisYearComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null)
+                    handleFilter(); // Re-render charts with new year filter
             });
 
             // Date picker constraints — disable invalid dates in the calendar UI
@@ -266,25 +320,25 @@ public class ReportsController {
         switch (index) {
             case 0: // Today
                 start = now.toLocalDate().atStartOfDay();
-                end = now.toLocalDate().atTime(23, 59, 59);
+                end = now;
                 break;
             case 1: // This Week
-                LocalDate today = now.toLocalDate();
-                start = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
-                        .atStartOfDay();
-                end = today.with(java.time.temporal.TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY))
-                        .atTime(23, 59, 59);
+                start = now.toLocalDate().minusDays(6).atStartOfDay();
+                end = now;
                 break;
             case 2: // This Month
                 start = now.toLocalDate().withDayOfMonth(1).atStartOfDay();
-                end = now.toLocalDate().with(java.time.temporal.TemporalAdjusters.lastDayOfMonth())
-                        .atTime(23, 59, 59);
+                end = now;
                 break;
-            case 3: // All Time
+            case 3: // This Year
+                start = now.toLocalDate().withDayOfYear(1).atStartOfDay();
+                end = now;
+                break;
+            case 4: // All Time
                 start = LocalDateTime.of(2000, 1, 1, 0, 0);
                 end = now;
                 break;
-            case 4: // Custom
+            case 5: // Custom
                 if (startDatePicker.getValue() == null || endDatePicker.getValue() == null) {
                     return;
                 }
@@ -295,7 +349,11 @@ public class ReportsController {
                     return;
                 }
                 start = startDatePicker.getValue().atStartOfDay();
-                end = endDatePicker.getValue().atTime(23, 59, 59);
+                if (!endDatePicker.getValue().isBefore(now.toLocalDate())) {
+                    end = now;
+                } else {
+                    end = endDatePicker.getValue().atTime(23, 59, 59);
+                }
                 break;
             default:
                 return;
@@ -342,7 +400,7 @@ public class ReportsController {
             pagination.setPageCount(Math.max(1, pageCount));
             pagination.setCurrentPageIndex(0);
             updatePage(0);
-            updateCharts(salesData);
+            updateCharts(salesData, start, end);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -398,11 +456,51 @@ public class ReportsController {
         }
     }
 
-    private void updateCharts(List<Sale> data) {
+    private void updateCharts(List<Sale> data, LocalDateTime start, LocalDateTime end) {
         if (data == null)
             return;
 
         java.util.ResourceBundle b = com.pos.system.App.getBundle();
+
+        // Determine grouping strategy based on filter
+        int filterIndex = dateRangeComboBox.getSelectionModel().getSelectedIndex();
+        int viewIndex = analysisViewComboBox.getSelectionModel().getSelectedIndex();
+        boolean groupMonthly = false;
+        boolean groupHourly = (filterIndex == 0); // Today -> Hourly
+
+        if (filterIndex == 3 || filterIndex == 4) { // This Year or All Time
+            groupMonthly = (viewIndex == 1); // User selected "Monthly"
+        }
+
+        // Filter by selected year if "All Time" is selected
+        LocalDateTime effectiveStart = start;
+        LocalDateTime effectiveEnd = end;
+        if (filterIndex == 4) {
+            String selectedYear = analysisYearComboBox.getValue();
+            if (selectedYear != null && !selectedYear.equals(b.getString("reports.filter.allTime"))) {
+                int y = Integer.parseInt(selectedYear);
+                data = data.stream().filter(s -> s.getSaleDate().getYear() == y)
+                        .collect(java.util.stream.Collectors.toList());
+
+                effectiveStart = LocalDateTime.of(y, 1, 1, 0, 0);
+                LocalDateTime yearEnd = LocalDateTime.of(y, 12, 31, 23, 59, 59);
+                if (yearEnd.isAfter(LocalDateTime.now())) {
+                    effectiveEnd = LocalDateTime.now();
+                } else {
+                    effectiveEnd = yearEnd;
+                }
+            }
+        }
+
+        // Formatter for grouping
+        java.time.format.DateTimeFormatter formatter;
+        if (groupHourly) {
+            formatter = java.time.format.DateTimeFormatter.ofPattern("HH:00");
+        } else if (groupMonthly) {
+            formatter = java.time.format.DateTimeFormatter.ofPattern("MMM yyyy");
+        } else {
+            formatter = java.time.format.DateTimeFormatter.ofPattern("MMM-d", java.util.Locale.ENGLISH);
+        }
 
         // 1. Revenue & Profit Trend (Line Chart)
         revenueLineChart.getData().clear();
@@ -411,23 +509,84 @@ public class ReportsController {
         XYChart.Series<String, Number> profitSeries = new XYChart.Series<>();
         profitSeries.setName(b.getString("reports.chart.profit"));
 
-        // Group by date
-        java.util.Map<String, Double> revByDate = new java.util.TreeMap<>();
-        java.util.Map<String, Double> profitByDate = new java.util.TreeMap<>();
-        java.time.format.DateTimeFormatter dayFormatter = java.time.format.DateTimeFormatter.ofPattern("dd-MM");
+        // Use a LinkedHashMap to preserve order of sales list (chronological)
+        java.util.Map<String, Double> orderPreservingRev = new java.util.LinkedHashMap<>();
+        java.util.Map<String, Double> orderPreservingProfit = new java.util.LinkedHashMap<>();
 
-        for (Sale s : data) {
-            String day = s.getSaleDate().format(dayFormatter);
-            revByDate.put(day, revByDate.getOrDefault(day, 0.0) + s.getTotalAmount());
-            profitByDate.put(day, profitByDate.getOrDefault(day, 0.0) + s.getTotalProfit());
+        // Pre-populate expected time intervals to ensure chronological order and
+        // complete axes
+        boolean isAllTimeNoYear = (filterIndex == 4 && (analysisYearComboBox.getValue() == null
+                || analysisYearComboBox.getValue().equals(b.getString("reports.filter.allTime"))));
+
+        if (!isAllTimeNoYear) {
+            if (groupHourly) {
+                int loopEnd = effectiveEnd.toLocalDate().isEqual(effectiveStart.toLocalDate()) ? effectiveEnd.getHour()
+                        : 23;
+                if (!effectiveEnd.toLocalDate().isEqual(LocalDateTime.now().toLocalDate()) && filterIndex == 5) {
+                    loopEnd = 23;
+                } else if (filterIndex == 0) { // Today
+                    loopEnd = effectiveEnd.getHour();
+                }
+                for (int i = 0; i <= loopEnd; i++) {
+                    String key = String.format("%02d:00", i);
+                    orderPreservingRev.put(key, 0.0);
+                    orderPreservingProfit.put(key, 0.0);
+                }
+            } else if (groupMonthly) {
+                LocalDateTime current = effectiveStart.withDayOfMonth(1);
+                while (!current.isAfter(effectiveEnd) || (current.getYear() == effectiveEnd.getYear()
+                        && current.getMonthValue() == effectiveEnd.getMonthValue())) {
+                    String key = current.format(formatter);
+                    orderPreservingRev.put(key, 0.0);
+                    orderPreservingProfit.put(key, 0.0);
+                    if (current.getYear() == effectiveEnd.getYear()
+                            && current.getMonthValue() == effectiveEnd.getMonthValue())
+                        break;
+                    current = current.plusMonths(1);
+                }
+            } else { // Daily
+                LocalDateTime current = effectiveStart.toLocalDate().atStartOfDay();
+                while (!current.isAfter(effectiveEnd)) {
+                    String key = current.format(formatter);
+                    orderPreservingRev.put(key, 0.0);
+                    orderPreservingProfit.put(key, 0.0);
+                    if (current.toLocalDate().isEqual(effectiveEnd.toLocalDate()))
+                        break;
+                    current = current.plusDays(1);
+                }
+            }
+        } else {
+            // For general 'All time', gather sorting keys from data naturally, but sort
+            java.util.Map<String, Double> treeRev = new java.util.TreeMap<>();
+            java.util.Map<String, Double> treeProfit = new java.util.TreeMap<>();
+            for (Sale s : data) {
+                String key = s.getSaleDate().format(formatter);
+                treeRev.put(key, 0.0);
+                treeProfit.put(key, 0.0);
+            }
+            orderPreservingRev.putAll(treeRev);
+            orderPreservingProfit.putAll(treeProfit);
         }
 
-        for (String day : revByDate.keySet()) {
-            revSeries.getData().add(new XYChart.Data<>(day, revByDate.get(day)));
-            profitSeries.getData().add(new XYChart.Data<>(day, profitByDate.get(day)));
+        // Apply actual data overrides
+        for (Sale s : data) {
+            String key = s.getSaleDate().format(formatter);
+            orderPreservingRev.put(key, orderPreservingRev.getOrDefault(key, 0.0) + s.getTotalAmount());
+            orderPreservingProfit.put(key, orderPreservingProfit.getOrDefault(key, 0.0) + s.getTotalProfit());
+        }
+
+        for (String key : orderPreservingRev.keySet()) {
+            revSeries.getData().add(new XYChart.Data<>(key, orderPreservingRev.get(key)));
+            profitSeries.getData().add(new XYChart.Data<>(key, orderPreservingProfit.get(key)));
         }
         revenueLineChart.getData().add(revSeries);
         revenueLineChart.getData().add(profitSeries);
+
+        // Dynamically adjust chart width based on the number of data points to enable
+        // horizontal scrolling
+        double requiredWidth = Math.max(800.0, orderPreservingRev.size() * 60.0);
+        revenueLineChart.setMinWidth(requiredWidth);
+        profitStackedBarChart.setMinWidth(requiredWidth);
 
         String mmk = b.getString("common.mmk");
         for (XYChart.Data<String, Number> dataNode : revSeries.getData()) {
@@ -468,31 +627,43 @@ public class ReportsController {
 
         // 3. Payment Methods (Pie Chart)
         paymentPieChart.getData().clear();
-        java.util.Map<String, Double> payMethods = new java.util.HashMap<>();
         for (Sale s : data) {
-            String methods = s.getPaymentMethods();
-            if (methods != null) {
-                String[] parts = methods.split(", ");
-                for (String p : parts) {
-                    int paren = p.lastIndexOf(" (");
-                    if (paren > 0) {
-                        String name = p.substring(0, paren);
-                        String amtStr = p.substring(paren + 2, p.length() - 1).replace(",", "");
-                        try {
-                            double amt = Double.parseDouble(amtStr);
-                            payMethods.put(name, payMethods.getOrDefault(name, 0.0) + amt);
-                        } catch (Exception ignored) {
+            String pMethods = s.getPaymentMethods();
+            if (pMethods == null || pMethods.isEmpty())
+                continue;
+
+            String[] methods = pMethods.split(",");
+            for (String methodStr : methods) {
+                // p.getPaymentMethod() + " (" + String.format("%,.0f", p.getAmount()) + ")"
+                int startParen = methodStr.lastIndexOf('(');
+                if (startParen != -1) {
+                    String method = methodStr.substring(0, startParen).trim();
+                    try {
+                        String amtStr = methodStr.substring(startParen + 1, methodStr.length() - 1)
+                                .replaceAll("[,\\s]", "");
+                        double amt = Double.parseDouble(amtStr);
+                        // accumulate
+                        PieChart.Data existingData = null;
+                        for (PieChart.Data dp : paymentPieChart.getData()) {
+                            if (dp.getName().equals(method)) {
+                                existingData = dp;
+                                break;
+                            }
                         }
+                        if (existingData != null) {
+                            existingData.setPieValue(existingData.getPieValue() + amt);
+                        } else {
+                            paymentPieChart.getData().add(new PieChart.Data(method, amt));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
             }
         }
-        for (java.util.Map.Entry<String, Double> entry : payMethods.entrySet()) {
-            paymentPieChart.getData().add(new PieChart.Data(entry.getKey(), entry.getValue()));
-        }
 
-        for (PieChart.Data dataNode : paymentPieChart.getData()) {
-            installTooltip(dataNode, "%s\nAmount: %,.2f " + mmk);
+        for (PieChart.Data d : paymentPieChart.getData()) {
+            installTooltip(d, "%s\nAmount: %,.2f " + mmk);
         }
 
         // 4. Profit Structure (Stacked Bar)
@@ -502,11 +673,11 @@ public class ReportsController {
         XYChart.Series<String, Number> netProfitSeries = new XYChart.Series<>();
         netProfitSeries.setName(b.getString("reports.chart.profit"));
 
-        for (String day : revByDate.keySet()) {
-            double r = revByDate.get(day);
-            double p = profitByDate.get(day);
-            costSeries.getData().add(new XYChart.Data<>(day, r - p));
-            netProfitSeries.getData().add(new XYChart.Data<>(day, p));
+        for (String key : orderPreservingRev.keySet()) {
+            double r = orderPreservingRev.get(key);
+            double p = orderPreservingProfit.get(key);
+            costSeries.getData().add(new XYChart.Data<>(key, r - p));
+            netProfitSeries.getData().add(new XYChart.Data<>(key, p));
         }
         profitStackedBarChart.getData().add(costSeries);
         profitStackedBarChart.getData().add(netProfitSeries);
@@ -517,18 +688,35 @@ public class ReportsController {
         for (XYChart.Data<String, Number> dataNode : netProfitSeries.getData()) {
             installTooltip(dataNode, "%s\nNet Profit: %,.2f " + mmk);
         }
+
+        // Auto-scroll the charts to the end (newest data)
+        javafx.application.Platform.runLater(() -> {
+            if (revenueScrollPane != null) {
+                revenueScrollPane.layout();
+                revenueScrollPane.setHvalue(1.0);
+            }
+            if (profitScrollPane != null) {
+                profitScrollPane.layout();
+                profitScrollPane.setHvalue(1.0);
+            }
+        });
     }
 
     private void installTooltip(XYChart.Data<String, Number> dataNode, String formatStr) {
         String tooltipText = String.format(formatStr, dataNode.getXValue(), dataNode.getYValue().doubleValue());
         Tooltip tooltip = new Tooltip(tooltipText);
         tooltip.setStyle("-fx-font-size: 14px; -fx-padding: 5px;");
-        if (dataNode.getNode() != null) {
-            Tooltip.install(dataNode.getNode(), tooltip);
+
+        // Add hover effects
+        javafx.scene.Node node = dataNode.getNode();
+        if (node != null) {
+            Tooltip.install(node, tooltip);
+            addHoverAnimation(node);
         } else {
             dataNode.nodeProperty().addListener((obs, oldNode, newNode) -> {
                 if (newNode != null) {
                     Tooltip.install(newNode, tooltip);
+                    addHoverAnimation(newNode);
                 }
             });
         }
@@ -538,14 +726,43 @@ public class ReportsController {
         String tooltipText = String.format(formatStr, dataNode.getName(), dataNode.getPieValue());
         Tooltip tooltip = new Tooltip(tooltipText);
         tooltip.setStyle("-fx-font-size: 14px; -fx-padding: 5px;");
-        if (dataNode.getNode() != null) {
-            Tooltip.install(dataNode.getNode(), tooltip);
+
+        javafx.scene.Node node = dataNode.getNode();
+        if (node != null) {
+            Tooltip.install(node, tooltip);
+            addHoverAnimation(node);
         } else {
             dataNode.nodeProperty().addListener((obs, oldNode, newNode) -> {
                 if (newNode != null) {
                     Tooltip.install(newNode, tooltip);
+                    addHoverAnimation(newNode);
                 }
             });
         }
+    }
+
+    private void addHoverAnimation(javafx.scene.Node node) {
+        // Transition for scaling
+        javafx.animation.ScaleTransition scaleIn = new javafx.animation.ScaleTransition(
+                javafx.util.Duration.millis(150), node);
+        scaleIn.setToX(1.15);
+        scaleIn.setToY(1.15);
+
+        javafx.animation.ScaleTransition scaleOut = new javafx.animation.ScaleTransition(
+                javafx.util.Duration.millis(150), node);
+        scaleOut.setToX(1.0);
+        scaleOut.setToY(1.0);
+
+        node.setOnMouseEntered(e -> {
+            node.setCursor(javafx.scene.Cursor.HAND);
+            scaleIn.playFromStart();
+            node.setOpacity(0.8);
+        });
+
+        node.setOnMouseExited(e -> {
+            node.setCursor(javafx.scene.Cursor.DEFAULT);
+            scaleOut.playFromStart();
+            node.setOpacity(1.0);
+        });
     }
 }
