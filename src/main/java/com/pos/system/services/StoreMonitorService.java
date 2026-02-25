@@ -1,5 +1,6 @@
 package com.pos.system.services;
 
+import com.pos.system.dao.AuditLogDAO;
 import com.pos.system.dao.ProductDAO;
 import com.pos.system.models.Product;
 import com.pos.system.utils.NotificationUtils;
@@ -34,6 +35,7 @@ public class StoreMonitorService extends ScheduledService<Void> {
                 logger.debug("Store Monitor: Starting background check...");
 
                 checkLowStock();
+                cleanupAuditLogs();
 
                 return null;
             }
@@ -49,8 +51,9 @@ public class StoreMonitorService extends ScheduledService<Void> {
                     if (notifiedProductIds.add(p.getId())) {
                         Platform.runLater(() -> {
                             logger.warn("Low Stock Alert: {} ({} left)", p.getName(), p.getStock());
-                            NotificationUtils.showWarning("Low Stock",
-                                    "Product " + p.getName() + " is low on stock (" + p.getStock() + ")");
+                            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+                            NotificationUtils.showWarning(b.getString("monitor.lowStock.title"),
+                                    String.format(b.getString("monitor.lowStock.msg"), p.getName(), p.getStock()));
                         });
                     }
                 } else {
@@ -60,6 +63,15 @@ public class StoreMonitorService extends ScheduledService<Void> {
             }
         } catch (Exception e) {
             logger.error("Monitor failed to check stock", e);
+        }
+    }
+
+    private void cleanupAuditLogs() {
+        try (AuditLogDAO auditLogDAO = new AuditLogDAO()) {
+            auditLogDAO.deleteLogsOlderThan(90);
+            logger.info("Audit Log cleanup completed (90 days retention).");
+        } catch (Exception e) {
+            logger.error("Failed to cleanup audit logs", e);
         }
     }
 

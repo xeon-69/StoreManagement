@@ -29,20 +29,15 @@
             </Label>
             <TextField fx:id="storeNameField" promptText="Enter store name" GridPane.columnIndex="1" GridPane.rowIndex="0" />
             
-            <Label text="%settings.currency" GridPane.columnIndex="0" GridPane.rowIndex="1">
+            <Label text="%settings.taxRate" GridPane.columnIndex="0" GridPane.rowIndex="1">
                <font><Font size="14.0" /></font>
             </Label>
-            <TextField fx:id="currencyField" promptText="e.g. MMK, $, ¥" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <TextField fx:id="taxRateField" promptText="e.g. 5" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             
-            <Label text="%settings.taxRate" GridPane.columnIndex="0" GridPane.rowIndex="2">
+            <Label text="%settings.printer" GridPane.columnIndex="0" GridPane.rowIndex="2">
                <font><Font size="14.0" /></font>
             </Label>
-            <TextField fx:id="taxRateField" promptText="e.g. 5" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            
-            <Label text="%settings.printer" GridPane.columnIndex="0" GridPane.rowIndex="3">
-               <font><Font size="14.0" /></font>
-            </Label>
-            <TextField fx:id="printerField" promptText="e.g. 192.168.1.100 or COM1" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <TextField fx:id="printerField" promptText="e.g. 192.168.1.100 or COM1" GridPane.columnIndex="1" GridPane.rowIndex="2" />
          </children>
       </GridPane>
       

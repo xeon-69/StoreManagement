@@ -5,7 +5,7 @@ import com.pos.system.models.Product;
 import com.pos.system.models.SaleItem;
 import com.pos.system.utils.NotificationUtils;
 import com.pos.system.viewmodels.ProductCatalogViewModel;
-import javafx.animation.PauseTransition;
+import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
@@ -13,12 +13,16 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import javafx.geometry.Bounds;
 
 import org.controlsfx.control.GridView;
 import org.controlsfx.control.GridCell;
@@ -29,6 +33,8 @@ public class POSController {
     private TextField searchField;
     @FXML
     private GridView<Product> productGridView;
+    @FXML
+    private ComboBox<com.pos.system.models.Category> categoryFilter;
     @FXML
     private Pagination pagination;
 
@@ -54,6 +60,7 @@ public class POSController {
 
     private final ObservableList<SaleItem> cartItems = FXCollections.observableArrayList();
     private ProductCatalogViewModel catalogViewModel;
+    private String currencySymbol;
     private PauseTransition searchDebounce;
 
     // For Dependency Injection in Tests
@@ -67,6 +74,9 @@ public class POSController {
         if (catalogViewModel == null) {
             catalogViewModel = new ProductCatalogViewModel();
         }
+        currencySymbol = com.pos.system.utils.SettingsManager.getInstance().getCurrencySymbol();
+
+        setupCategoryFilter();
 
         // Debounced search — waits 300ms after last keystroke before filtering
         searchDebounce = new PauseTransition(Duration.millis(300));
@@ -109,27 +119,63 @@ public class POSController {
             protected void updateItem(Product item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
-                    setGraphic(null);
+                    setOnMouseClicked(null);
+                    getStyleClass().remove("product-card-active");
                 } else {
-                    setGraphic(createProductTile(item));
+                    VBox tile = createProductTile(item);
+                    setGraphic(tile);
+
+                    // Use standard Action click handling
+                    setOnMouseClicked(e -> {
+                        if (item != null && e.getClickCount() == 1) {
+                            handleProductClick(item, tile);
+                        }
+                    });
                 }
             }
         });
 
-        // Cart Table Setup - Receipt Style
-        cNameCol.setCellValueFactory(new PropertyValueFactory<>("productName"));
-        cQtyCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-        cTotalCol.setCellValueFactory(cellData -> new SimpleDoubleProperty(cellData.getValue().getTotal()).asObject());
-
-        // Receipt Styling preference
-        cartTable.setPlaceholder(new Label("Cart is empty"));
-
-        cartTable.setItems(cartItems);
+        setupCartTable();
         // Ensure catalog loads
         catalogViewModel.loadProducts();
 
         // Auto-focus search field on load
         Platform.runLater(() -> searchField.requestFocus());
+
+        // Refresh grid when cart changes to update active styles
+        cartItems.addListener((ListChangeListener<SaleItem>) c -> {
+            // Re-render the current page of the product grid to update active styles
+            showPage(pagination.getCurrentPageIndex());
+        });
+    }
+
+    private void setupCartTable() {
+        // Cart Table Setup - Receipt Style
+        cartTable.getStyleClass().add("cart-table");
+        cNameCol.setCellValueFactory(new PropertyValueFactory<>("productName"));
+
+        setupQuantityColumn();
+        cQtyCol.setMinWidth(120);
+        cQtyCol.setPrefWidth(120);
+
+        cTotalCol.setCellValueFactory(cellData -> new SimpleDoubleProperty(cellData.getValue().getTotal()).asObject());
+
+        // Receipt Styling preference
+        cartTable.setPlaceholder(new Label(com.pos.system.App.getBundle().getString("pos.cart.placeholder")));
+
+        cartTable.setItems(cartItems);
+    }
+
+    private void handleProductClick(Product p, Node tileNode) {
+        if (p == null || tileNode == null)
+            return;
+        if (isProductInCart(p)) {
+            playFlyAnimation(tileNode, false);
+            removeFromCart(p);
+        } else {
+            playFlyAnimation(tileNode, true);
+            updateCartQuantity(p, 1);
+        }
     }
 
     /**
@@ -137,20 +183,18 @@ public class POSController {
      * adds it to cart (or increments qty), clears field, and re-focuses.
      */
     private void handleBarcodeInput(String barcode) {
+        java.util.ResourceBundle b = com.pos.system.App.getBundle();
         try (ProductDAO productDAO = new ProductDAO()) {
             Product product = productDAO.getProductByBarcode(barcode);
             if (product != null) {
                 updateCartQuantity(product, 1);
             } else {
-                NotificationUtils.showWarning(
-                        com.pos.system.App.getBundle().getString("dialog.warning"),
-                        "No product found for barcode: " + barcode);
+                NotificationUtils.showWarning(b.getString("dialog.warning"),
+                        String.format(b.getString("pos.barcode.notFound"), barcode));
             }
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
-            NotificationUtils.showError(
-                    com.pos.system.App.getBundle().getString("dialog.error"),
-                    "Failed to look up barcode.");
+            NotificationUtils.showError(b.getString("dialog.error"), b.getString("pos.barcode.error"));
         }
         // Clear and re-focus for next scan
         searchField.clear();
@@ -165,6 +209,7 @@ public class POSController {
         card.setAlignment(Pos.CENTER);
 
         // Image Handling
+        java.util.ResourceBundle b = com.pos.system.App.getBundle();
         if (p.getImageData() != null && p.getImageData().length > 0) {
             try {
                 java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(p.getImageData());
@@ -175,12 +220,12 @@ public class POSController {
                 imageView.setPreserveRatio(true);
                 card.getChildren().add(imageView);
             } catch (Exception e) {
-                Label imgPlaceholder = new Label("No Image");
+                Label imgPlaceholder = new Label(b.getString("pos.noImage"));
                 imgPlaceholder.setStyle("-fx-text-fill: gray;"); // Keep simple or add class
                 card.getChildren().add(imgPlaceholder);
             }
         } else {
-            Label imgPlaceholder = new Label("No Image");
+            Label imgPlaceholder = new Label(b.getString("pos.noImage"));
             imgPlaceholder.setStyle(
                     "-fx-text-fill: #bdc3c7; -fx-border-color: #bdc3c7; -fx-border-style: dashed; -fx-padding: 20;");
             card.getChildren().add(imgPlaceholder);
@@ -190,7 +235,7 @@ public class POSController {
         nameLbl.getStyleClass().add("product-name");
         nameLbl.setWrapText(true);
 
-        Label priceLbl = new Label(String.format("%,.0f MMK", p.getSellingPrice()));
+        Label priceLbl = new Label(String.format("%,.0f %s", p.getSellingPrice(), currencySymbol));
         priceLbl.getStyleClass().add("product-price");
 
         Label stockLbl = new Label(com.pos.system.App.getBundle().getString("pos.stockLabel") + p.getStock());
@@ -199,58 +244,78 @@ public class POSController {
             stockLbl.getStyleClass().add("stock-low");
         }
 
-        // Stepper Control
-        HBox stepper = new HBox(10);
-        stepper.setAlignment(Pos.CENTER);
-
-        Button minusBtn = new Button("-");
-        minusBtn.getStyleClass().addAll("stepper-btn", "stepper-btn-minus");
-
-        Label qtyLbl = new Label("0");
-        qtyLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;"); // Could move to CSS
-
-        Button plusBtn = new Button("+");
-        plusBtn.setId("add-btn-" + p.getId());
-        plusBtn.getStyleClass().addAll("stepper-btn", "stepper-btn-plus");
-
-        minusBtn.setOnAction(e -> updateCartQuantity(p, -1));
-        plusBtn.setOnAction(e -> updateCartQuantity(p, 1));
-
-        if (p.getStock() <= 0) {
-            plusBtn.setDisable(true);
-            stockLbl.setText("Out of Stock");
+        if (isProductInCart(p)) {
+            card.getStyleClass().add("product-card-active");
         }
 
-        stepper.getChildren().addAll(plusBtn, qtyLbl, minusBtn);
+        // Click handler moved to GridCell level for better reuse/stability
 
-        // Sync Logic: Update qtyLbl when cart changes
-        Runnable updateLabel = () -> {
-            int currentQty = 0;
-            for (SaleItem item : cartItems) {
-                if (item.getProductId() == p.getId()) {
-                    currentQty = item.getQuantity();
-                    break;
-                }
-            }
-            qtyLbl.setText(String.valueOf(currentQty));
-
-            if (currentQty >= p.getStock()) {
-                plusBtn.setDisable(true);
-            } else {
-                plusBtn.setDisable(false);
-            }
-        };
-
-        // Initial update
-        updateLabel.run();
-
-        // Listen for global cart changes
-        cartItems.addListener((javafx.collections.ListChangeListener<SaleItem>) c -> {
-            Platform.runLater(updateLabel);
-        });
-
-        card.getChildren().addAll(nameLbl, priceLbl, stockLbl, stepper);
+        card.getChildren().addAll(nameLbl, priceLbl, stockLbl);
         return card;
+    }
+
+    private boolean isProductInCart(Product p) {
+        return cartItems.stream().anyMatch(item -> item.getProductId() == p.getId());
+    }
+
+    private void removeFromCart(Product p) {
+        cartItems.removeIf(item -> item.getProductId() == p.getId());
+        updateTotal();
+    }
+
+    private void playFlyAnimation(Node startNode, boolean toCart) {
+        try {
+            if (startNode.getScene() == null)
+                return;
+
+            Pane root = (Pane) startNode.getScene().getRoot();
+            Bounds startBounds = startNode.localToScene(startNode.getBoundsInLocal());
+            Bounds targetBounds = cartTable.localToScene(cartTable.getBoundsInLocal());
+
+            // Create flyer silhouette (rectangle matching card size)
+            Rectangle flyer = new Rectangle(startBounds.getWidth(), startBounds.getHeight());
+            flyer.getStyleClass().add("flyer-node");
+            flyer.setArcWidth(20); // 2 * radius = 20
+            flyer.setArcHeight(20);
+            flyer.setManaged(false);
+            root.getChildren().add(flyer);
+
+            // Final destination in the middle of the cart
+            double targetX = targetBounds.getMinX() + targetBounds.getWidth() / 2 - flyer.getWidth() / 2;
+            double targetY = targetBounds.getMinY() + targetBounds.getHeight() / 2 - flyer.getHeight() / 2;
+
+            if (toCart) {
+                flyer.setTranslateX(startBounds.getMinX());
+                flyer.setTranslateY(startBounds.getMinY());
+            } else {
+                flyer.setTranslateX(targetX);
+                flyer.setTranslateY(targetY);
+                // Inverse start state
+                flyer.setScaleX(0.2);
+                flyer.setScaleY(0.2);
+                flyer.setOpacity(0);
+            }
+
+            // Shrinking and flying transition
+            TranslateTransition translate = new TranslateTransition(Duration.millis(500), flyer);
+            translate.setToX(toCart ? targetX : startBounds.getMinX());
+            translate.setToY(toCart ? targetY : startBounds.getMinY());
+
+            ScaleTransition scale = new ScaleTransition(Duration.millis(500), flyer);
+            scale.setToX(toCart ? 0.2 : 1.0);
+            scale.setToY(toCart ? 0.2 : 1.0);
+
+            FadeTransition fade = new FadeTransition(Duration.millis(500), flyer);
+            fade.setFromValue(toCart ? 0.6 : 0.0);
+            fade.setToValue(toCart ? 0.0 : 0.6);
+
+            ParallelTransition pt = new ParallelTransition(translate, scale, fade);
+            pt.setOnFinished(e -> root.getChildren().remove(flyer));
+            pt.play();
+
+        } catch (Exception e) {
+            System.err.println("Animation failed: " + e.getMessage());
+        }
     }
 
     private void updateCartQuantity(Product p, int change) {
@@ -270,9 +335,10 @@ public class POSController {
             if (newQty <= 0) {
                 cartItems.remove(existingItem);
             } else {
+                java.util.ResourceBundle b = com.pos.system.App.getBundle();
                 if (newQty > p.getStock()) {
-                    NotificationUtils.showWarning(com.pos.system.App.getBundle().getString("dialog.warning"),
-                            "Not enough stock!");
+                    NotificationUtils.showWarning(b.getString("dialog.warning"),
+                            b.getString("pos.notEnoughStock"));
                     return;
                 }
                 existingItem.setQuantity(newQty);
@@ -284,8 +350,9 @@ public class POSController {
         } else if (change > 0) {
             // Add new
             if (p.getStock() <= 0) {
-                NotificationUtils.showWarning(com.pos.system.App.getBundle().getString("dialog.warning"),
-                        "Out of stock!");
+                java.util.ResourceBundle b = com.pos.system.App.getBundle();
+                NotificationUtils.showWarning(b.getString("dialog.warning"),
+                        b.getString("pos.outOfStock"));
                 return;
             }
             SaleItem item = new SaleItem(
@@ -295,6 +362,92 @@ public class POSController {
         }
 
         updateTotal();
+    }
+
+    private void setupQuantityColumn() {
+        cQtyCol.setCellFactory(col -> new TableCell<SaleItem, Integer>() {
+            private final Button minusBtn = new Button("-");
+            private final Button plusBtn = new Button("+");
+            private final TextField qtyField = new TextField();
+            private final HBox container = new HBox(5, plusBtn, qtyField, minusBtn);
+
+            {
+                minusBtn.getStyleClass().addAll("stepper-btn", "stepper-btn-minus");
+                plusBtn.getStyleClass().addAll("stepper-btn", "stepper-btn-plus");
+                qtyField.getStyleClass().add("cart-qty-field");
+                container.getStyleClass().add("cart-stepper");
+                container.setAlignment(Pos.CENTER);
+
+                minusBtn.setOnAction(e -> {
+                    SaleItem item = getTableView().getItems().get(getIndex());
+                    Product p = findProductById(item.getProductId());
+                    if (p != null)
+                        updateCartQuantity(p, -1);
+                });
+
+                plusBtn.setOnAction(e -> {
+                    SaleItem item = getTableView().getItems().get(getIndex());
+                    Product p = findProductById(item.getProductId());
+                    if (p != null)
+                        updateCartQuantity(p, 1);
+                });
+
+                qtyField.setOnAction(e -> handleQtyFieldUpdate());
+                qtyField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+                    if (!newVal)
+                        handleQtyFieldUpdate();
+                });
+            }
+
+            private void handleQtyFieldUpdate() {
+                SaleItem item = getTableRow().getItem();
+                if (item == null)
+                    return;
+                try {
+                    int newQty = Integer.parseInt(qtyField.getText());
+                    Product p = findProductById(item.getProductId());
+                    if (p != null) {
+                        int change = newQty - item.getQuantity();
+                        if (change != 0)
+                            updateCartQuantity(p, change);
+                    }
+                } catch (NumberFormatException ex) {
+                    qtyField.setText(String.valueOf(item.getQuantity()));
+                }
+            }
+
+            @Override
+            protected void updateItem(Integer quantity, boolean empty) {
+                super.updateItem(quantity, empty);
+                if (empty || getTableRow() == null) {
+                    setGraphic(null);
+                    setText(null);
+                } else {
+                    SaleItem item = getTableRow().getItem();
+                    if (item == null) {
+                        setGraphic(null);
+                        return;
+                    }
+                    qtyField.setText(String.valueOf(item.getQuantity()));
+
+                    // Safe binding to row hover
+                    minusBtn.visibleProperty().unbind();
+                    plusBtn.visibleProperty().unbind();
+                    minusBtn.visibleProperty().bind(getTableRow().hoverProperty());
+                    plusBtn.visibleProperty().bind(getTableRow().hoverProperty());
+
+                    setGraphic(container);
+                    setText(null);
+                }
+            }
+        });
+    }
+
+    private Product findProductById(int id) {
+        return catalogViewModel.getAllProducts().stream()
+                .filter(p -> p.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     @FXML
@@ -317,22 +470,23 @@ public class POSController {
 
     @FXML
     private void handleCheckout() {
+        java.util.ResourceBundle b = com.pos.system.App.getBundle();
         if (cartItems.isEmpty()) {
-            NotificationUtils.showWarning(com.pos.system.App.getBundle().getString("dialog.warning"), "Cart is empty!");
+            NotificationUtils.showWarning(b.getString("dialog.warning"), b.getString("pos.cart.emptyMsg"));
             return;
         }
 
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/fxml/checkout_modal.fxml"));
-            loader.setResources(com.pos.system.App.getBundle());
+            loader.setResources(b);
             javafx.scene.Parent root = loader.load();
 
             CheckoutController controller = loader.getController();
             controller.setCheckoutData(cartItems, () -> {
                 Platform.runLater(() -> {
-                    NotificationUtils.showSuccess(com.pos.system.App.getBundle().getString("dialog.success"),
-                            "Transaction Completed!");
+                    NotificationUtils.showSuccess(b.getString("dialog.success"),
+                            b.getString("pos.transaction.completed"));
                     cartItems.clear();
                     updateTotal();
                     catalogViewModel.loadProducts();
@@ -342,7 +496,7 @@ public class POSController {
             javafx.stage.Stage stage = new javafx.stage.Stage();
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.initOwner(totalLabel.getScene().getWindow());
-            stage.setTitle("Checkout");
+            stage.setTitle(b.getString("checkout.title"));
             stage.setScene(new javafx.scene.Scene(root));
             stage.showAndWait();
 
@@ -351,8 +505,8 @@ public class POSController {
 
         } catch (java.io.IOException e) {
             e.printStackTrace();
-            NotificationUtils.showError(com.pos.system.App.getBundle().getString("dialog.error"),
-                    "Failed to open checkout modal.");
+            NotificationUtils.showError(b.getString("dialog.error"),
+                    b.getString("pos.checkout.failed"));
         }
     }
 
@@ -391,8 +545,38 @@ public class POSController {
         }
     }
 
+    private void setupCategoryFilter() {
+        java.util.ResourceBundle b = com.pos.system.App.getBundle();
+
+        // Dummy "All Categories" category
+        com.pos.system.models.Category allCat = new com.pos.system.models.Category(0, b.getString("pos.allCategories"),
+                "");
+
+        // Load categories from DAO
+        try (com.pos.system.dao.CategoryDAO categoryDAO = new com.pos.system.dao.CategoryDAO()) {
+            java.util.List<com.pos.system.models.Category> categories = categoryDAO.getAllCategories();
+            ObservableList<com.pos.system.models.Category> comboItems = FXCollections.observableArrayList();
+            comboItems.add(allCat);
+            comboItems.addAll(categories);
+            categoryFilter.setItems(comboItems);
+            categoryFilter.getSelectionModel().select(allCat);
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+            categoryFilter.setItems(FXCollections.observableArrayList(allCat));
+            categoryFilter.getSelectionModel().select(allCat);
+        }
+
+        // Listener for filter
+        categoryFilter.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                catalogViewModel.filterByCategory(newVal.getId());
+                updatePagination(); // Reset pagination on filter change
+            }
+        });
+    }
+
     private void updateTotal() {
-        double total = cartItems.stream().mapToDouble(SaleItem::getTotal).sum();
-        totalLabel.setText(String.format("%,.2f MMK", total));
+        double subtotal = cartItems.stream().mapToDouble(SaleItem::getTotal).sum();
+        totalLabel.setText(String.format("%,.2f %s", subtotal, currencySymbol));
     }
 }

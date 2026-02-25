@@ -6,6 +6,7 @@ C:\POS\src\main\java\com\pos\system\services\StoreEvents.java
 C:\POS\src\main\java\com\pos\system\dao\ProductDAO.java
 C:\POS\src\main\java\com\pos\system\controllers\CategoryController.java
 C:\POS\src\main\java\com\pos\system\services\ReportingService.java
+C:\POS\src\main\java\com\pos\system\utils\SettingsManager.java
 C:\POS\src\main\java\com\pos\system\TestLoad.java
 C:\POS\src\main\java\com\pos\system\models\Category.java
 C:\POS\src\main\java\com\pos\system\dao\ExpenseDAO.java

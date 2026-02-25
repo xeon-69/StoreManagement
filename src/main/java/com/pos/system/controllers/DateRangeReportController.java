@@ -65,7 +65,9 @@ public class DateRangeReportController {
         LocalDate end = endDatePicker.getValue();
 
         if (start == null || end == null) {
-            NotificationUtils.showError("report.notify.invalidDates", "report.notify.selectDates");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showError(b.getString("report.notify.invalidDates"),
+                    b.getString("report.notify.selectDates"));
             return;
         }
 
@@ -74,21 +76,23 @@ public class DateRangeReportController {
             File csvFile = reportingService.generateRangeReportCSV(start, end);
             File excelFile = reportingService.generateRangeReportExcel(start, end);
 
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
             String msg = String.format(
-                    com.pos.system.App.getBundle().getString("report.notify.savedTo") + "\n" +
-                            com.pos.system.App.getBundle().getString("report.notify.csv") + "\n" +
-                            com.pos.system.App.getBundle().getString("report.notify.excel") + "\n\n" +
-                            com.pos.system.App.getBundle().getString("report.notify.folder"),
+                    b.getString("report.notify.savedTo") + "\n" +
+                            b.getString("report.notify.csv") + "\n" +
+                            b.getString("report.notify.excel") + "\n\n" +
+                            b.getString("report.notify.folder"),
                     csvFile.getName(), excelFile.getName(), csvFile.getParent());
 
-            NotificationUtils.showSuccess("report.notify.generated", msg);
+            NotificationUtils.showSuccess(b.getString("report.notify.generated"), msg);
 
             handleCancel(); // Close modal
         } catch (Exception e) {
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
             String errorMsg = String.format(
-                    com.pos.system.App.getBundle().getString("report.notify.failMsg"),
+                    b.getString("report.notify.failMsg"),
                     e.getMessage());
-            NotificationUtils.showError("report.notify.failed", errorMsg);
+            NotificationUtils.showError(b.getString("report.notify.failed"), errorMsg);
             e.printStackTrace();
         }
     }

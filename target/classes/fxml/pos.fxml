@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Pagination?>
 <?import javafx.scene.control.TableColumn?>
@@ -21,7 +22,8 @@
             <HBox spacing="10.0">
                <children>
                   <TextField fx:id="searchField" promptText="%pos.search" HBox.hgrow="ALWAYS" styleClass="search-field" />
-                  <Button mnemonicParsing="false" onAction="#handleSearch" text="%pos.searchBtn" styleClass="btn-primary" contentDisplay="GRAPHIC_ONLY">
+                  <ComboBox fx:id="categoryFilter" prefWidth="150.0" promptText="%pos.allCategories" styleClass="category-combo" />
+                  <Button mnemonicParsing="false" onAction="#handleSearch" text="%pos.searchBtn" styleClass="btn-primary, pos-tool-btn" contentDisplay="GRAPHIC_ONLY">
                       <graphic><FontIcon iconLiteral="fas-search" iconColor="white"/></graphic>
                       <tooltip><Tooltip text="%pos.searchBtn"/></tooltip>
                   </Button>

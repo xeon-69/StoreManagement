@@ -31,8 +31,8 @@ public class AddCategoryController {
     public void setCategoryToEdit(Category category) {
         this.categoryToEdit = category;
         if (category != null) {
-            titleLabel.setText("Edit Category"); // Fallback text when no resource bundle key logic explicitly replaces
-                                                 // it, though FXML takes precedence initially. We can keep it simple.
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            titleLabel.setText(b.getString("category.edit"));
             nameField.setText(category.getName());
             descriptionArea.setText(category.getDescription());
         }
@@ -44,15 +44,16 @@ public class AddCategoryController {
             return;
 
         try (CategoryDAO dao = new CategoryDAO()) {
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
             int id = (categoryToEdit != null) ? categoryToEdit.getId() : 0;
             Category category = new Category(id, nameField.getText().trim(), descriptionArea.getText().trim());
 
             if (categoryToEdit != null) {
                 dao.updateCategory(category);
-                messageLabel.setText("Category updated!");
+                messageLabel.setText(b.getString("category.update.success"));
             } else {
                 dao.addCategory(category);
-                messageLabel.setText("Category saved!");
+                messageLabel.setText(b.getString("category.add.success"));
             }
 
             messageLabel.setStyle("-fx-text-fill: green;");
@@ -64,10 +65,11 @@ public class AddCategoryController {
             closeWindow();
 
         } catch (SQLException e) {
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
             if (e.getMessage().contains("SQLITE_CONSTRAINT_UNIQUE")) {
-                messageLabel.setText("Error: Category name already exists.");
+                messageLabel.setText(b.getString("category.name.exists"));
             } else {
-                messageLabel.setText("Database error: " + e.getMessage());
+                messageLabel.setText(b.getString("dialog.dbError") + ": " + e.getMessage());
             }
             messageLabel.setStyle("-fx-text-fill: red;");
         }
@@ -85,7 +87,8 @@ public class AddCategoryController {
 
     private boolean validateInput() {
         if (nameField.getText().trim().isEmpty()) {
-            messageLabel.setText("Please enter a category name.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            messageLabel.setText(b.getString("category.name.empty"));
             messageLabel.setStyle("-fx-text-fill: red;");
             return false;
         }

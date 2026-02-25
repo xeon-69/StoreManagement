@@ -354,7 +354,8 @@ public class ReportingService {
                         row.createCell(0).setCellValue(tx.getCreatedAt().format(DateTimeFormatter.ofPattern("HH:mm")));
 
                         // Show Name (ID)
-                        String prodDisplay = (tx.getProductName() != null ? tx.getProductName() : "Unknown") + " ("
+                        String prodDisplay = (tx.getProductName() != null ? tx.getProductName()
+                                : b.getString("report.excel.unknown")) + " ("
                                 + tx.getProductId() + ")";
                         row.createCell(1).setCellValue(prodDisplay);
 
@@ -371,7 +372,9 @@ public class ReportingService {
                                 for (SaleItem si : sItems) {
                                     if (si.getProductId() == tx.getProductId()) {
                                         double lineTotal = si.getPriceAtSale() * Math.abs(tx.getQuantityChange());
-                                        details += " - Amt: " + String.format("%,.2f", lineTotal) + " MMK";
+                                        details += " - " + b.getString("report.excel.amtHeader") + ": "
+                                                + String.format("%,.2f", lineTotal) + " "
+                                                + b.getString("common.mmk");
                                         break;
                                     }
                                 }
@@ -385,9 +388,9 @@ public class ReportingService {
                                 try (ResultSet rs = pstmt.executeQuery()) {
                                     if (rs.next()) {
                                         double cost = rs.getDouble(1);
-                                        details += " - Cost: "
+                                        details += " - " + b.getString("report.excel.costHeader") + ": "
                                                 + String.format("%,.2f", cost * Math.abs(tx.getQuantityChange()))
-                                                + " MMK";
+                                                + " " + b.getString("common.mmk");
                                     }
                                 }
                             } catch (Exception e) {
@@ -447,7 +450,7 @@ public class ReportingService {
                     List<Expense> dayExpenses = expenseDAO.getExpensesBetween(startOfDay, endOfDay);
                     if (dayExpenses.isEmpty()) {
                         Row row = sheet.createRow(rowNum++);
-                        row.createCell(0).setCellValue("No expenses recorded.");
+                        row.createCell(0).setCellValue(b.getString("report.excel.noExpenses"));
                     } else {
                         for (Expense exp : dayExpenses) {
                             Row row = sheet.createRow(rowNum++);
@@ -483,22 +486,23 @@ public class ReportingService {
 
                 // Daily Analysis (All days in current year)
                 addAnalysisSheet(workbook, b.getString("report.excel.dailyAnalysis"),
-                        yearStart, endOfRange, saleDAO, expenseDAO, auditLogDAO,
+                        yearStart, endOfRange, saleDAO, paymentDAO, expenseDAO, auditLogDAO,
                         headerStyle, summaryStyle, currencyStyle, boldStyle, AggregationLevel.DAILY);
 
                 // Weekly Analysis (All weeks in current year)
                 addAnalysisSheet(workbook, b.getString("report.excel.weeklyAnalysis"),
-                        yearStart, endOfRange, saleDAO, expenseDAO, auditLogDAO,
+                        yearStart, endOfRange, saleDAO, paymentDAO, expenseDAO, auditLogDAO,
                         headerStyle, summaryStyle, currencyStyle, boldStyle, AggregationLevel.WEEKLY);
 
                 // Monthly Analysis (All months in current year)
                 addAnalysisSheet(workbook, b.getString("report.excel.monthlyAnalysis"),
-                        yearStart, endOfRange, saleDAO, expenseDAO, auditLogDAO,
+                        yearStart, endOfRange, saleDAO, paymentDAO, expenseDAO, auditLogDAO,
                         headerStyle, summaryStyle, currencyStyle, boldStyle, AggregationLevel.MONTHLY);
 
                 // Yearly Analysis (At least 5 years)
                 addAnalysisSheet(workbook, b.getString("report.excel.yearlyAnalysis"),
-                        end.minusYears(4).withDayOfYear(1).atStartOfDay(), endOfRange, saleDAO, expenseDAO, auditLogDAO,
+                        end.minusYears(4).withDayOfYear(1).atStartOfDay(), endOfRange, saleDAO, paymentDAO, expenseDAO,
+                        auditLogDAO,
                         headerStyle, summaryStyle, currencyStyle, boldStyle, AggregationLevel.YEARLY);
 
                 if (latestDateSheetIndex >= 0) {
@@ -820,7 +824,7 @@ public class ReportingService {
     }
 
     private void addAnalysisSheet(Workbook workbook, String sheetName, LocalDateTime start, LocalDateTime end,
-            SaleDAO saleDAO, ExpenseDAO expenseDAO, AuditLogDAO auditLogDAO,
+            SaleDAO saleDAO, SalePaymentDAO paymentDAO, ExpenseDAO expenseDAO, AuditLogDAO auditLogDAO,
             CellStyle headerStyle, CellStyle summaryStyle, CellStyle currencyStyle, CellStyle boldStyle,
             AggregationLevel aggregation) {
 
@@ -869,10 +873,15 @@ public class ReportingService {
             // --- ABC Analysis ---
             Row abcHead = sheet.createRow(rowNum++);
             Cell abcHc = abcHead.createCell(0);
-            abcHc.setCellValue("ABC ANALYSIS (Product Contribution)");
+            abcHc.setCellValue(b.getString("report.excel.abcTitle"));
             abcHc.setCellStyle(boldStyle);
 
-            String[] abcHeaders = { "Product", "Revenue", "Cumulative %", "Category" };
+            String[] abcHeaders = {
+                    b.getString("report.excel.abcProduct"),
+                    b.getString("report.excel.abcRevenue"),
+                    b.getString("report.excel.abcCumulative"),
+                    b.getString("report.excel.abcCategory")
+            };
             Row abcHRow = sheet.createRow(rowNum++);
             for (int i = 0; i < abcHeaders.length; i++) {
                 Cell c = abcHRow.createCell(i);
@@ -910,11 +919,11 @@ public class ReportingService {
                 double percent = (totalSales > 0) ? (runningTotal / totalSales) : 0;
                 r.createCell(2).setCellValue(String.format("%.2f%%", percent * 100));
 
-                String category = "C";
+                String category = b.getString("report.excel.abc.c");
                 if (percent <= 0.7)
-                    category = "A";
+                    category = b.getString("report.excel.abc.a");
                 else if (percent <= 0.9)
-                    category = "B";
+                    category = b.getString("report.excel.abc.b");
                 r.createCell(3).setCellValue(category);
             }
             rowNum++;
@@ -934,7 +943,9 @@ public class ReportingService {
                 }
 
                 if (!expenseCats.isEmpty()) {
-                    XSSFDrawing drawing = xSheet.createDrawingPatriarch();
+                    XSSFDrawing drawing = xSheet.getDrawingPatriarch();
+                    if (drawing == null)
+                        drawing = xSheet.createDrawingPatriarch();
                     XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 0, chartRow + 34, 8, chartRow + 49);
                     XSSFChart chart = drawing.createChart(anchor);
                     chart.setTitleText(b.getString("finance.expensesTitle"));
@@ -951,12 +962,300 @@ public class ReportingService {
                 }
             }
 
+            // --- Professional Sheets for Monthly Analysis ---
+            if (aggregation == AggregationLevel.MONTHLY) {
+                addProfitAndLossSheet(workbook, start, end, saleDAO, expenseDAO, headerStyle, currencyStyle, boldStyle);
+                addBalanceSheet(workbook, start, end, saleDAO, expenseDAO, headerStyle, currencyStyle, boldStyle);
+                addCashFlowSheet(workbook, start, end, saleDAO, paymentDAO, expenseDAO, headerStyle, currencyStyle,
+                        boldStyle);
+                addInventoryValueSheet(workbook, headerStyle, summaryStyle, currencyStyle, boldStyle);
+            }
+
             for (int i = 0; i < 5; i++)
                 sheet.autoSizeColumn(i);
 
         } catch (SQLException e) {
             logger.error("Error generating analysis sheet", e);
         }
+    }
+
+    private void addProfitAndLossSheet(Workbook workbook, LocalDateTime start, LocalDateTime end,
+            SaleDAO saleDAO, ExpenseDAO expenseDAO,
+            CellStyle headerStyle, CellStyle currencyStyle, CellStyle boldStyle) throws SQLException {
+        java.util.ResourceBundle b = App.getBundle();
+        Sheet sheet = workbook.createSheet(b.getString("report.excel.plSheet"));
+        int rowNum = 0;
+
+        Row titleRow = sheet.createRow(rowNum++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(b.getString("report.excel.plSheet"));
+        titleCell.setCellStyle(headerStyle);
+        rowNum++;
+
+        LocalDateTime currentMonthStart = start.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        while (currentMonthStart.isBefore(end)) {
+            LocalDateTime currentMonthEnd = currentMonthStart.plusMonths(1).minusNanos(1);
+            if (currentMonthEnd.isAfter(end))
+                currentMonthEnd = end;
+
+            // Month Header
+            Row monthRow = sheet.createRow(rowNum++);
+            Cell monthCell = monthRow.createCell(0);
+            monthCell.setCellValue(currentMonthStart.format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy")));
+            monthCell.setCellStyle(boldStyle);
+
+            double revenue = saleDAO.getTotalSalesBetween(currentMonthStart, currentMonthEnd);
+            double profit = saleDAO.getTotalProfitBetween(currentMonthStart, currentMonthEnd);
+            double cogs = revenue - profit;
+
+            writeSummaryRow(sheet, rowNum++, b.getString("report.excel.pl.revenue"), revenue, currencyStyle, null);
+            writeSummaryRow(sheet, rowNum++, b.getString("report.excel.pl.cogs"), -cogs, currencyStyle, null);
+            writeSummaryRow(sheet, rowNum++, b.getString("report.excel.pl.grossProfit"), profit, currencyStyle,
+                    boldStyle);
+            rowNum++;
+
+            // Expenses
+            List<Expense> expenses = expenseDAO.getExpensesBetween(currentMonthStart, currentMonthEnd);
+            java.util.Map<String, Double> expByCat = new java.util.TreeMap<>();
+            for (Expense e : expenses) {
+                expByCat.put(e.getCategory(), expByCat.getOrDefault(e.getCategory(), 0.0) + e.getAmount());
+            }
+
+            double totalExpenses = 0;
+            for (java.util.Map.Entry<String, Double> entry : expByCat.entrySet()) {
+                writeSummaryRow(sheet, rowNum++, entry.getKey(), -entry.getValue(), currencyStyle, null);
+                totalExpenses += entry.getValue();
+            }
+
+            writeSummaryRow(sheet, rowNum++, b.getString("report.excel.pl.netProfit"), profit - totalExpenses,
+                    currencyStyle, boldStyle);
+            rowNum++;
+            Row line = sheet.createRow(rowNum++);
+            for (int i = 0; i < 2; i++)
+                line.createCell(i).setCellValue("---");
+            rowNum++;
+
+            currentMonthStart = currentMonthStart.plusMonths(1);
+        }
+
+        sheet.autoSizeColumn(0);
+        sheet.autoSizeColumn(1);
+    }
+
+    private void addBalanceSheet(Workbook workbook, LocalDateTime start, LocalDateTime end,
+            SaleDAO saleDAO, ExpenseDAO expenseDAO,
+            CellStyle headerStyle, CellStyle currencyStyle, CellStyle boldStyle) throws SQLException {
+        java.util.ResourceBundle b = App.getBundle();
+        Sheet sheet = workbook.createSheet(b.getString("report.excel.bsSheet"));
+        int rowNum = 0;
+
+        Row titleRow = sheet.createRow(rowNum++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(b.getString("report.excel.bsSheet"));
+        titleCell.setCellStyle(headerStyle);
+        rowNum++;
+
+        LocalDateTime currentMonthStart = start.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        while (currentMonthStart.isBefore(end)) {
+            LocalDateTime currentMonthEnd = currentMonthStart.plusMonths(1).minusNanos(1);
+            if (currentMonthEnd.isAfter(end))
+                currentMonthEnd = end;
+
+            // Month Header
+            Row monthRow = sheet.createRow(rowNum++);
+            Cell monthCell = monthRow.createCell(0);
+            monthCell.setCellValue(currentMonthStart.format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy")));
+            monthCell.setCellStyle(boldStyle);
+
+            // --- ASSETS ---
+            Row assetHead = sheet.createRow(rowNum++);
+            assetHead.createCell(0).setCellValue(b.getString("report.excel.bs.assets"));
+            assetHead.getCell(0).setCellStyle(boldStyle);
+
+            double totalRev = saleDAO.getTotalSalesBetween(currentMonthStart, currentMonthEnd);
+            double totalExp = expenseDAO.getTotalExpensesBetween(currentMonthStart, currentMonthEnd);
+            double cash = totalRev - totalExp; // Simplification for current period cash flow
+
+            double invValue = 0;
+            // For historical balance sheets, we use current inventory value as a proxy if
+            // historical depth is missing
+            try (com.pos.system.dao.ProductDAO pDAO = new com.pos.system.dao.ProductDAO(
+                    DatabaseManager.getInstance().getConnection())) {
+                for (com.pos.system.models.Product p : pDAO.getAllProducts()) {
+                    invValue += p.getStock() * p.getCostPrice();
+                }
+            }
+
+            writeSummaryRow(sheet, rowNum++, "  " + b.getString("report.excel.bs.cash"), cash, currencyStyle, null);
+            writeSummaryRow(sheet, rowNum++, "  " + b.getString("report.excel.bs.inventoryValue"), invValue,
+                    currencyStyle,
+                    null);
+            writeSummaryRow(sheet, rowNum++, b.getString("report.excel.bs.assets"), cash + invValue, currencyStyle,
+                    boldStyle);
+            rowNum++;
+
+            // --- LIABILITIES & EQUITY ---
+            Row leHead = sheet.createRow(rowNum++);
+            leHead.createCell(0).setCellValue(b.getString("report.excel.bs.totalLiabilitiesEquity"));
+            leHead.getCell(0).setCellStyle(boldStyle);
+
+            double liabilities = 0;
+            double netIncome = totalRev - totalExp;
+            double equitySource = invValue;
+
+            writeSummaryRow(sheet, rowNum++, "  " + b.getString("report.excel.bs.liabilities"), liabilities,
+                    currencyStyle,
+                    null);
+            writeSummaryRow(sheet, rowNum++, "  " + b.getString("report.excel.bs.retainedEarnings"), netIncome,
+                    currencyStyle, null);
+            writeSummaryRow(sheet, rowNum++, "  " + b.getString("report.excel.bs.equity"), equitySource,
+                    currencyStyle, null);
+            writeSummaryRow(sheet, rowNum++, b.getString("report.excel.bs.totalLiabilitiesEquity"),
+                    liabilities + netIncome + equitySource, currencyStyle, boldStyle);
+
+            rowNum++;
+            Row lineRow = sheet.createRow(rowNum++);
+            for (int i = 0; i < 2; i++)
+                lineRow.createCell(i).setCellValue("---");
+            rowNum++;
+            currentMonthStart = currentMonthStart.plusMonths(1);
+        }
+
+        sheet.autoSizeColumn(0);
+        sheet.autoSizeColumn(1);
+    }
+
+    private void addCashFlowSheet(Workbook workbook, LocalDateTime start, LocalDateTime end,
+            SaleDAO saleDAO, SalePaymentDAO paymentDAO, ExpenseDAO expenseDAO,
+            CellStyle headerStyle, CellStyle currencyStyle, CellStyle boldStyle) throws SQLException {
+        java.util.ResourceBundle b = App.getBundle();
+        Sheet sheet = workbook.createSheet(b.getString("report.excel.cfSheet"));
+        int rowNum = 0;
+
+        Row titleRow = sheet.createRow(rowNum++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(b.getString("report.excel.cfSheet"));
+        titleCell.setCellStyle(headerStyle);
+        rowNum++;
+
+        LocalDateTime currentMonthStart = start.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        while (currentMonthStart.isBefore(end)) {
+            LocalDateTime currentMonthEnd = currentMonthStart.plusMonths(1).minusNanos(1);
+            if (currentMonthEnd.isAfter(end))
+                currentMonthEnd = end;
+
+            // Month Header
+            Row monthRow = sheet.createRow(rowNum++);
+            Cell monthCell = monthRow.createCell(0);
+            monthCell.setCellValue(currentMonthStart.format(java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy")));
+            monthCell.setCellStyle(boldStyle);
+
+            // Inflow
+            double totalInflow = 0;
+            List<Sale> sales = saleDAO.getSalesBetween(currentMonthStart, currentMonthEnd);
+            java.util.Map<String, Double> inflowByMethod = new java.util.TreeMap<>();
+            for (Sale s : sales) {
+                List<SalePayment> payments = paymentDAO.findBySaleId(s.getId());
+                for (SalePayment p : payments) {
+                    inflowByMethod.put(p.getPaymentMethod(),
+                            inflowByMethod.getOrDefault(p.getPaymentMethod(), 0.0) + p.getAmount());
+                }
+            }
+            for (java.util.Map.Entry<String, Double> entry : inflowByMethod.entrySet()) {
+                writeSummaryRow(sheet, rowNum++, entry.getKey(), entry.getValue(), currencyStyle, null);
+                totalInflow += entry.getValue();
+            }
+            writeSummaryRow(sheet, rowNum++, b.getString("report.excel.cf.inflow"), totalInflow, currencyStyle,
+                    boldStyle);
+            rowNum++;
+
+            // Outflow
+            double totalExpenses = expenseDAO.getTotalExpensesBetween(currentMonthStart, currentMonthEnd);
+            writeSummaryRow(sheet, rowNum++, b.getString("report.excel.pl.expenses"), -totalExpenses, currencyStyle,
+                    null);
+            writeSummaryRow(sheet, rowNum++, b.getString("report.excel.cf.outflow"), -totalExpenses, currencyStyle,
+                    boldStyle);
+
+            rowNum++;
+            Row lineRow = sheet.createRow(rowNum++);
+            for (int i = 0; i < 2; i++)
+                lineRow.createCell(i).setCellValue("---");
+            rowNum++;
+            currentMonthStart = currentMonthStart.plusMonths(1);
+        }
+
+        sheet.autoSizeColumn(0);
+        sheet.autoSizeColumn(1);
+    }
+
+    private void addInventoryValueSheet(Workbook workbook, CellStyle headerStyle, CellStyle summaryStyle,
+            CellStyle currencyStyle, CellStyle boldStyle) throws SQLException {
+        java.util.ResourceBundle b = App.getBundle();
+        Sheet sheet = workbook.createSheet(b.getString("report.excel.ivSheet"));
+        int rowNum = 0;
+
+        Row titleRow = sheet.createRow(rowNum++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(b.getString("report.excel.ivSheet"));
+        titleCell.setCellStyle(headerStyle);
+        rowNum++;
+
+        String[] headers = {
+                b.getString("report.excel.iv.product"),
+                b.getString("report.excel.iv.stock"),
+                b.getString("report.excel.iv.cost"),
+                b.getString("report.excel.iv.totalValue")
+        };
+
+        Row headerRow = sheet.createRow(rowNum++);
+        for (int i = 0; i < headers.length; i++) {
+            Cell c = headerRow.createCell(i);
+            c.setCellValue(headers[i]);
+            c.setCellStyle(summaryStyle);
+        }
+
+        double grandTotal = 0;
+        try (com.pos.system.dao.ProductDAO pDAO = new com.pos.system.dao.ProductDAO(
+                DatabaseManager.getInstance().getConnection())) {
+            List<com.pos.system.models.Product> products = pDAO.getAllProducts();
+            for (com.pos.system.models.Product p : products) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(p.getName());
+                row.createCell(1).setCellValue(p.getStock());
+                Cell c2 = row.createCell(2);
+                c2.setCellValue(p.getCostPrice());
+                c2.setCellStyle(currencyStyle);
+                Cell c3 = row.createCell(3);
+                double total = p.getStock() * p.getCostPrice();
+                c3.setCellValue(total);
+                c3.setCellStyle(currencyStyle);
+                grandTotal += total;
+            }
+        }
+
+        rowNum++;
+        Row totalRow = sheet.createRow(rowNum++);
+        totalRow.createCell(0).setCellValue(b.getString("report.excel.ivSheet"));
+        totalRow.getCell(0).setCellStyle(boldStyle);
+        Cell totalVal = totalRow.createCell(3);
+        totalVal.setCellValue(grandTotal);
+        totalVal.setCellStyle(currencyStyle);
+
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+    }
+
+    private void writeSummaryRow(Sheet sheet, int rowNum, String label, double value, CellStyle currencyStyle,
+            CellStyle fontStyle) {
+        Row row = sheet.createRow(rowNum);
+        Cell l = row.createCell(0);
+        l.setCellValue(label);
+        if (fontStyle != null)
+            l.setCellStyle(fontStyle);
+        Cell v = row.createCell(1);
+        v.setCellValue(value);
+        v.setCellStyle(currencyStyle);
     }
 
     private static String fmt(double value) {

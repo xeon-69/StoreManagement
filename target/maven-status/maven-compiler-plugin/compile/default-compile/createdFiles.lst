@@ -11,6 +11,7 @@ com\pos\system\services\StoreEvents.class
 FixAdmin.class
 CheckAdmin.class
 com\pos\system\services\InventoryService.class
+com\pos\system\utils\SettingsManager.class
 com\pos\system\controllers\FinanceController$2.class
 com\pos\system\controllers\ReportsController$4.class
 com\pos\system\models\AuditLog.class
@@ -56,6 +57,7 @@ com\pos\system\controllers\DateRangeReportController$1.class
 com\pos\system\controllers\InventoryController.class
 com\pos\system\controllers\SettingsController$1.class
 com\pos\system\controllers\FinanceController$4.class
+com\pos\system\controllers\POSController$2.class
 com\pos\system\controllers\AddProductController.class
 com\pos\system\controllers\InventoryController$7.class
 com\pos\system\controllers\TransactionDetailsController.class

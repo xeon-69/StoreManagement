@@ -33,7 +33,8 @@ public class AdjustStockController {
     public void setProductContext(Product product) {
         this.product = product;
         if (product != null) {
-            titleLabel.setText("Adjust Stock: " + product.getName());
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            titleLabel.setText(String.format(b.getString("inventory.adjustStock.title"), product.getName()));
         }
     }
 
@@ -44,21 +45,24 @@ public class AdjustStockController {
     @FXML
     private void handleSave() {
         if (qtyField.getText().trim().isEmpty()) {
-            messageLabel.setText("Operation failed: Quantity is required.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            messageLabel.setText(b.getString("inventory.adjustStock.qtyRequired"));
             return;
         }
 
         try {
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
             int qtyChange = Integer.parseInt(qtyField.getText().trim());
             String reason = reasonArea.getText().trim();
             if (reason.isEmpty())
-                reason = "Manual Adjustment";
+                reason = b.getString("inventory.adjustStock.manualReason");
 
             StockAdjustmentService service = this.adjustmentService != null ? this.adjustmentService
                     : new StockAdjustmentService();
             service.adjustStock(product.getId(), qtyChange, reason);
 
-            NotificationUtils.showSuccess("Stock Adjusted", "Ledger updated successfully.");
+            NotificationUtils.showSuccess(b.getString("inventory.adjustStock.successTitle"),
+                    b.getString("inventory.adjustStock.successMsg"));
 
             if (onSaveCallback != null) {
                 onSaveCallback.run();
@@ -66,9 +70,11 @@ public class AdjustStockController {
 
             closeWindow();
         } catch (NumberFormatException e) {
-            messageLabel.setText("Operation failed: Quantity must be a valid number.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            messageLabel.setText(b.getString("inventory.adjustStock.invalidQty"));
         } catch (SQLException e) {
-            messageLabel.setText("Database error: " + e.getMessage());
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            messageLabel.setText(b.getString("dialog.dbError") + ": " + e.getMessage());
         } catch (IllegalArgumentException e) {
             messageLabel.setText(e.getMessage());
         }

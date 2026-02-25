@@ -1,6 +1,5 @@
 package com.pos.system.controllers;
 
-import com.pos.system.dao.CategoryDAO;
 import com.pos.system.models.Category;
 import com.pos.system.services.CategoryService;
 import com.pos.system.utils.NotificationUtils;
@@ -62,7 +61,8 @@ public class CategoryController {
             categoryTable.setItems(FXCollections.observableArrayList(service.getAllCategories()));
         } catch (SQLException e) {
             e.printStackTrace();
-            NotificationUtils.showWarning("Error", "Failed to load categories.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showWarning(b.getString("dialog.error"), b.getString("category.load.fail"));
         }
     }
 
@@ -143,34 +143,38 @@ public class CategoryController {
             controller.setOnSaveCallback(this::loadCategories);
 
             Stage stage = new Stage();
-            stage.setTitle(category == null ? "Add Category" : "Edit Category");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            stage.setTitle(category == null ? b.getString("category.add") : b.getString("category.edit"));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(root));
             stage.showAndWait();
 
         } catch (IOException e) {
             e.printStackTrace();
-            NotificationUtils.showWarning("Error", "Could not load category form.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showWarning(b.getString("dialog.error"), b.getString("category.form.load.fail"));
         }
     }
 
     private void handleDeleteCategory(Category category) {
+        java.util.ResourceBundle b = com.pos.system.App.getBundle();
         boolean confirm = NotificationUtils.showConfirmation(
-                com.pos.system.App.getBundle().getString("dialog.confirm"),
-                "Delete category: " + category.getName() + "? This action cannot be undone.");
+                b.getString("dialog.confirm"),
+                String.format(b.getString("category.delete.confirm"), category.getName()));
 
         if (confirm) {
             try {
                 CategoryService service = new CategoryService();
                 service.deleteCategory(category.getId());
-                NotificationUtils.showInfo("Success", "Category deleted.");
+                NotificationUtils.showInfo(b.getString("dialog.success"), b.getString("category.delete.success"));
                 loadCategories();
             } catch (SQLException e) {
                 e.printStackTrace();
                 if (e.getMessage().contains("SQLITE_CONSTRAINT_FOREIGNKEY")) {
-                    NotificationUtils.showWarning("Error", "Cannot delete category used by products.");
+                    NotificationUtils.showWarning(b.getString("dialog.error"),
+                            b.getString("category.delete.usedByProducts"));
                 } else {
-                    NotificationUtils.showWarning("Error", "Failed to delete category.");
+                    NotificationUtils.showWarning(b.getString("dialog.error"), b.getString("category.delete.fail"));
                 }
             }
         }

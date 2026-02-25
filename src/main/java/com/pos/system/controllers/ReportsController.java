@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Modality;
@@ -58,7 +59,23 @@ public class ReportsController {
     @FXML
     private TableColumn<Sale, LocalDateTime> dateCol;
     @FXML
+    private TableColumn<Sale, Double> changeCol;
+    @FXML
     private TableColumn<Sale, Void> actionCol;
+    @FXML
+    private Pagination pagination;
+
+    @FXML
+    private LineChart<String, Number> revenueLineChart;
+    @FXML
+    private BarChart<String, Number> categoryBarChart;
+    @FXML
+    private PieChart paymentPieChart;
+    @FXML
+    private StackedBarChart<String, Number> profitStackedBarChart;
+
+    private static final int ROWS_PER_PAGE = 30;
+    private List<Sale> allFilteredSales = new java.util.ArrayList<>();
 
     @FXML
     public void initialize() {
@@ -139,6 +156,7 @@ public class ReportsController {
             taxCol.setCellValueFactory(new PropertyValueFactory<>("taxAmount"));
             amountCol.setCellValueFactory(new PropertyValueFactory<>("totalAmount"));
             profitCol.setCellValueFactory(new PropertyValueFactory<>("totalProfit"));
+            changeCol.setCellValueFactory(new PropertyValueFactory<>("change"));
             paymentCol.setCellValueFactory(new PropertyValueFactory<>("paymentMethods"));
 
             formatCurrencyColumn(subtotalCol);
@@ -146,6 +164,7 @@ public class ReportsController {
             formatCurrencyColumn(taxCol);
             formatCurrencyColumn(amountCol);
             formatCurrencyColumn(profitCol);
+            formatCurrencyColumn(changeCol);
 
             // Date column formatter
             dateCol.setCellValueFactory(new PropertyValueFactory<>("saleDate"));
@@ -166,6 +185,11 @@ public class ReportsController {
 
             setupActionColumn();
 
+            // Pagination setup
+            pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+                updatePage(newIndex.intValue());
+            });
+
             // Select default filter (triggers handleFilter via listener)
             dateRangeComboBox.getSelectionModel().select(0);
 
@@ -176,7 +200,8 @@ public class ReportsController {
 
     private void setupActionColumn() {
         actionCol.setCellFactory(param -> new javafx.scene.control.TableCell<Sale, Void>() {
-            private final javafx.scene.control.Button detailsBtn = new javafx.scene.control.Button("Details");
+            private final javafx.scene.control.Button detailsBtn = new javafx.scene.control.Button(
+                    com.pos.system.App.getBundle().getString("reports.details.btn"));
 
             {
                 detailsBtn.getStyleClass().add("btn-primary");
@@ -212,14 +237,15 @@ public class ReportsController {
 
             javafx.scene.Scene scene = new javafx.scene.Scene(root);
             javafx.stage.Stage stage = new javafx.stage.Stage();
-            stage.setTitle("Transaction Details");
+            stage.setTitle(com.pos.system.App.getBundle().getString("reports.details.title"));
             stage.setScene(scene);
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.showAndWait();
 
         } catch (java.io.IOException e) {
             e.printStackTrace();
-            NotificationUtils.showError("Error", "Could not load transaction details.");
+            NotificationUtils.showError(com.pos.system.App.getBundle().getString("dialog.error"),
+                    com.pos.system.App.getBundle().getString("reports.details.loadError"));
         }
     }
 
@@ -263,7 +289,9 @@ public class ReportsController {
                     return;
                 }
                 if (startDatePicker.getValue().isAfter(endDatePicker.getValue())) {
-                    NotificationUtils.showError("Invalid Date Range", "Start date cannot be after end date.");
+                    java.util.ResourceBundle b = com.pos.system.App.getBundle();
+                    NotificationUtils.showError(b.getString("reports.filter.invalidRange"),
+                            b.getString("reports.filter.invalidRangeMsg"));
                     return;
                 }
                 start = startDatePicker.getValue().atStartOfDay();
@@ -296,9 +324,7 @@ public class ReportsController {
                         }
                         double totalPaid = payments.stream().mapToDouble(SalePayment::getAmount).sum();
                         double change = totalPaid - sale.getTotalAmount();
-                        if (change > 0) {
-                            sb.append(" | Change: ").append(String.format("%,.0f", change));
-                        }
+                        sale.setChange(Math.max(0, change));
                         sale.setPaymentMethods(sb.toString());
                     }
                 } catch (Exception ignored) {
@@ -306,14 +332,22 @@ public class ReportsController {
             }
 
             // Update UI directly (we're already on the FX thread)
-            todaySalesLabel.setText(String.format("%,.2f MMK", filteredSales));
-            todayProfitLabel.setText(String.format("%,.2f MMK", filteredProfit));
-            totalSalesLabel.setText(String.format("%,.2f MMK", totalSales));
-            recentSalesTable.setItems(FXCollections.observableArrayList(salesData));
+            String mmk = com.pos.system.App.getBundle().getString("common.mmk");
+            todaySalesLabel.setText(String.format("%,.2f %s", filteredSales, mmk));
+            todayProfitLabel.setText(String.format("%,.2f %s", filteredProfit, mmk));
+            totalSalesLabel.setText(String.format("%,.2f %s", totalSales, mmk));
+
+            this.allFilteredSales = salesData;
+            int pageCount = (int) Math.ceil((double) allFilteredSales.size() / ROWS_PER_PAGE);
+            pagination.setPageCount(Math.max(1, pageCount));
+            pagination.setCurrentPageIndex(0);
+            updatePage(0);
+            updateCharts(salesData);
 
         } catch (Exception e) {
             e.printStackTrace();
-            NotificationUtils.showError("Error", "Failed to load sales data.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showError(b.getString("dialog.error"), b.getString("reports.load.error"));
         }
     }
 
@@ -330,7 +364,9 @@ public class ReportsController {
             stage.setScene(new Scene(root));
             stage.showAndWait();
         } catch (IOException e) {
-            NotificationUtils.showError("UI Error", "Could not open date range selector: " + e.getMessage());
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showError(b.getString("dialog.uiError"),
+                    String.format(b.getString("reports.modal.uiError"), e.getMessage()));
             e.printStackTrace();
         }
     }
@@ -347,5 +383,169 @@ public class ReportsController {
                 }
             }
         });
+    }
+
+    private void updatePage(int pageIndex) {
+        int fromIndex = pageIndex * ROWS_PER_PAGE;
+        int toIndex = Math.min(fromIndex + ROWS_PER_PAGE, allFilteredSales.size());
+
+        if (fromIndex >= allFilteredSales.size() && !allFilteredSales.isEmpty()) {
+            recentSalesTable.setItems(FXCollections.observableArrayList());
+        } else if (allFilteredSales.isEmpty()) {
+            recentSalesTable.setItems(FXCollections.observableArrayList());
+        } else {
+            recentSalesTable.setItems(FXCollections.observableArrayList(allFilteredSales.subList(fromIndex, toIndex)));
+        }
+    }
+
+    private void updateCharts(List<Sale> data) {
+        if (data == null)
+            return;
+
+        java.util.ResourceBundle b = com.pos.system.App.getBundle();
+
+        // 1. Revenue & Profit Trend (Line Chart)
+        revenueLineChart.getData().clear();
+        XYChart.Series<String, Number> revSeries = new XYChart.Series<>();
+        revSeries.setName(b.getString("reports.chart.revenue"));
+        XYChart.Series<String, Number> profitSeries = new XYChart.Series<>();
+        profitSeries.setName(b.getString("reports.chart.profit"));
+
+        // Group by date
+        java.util.Map<String, Double> revByDate = new java.util.TreeMap<>();
+        java.util.Map<String, Double> profitByDate = new java.util.TreeMap<>();
+        java.time.format.DateTimeFormatter dayFormatter = java.time.format.DateTimeFormatter.ofPattern("dd-MM");
+
+        for (Sale s : data) {
+            String day = s.getSaleDate().format(dayFormatter);
+            revByDate.put(day, revByDate.getOrDefault(day, 0.0) + s.getTotalAmount());
+            profitByDate.put(day, profitByDate.getOrDefault(day, 0.0) + s.getTotalProfit());
+        }
+
+        for (String day : revByDate.keySet()) {
+            revSeries.getData().add(new XYChart.Data<>(day, revByDate.get(day)));
+            profitSeries.getData().add(new XYChart.Data<>(day, profitByDate.get(day)));
+        }
+        revenueLineChart.getData().add(revSeries);
+        revenueLineChart.getData().add(profitSeries);
+
+        String mmk = b.getString("common.mmk");
+        for (XYChart.Data<String, Number> dataNode : revSeries.getData()) {
+            installTooltip(dataNode, "%s\nRevenue: %,.2f " + mmk);
+        }
+        for (XYChart.Data<String, Number> dataNode : profitSeries.getData()) {
+            installTooltip(dataNode, "%s\nProfit: %,.2f " + mmk);
+        }
+
+        // 2. Sales by Category (Bar Chart)
+        categoryBarChart.getData().clear();
+        XYChart.Series<String, Number> catSeries = new XYChart.Series<>();
+        catSeries.setName(b.getString("reports.chart.revenue"));
+
+        java.util.Map<String, Double> revByCat = new java.util.TreeMap<>();
+
+        try (com.pos.system.dao.SaleDAO saleDAO = new com.pos.system.dao.SaleDAO()) {
+            for (Sale s : data) {
+                List<com.pos.system.models.SaleItem> items = saleDAO.getItemsBySaleId(s.getId());
+                for (com.pos.system.models.SaleItem item : items) {
+                    String cat = item.getCategoryName();
+                    if (cat == null)
+                        cat = "Uncategorized";
+                    revByCat.put(cat, revByCat.getOrDefault(cat, 0.0) + (item.getQuantity() * item.getPriceAtSale()));
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        for (java.util.Map.Entry<String, Double> entry : revByCat.entrySet()) {
+            catSeries.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+        }
+        categoryBarChart.getData().add(catSeries);
+
+        for (XYChart.Data<String, Number> dataNode : catSeries.getData()) {
+            installTooltip(dataNode, "%s\nSales: %,.2f " + mmk);
+        }
+
+        // 3. Payment Methods (Pie Chart)
+        paymentPieChart.getData().clear();
+        java.util.Map<String, Double> payMethods = new java.util.HashMap<>();
+        for (Sale s : data) {
+            String methods = s.getPaymentMethods();
+            if (methods != null) {
+                String[] parts = methods.split(", ");
+                for (String p : parts) {
+                    int paren = p.lastIndexOf(" (");
+                    if (paren > 0) {
+                        String name = p.substring(0, paren);
+                        String amtStr = p.substring(paren + 2, p.length() - 1).replace(",", "");
+                        try {
+                            double amt = Double.parseDouble(amtStr);
+                            payMethods.put(name, payMethods.getOrDefault(name, 0.0) + amt);
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+            }
+        }
+        for (java.util.Map.Entry<String, Double> entry : payMethods.entrySet()) {
+            paymentPieChart.getData().add(new PieChart.Data(entry.getKey(), entry.getValue()));
+        }
+
+        for (PieChart.Data dataNode : paymentPieChart.getData()) {
+            installTooltip(dataNode, "%s\nAmount: %,.2f " + mmk);
+        }
+
+        // 4. Profit Structure (Stacked Bar)
+        profitStackedBarChart.getData().clear();
+        XYChart.Series<String, Number> costSeries = new XYChart.Series<>();
+        costSeries.setName(b.getString("report.excel.pl.cogs"));
+        XYChart.Series<String, Number> netProfitSeries = new XYChart.Series<>();
+        netProfitSeries.setName(b.getString("reports.chart.profit"));
+
+        for (String day : revByDate.keySet()) {
+            double r = revByDate.get(day);
+            double p = profitByDate.get(day);
+            costSeries.getData().add(new XYChart.Data<>(day, r - p));
+            netProfitSeries.getData().add(new XYChart.Data<>(day, p));
+        }
+        profitStackedBarChart.getData().add(costSeries);
+        profitStackedBarChart.getData().add(netProfitSeries);
+
+        for (XYChart.Data<String, Number> dataNode : costSeries.getData()) {
+            installTooltip(dataNode, "%s\nCOGS: %,.2f " + mmk);
+        }
+        for (XYChart.Data<String, Number> dataNode : netProfitSeries.getData()) {
+            installTooltip(dataNode, "%s\nNet Profit: %,.2f " + mmk);
+        }
+    }
+
+    private void installTooltip(XYChart.Data<String, Number> dataNode, String formatStr) {
+        String tooltipText = String.format(formatStr, dataNode.getXValue(), dataNode.getYValue().doubleValue());
+        Tooltip tooltip = new Tooltip(tooltipText);
+        tooltip.setStyle("-fx-font-size: 14px; -fx-padding: 5px;");
+        if (dataNode.getNode() != null) {
+            Tooltip.install(dataNode.getNode(), tooltip);
+        } else {
+            dataNode.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                if (newNode != null) {
+                    Tooltip.install(newNode, tooltip);
+                }
+            });
+        }
+    }
+
+    private void installTooltip(PieChart.Data dataNode, String formatStr) {
+        String tooltipText = String.format(formatStr, dataNode.getName(), dataNode.getPieValue());
+        Tooltip tooltip = new Tooltip(tooltipText);
+        tooltip.setStyle("-fx-font-size: 14px; -fx-padding: 5px;");
+        if (dataNode.getNode() != null) {
+            Tooltip.install(dataNode.getNode(), tooltip);
+        } else {
+            dataNode.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                if (newNode != null) {
+                    Tooltip.install(newNode, tooltip);
+                }
+            });
+        }
     }
 }

@@ -77,13 +77,15 @@ public class TransactionDetailsController {
         if (sale == null)
             return;
 
-        saleIdLabel.setText("Sale ID: " + sale.getId());
-        dateLabel.setText("Date: " + sale.getSaleDate().toString().replace("T", " "));
-        subtotalLabel.setText(String.format("%,.2f", sale.getSubtotal()));
-        taxLabel.setText(String.format("%,.2f", sale.getTaxAmount()));
-        discountLabel.setText(String.format("%,.2f", sale.getDiscountAmount()));
-        totalLabel.setText(String.format("%,.2f", sale.getTotalAmount()));
-        userLabel.setText("User ID: " + sale.getUserId());
+        java.util.ResourceBundle b = com.pos.system.App.getBundle();
+        saleIdLabel.setText(String.format(b.getString("details.saleId"), sale.getId()));
+        dateLabel.setText(String.format(b.getString("details.date"), sale.getSaleDate().toString().replace("T", " ")));
+        String mmk = b.getString("common.mmk");
+        subtotalLabel.setText(String.format("%,.2f %s", sale.getSubtotal(), mmk));
+        taxLabel.setText(String.format("%,.2f %s", sale.getTaxAmount(), mmk));
+        discountLabel.setText(String.format("%,.2f %s", sale.getDiscountAmount(), mmk));
+        totalLabel.setText(String.format("%,.2f %s", sale.getTotalAmount(), mmk));
+        userLabel.setText(String.format(com.pos.system.App.getBundle().getString("details.userId"), sale.getUserId()));
 
         try (SaleDAO saleDAO = new SaleDAO(); SalePaymentDAO paymentDAO = new SalePaymentDAO()) {
             List<SaleItem> items = saleDAO.getItemsBySaleId(sale.getId());

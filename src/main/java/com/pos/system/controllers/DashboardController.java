@@ -167,7 +167,8 @@ public class DashboardController {
             mainPane.setCenter(view);
         } catch (IOException e) {
             e.printStackTrace();
-            Label errorLabel = new Label("Failed to load view: " + fxml);
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            Label errorLabel = new Label(String.format(b.getString("error.loadView"), fxml));
             mainPane.setCenter(errorLabel);
         }
     }

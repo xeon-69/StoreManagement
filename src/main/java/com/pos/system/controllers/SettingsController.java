@@ -14,8 +14,6 @@ public class SettingsController {
     @FXML
     private TextField storeNameField;
     @FXML
-    private TextField currencyField;
-    @FXML
     private TextField taxRateField;
     @FXML
     private TextField printerField;
@@ -46,7 +44,6 @@ public class SettingsController {
             Map<String, String> settings = loadTask.getValue();
             if (settings != null) {
                 storeNameField.setText(settings.getOrDefault("store_name", "My Store"));
-                currencyField.setText(settings.getOrDefault("currency_symbol", "MMK"));
                 taxRateField.setText(settings.getOrDefault("tax_rate", "0"));
                 printerField.setText(settings.getOrDefault("printer_id", ""));
             }
@@ -54,7 +51,8 @@ public class SettingsController {
 
         loadTask.setOnFailed(e -> {
             e.getSource().getException().printStackTrace();
-            NotificationUtils.showError("Database Error", "Failed to load settings.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showError(b.getString("dialog.dbError"), b.getString("settings.load.fail"));
         });
 
         new Thread(loadTask).start();
@@ -63,12 +61,12 @@ public class SettingsController {
     @FXML
     private void handleSaveSettings() {
         String storeName = storeNameField.getText().trim();
-        String currency = currencyField.getText().trim();
         String taxRate = taxRateField.getText().trim();
         String printer = printerField.getText().trim();
 
         if (storeName.isEmpty()) {
-            NotificationUtils.showError("Validation Error", "Store name cannot be empty.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showError(b.getString("dialog.validationError"), b.getString("settings.storeName.empty"));
             return;
         }
 
@@ -78,7 +76,6 @@ public class SettingsController {
                 try (SettingsDAO dao = getSettingsDAO()) {
                     boolean success = true;
                     success &= dao.updateSetting("store_name", storeName);
-                    success &= dao.updateSetting("currency_symbol", currency);
                     success &= dao.updateSetting("tax_rate", taxRate);
                     success &= dao.updateSetting("printer_id", printer);
                     return success;
@@ -87,16 +84,19 @@ public class SettingsController {
         };
 
         saveTask.setOnSucceeded(e -> {
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
             if (saveTask.getValue()) {
-                NotificationUtils.showInfo("Success", "Settings saved successfully.");
+                com.pos.system.utils.SettingsManager.getInstance().refreshSettings();
+                NotificationUtils.showInfo(b.getString("dialog.successTitle"), b.getString("settings.save.success"));
             } else {
-                NotificationUtils.showError("Error", "Failed to save some settings.");
+                NotificationUtils.showError(b.getString("dialog.errorTitle"), b.getString("settings.save.fail"));
             }
         });
 
         saveTask.setOnFailed(e -> {
             e.getSource().getException().printStackTrace();
-            NotificationUtils.showError("Database Error", "Failed to save settings.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showError(b.getString("dialog.dbError"), b.getString("settings.save.fail"));
         });
 
         new Thread(saveTask).start();

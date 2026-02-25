@@ -6,9 +6,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Pagination;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
+import java.sql.SQLException;
 
 public class AuditLogController {
 
@@ -26,7 +29,10 @@ public class AuditLogController {
     private TableColumn<AuditLog, String> entityCol;
     @FXML
     private TableColumn<AuditLog, String> detailsCol;
+    @FXML
+    private Pagination pagination;
 
+    private static final int ROWS_PER_PAGE = 20;
     private final ObservableList<AuditLog> logsList = FXCollections.observableArrayList();
 
     @FXML
@@ -38,7 +44,8 @@ public class AuditLogController {
                 : ""));
 
         userCol.setCellValueFactory(cellData -> new SimpleStringProperty(
-                cellData.getValue().getUserId() != null ? String.valueOf(cellData.getValue().getUserId()) : "SYSTEM"));
+                cellData.getValue().getUserId() != null ? String.valueOf(cellData.getValue().getUserId())
+                        : com.pos.system.App.getBundle().getString("audit.system")));
 
         actionCol.setCellValueFactory(new PropertyValueFactory<>("action"));
 
@@ -48,13 +55,32 @@ public class AuditLogController {
         detailsCol.setCellValueFactory(new PropertyValueFactory<>("details"));
 
         auditTable.setItems(logsList);
-        loadLogs();
+
+        setupPagination();
     }
 
-    private void loadLogs() {
-        logsList.clear();
+    private void setupPagination() {
         try (AuditLogDAO dao = new AuditLogDAO()) {
-            logsList.addAll(dao.getRecentLogs(500)); // Load latest 500 for now
+            int totalLogs = dao.getTotalCount();
+            int pageCount = (int) Math.ceil((double) totalLogs / ROWS_PER_PAGE);
+            if (pageCount == 0)
+                pageCount = 1;
+
+            pagination.setPageCount(pageCount);
+            pagination.setPageFactory(pageIndex -> {
+                loadLogs(pageIndex);
+                return new VBox(); // Pagination requires returning a Node, but we use it as a controller
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadLogs(int pageIndex) {
+        logsList.clear();
+        int offset = pageIndex * ROWS_PER_PAGE;
+        try (AuditLogDAO dao = new AuditLogDAO()) {
+            logsList.addAll(dao.getPaginatedLogs(ROWS_PER_PAGE, offset));
         } catch (Exception e) {
             e.printStackTrace();
         }

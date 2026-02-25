@@ -90,6 +90,10 @@ public class CheckoutController {
 
         discountField.textProperty().addListener((obs, oldV, newV) -> recalculateTotal());
         taxField.textProperty().addListener((obs, oldV, newV) -> recalculateTotal());
+
+        // Initialize from settings
+        com.pos.system.utils.SettingsManager settings = com.pos.system.utils.SettingsManager.getInstance();
+        taxField.setText(String.valueOf(settings.getTaxRate()));
     }
 
     public void setCheckoutData(ObservableList<SaleItem> cartItems, Runnable onSuccessCallback) {
@@ -97,7 +101,8 @@ public class CheckoutController {
         this.onSuccessCallback = onSuccessCallback;
 
         this.subtotal = cartItems.stream().mapToDouble(SaleItem::getTotal).sum();
-        subtotalLabel.setText(String.format("%,.2f", subtotal));
+        String currency = com.pos.system.utils.SettingsManager.getInstance().getCurrencySymbol();
+        subtotalLabel.setText(String.format("%,.2f %s", subtotal, currency));
 
         recalculateTotal();
     }
@@ -111,7 +116,8 @@ public class CheckoutController {
             double taxAmt = (subtotal - discountAmt) * (taxPct / 100.0);
 
             this.calculatedTotal = subtotal - discountAmt + taxAmt;
-            totalLabel.setText(String.format("%,.2f", calculatedTotal));
+            String currency = com.pos.system.utils.SettingsManager.getInstance().getCurrencySymbol();
+            totalLabel.setText(String.format("%,.2f %s", calculatedTotal, currency));
 
             updatePayments();
         } catch (NumberFormatException e) {
@@ -132,7 +138,7 @@ public class CheckoutController {
             paymentAmountField.clear();
             updatePayments();
         } catch (NumberFormatException e) {
-            errorLabel.setText("Invalid amount.");
+            errorLabel.setText(com.pos.system.App.getBundle().getString("checkout.invalidAmount"));
         }
     }
 
@@ -164,13 +170,14 @@ public class CheckoutController {
         double totalPaid = payments.stream().mapToDouble(SalePayment::getAmount).sum();
         double remaining = calculatedTotal - totalPaid;
 
+        String currency = com.pos.system.utils.SettingsManager.getInstance().getCurrencySymbol();
         if (remaining <= 0) {
-            remainingLabel.setText("0.00");
-            changeLabel.setText(String.format("%,.2f", Math.abs(remaining)));
+            remainingLabel.setText("0.00 " + currency);
+            changeLabel.setText(String.format("%,.2f %s", Math.abs(remaining), currency));
             confirmButton.setDisable(false);
         } else {
-            remainingLabel.setText(String.format("%,.2f", remaining));
-            changeLabel.setText("0.00");
+            remainingLabel.setText(String.format("%,.2f %s", remaining, currency));
+            changeLabel.setText("0.00 " + currency);
             confirmButton.setDisable(true);
         }
 
@@ -220,8 +227,9 @@ public class CheckoutController {
                 boolean success = printer.printReceipt(printSale, printItems, printTendered, printChange);
                 if (!success) {
                     javafx.application.Platform
-                            .runLater(() -> com.pos.system.utils.NotificationUtils.showWarning("Print Failed",
-                                    "Receipt could not be printed. Sale was saved successfully."));
+                            .runLater(() -> com.pos.system.utils.NotificationUtils.showWarning(
+                                    com.pos.system.App.getBundle().getString("checkout.printFailed.title"),
+                                    com.pos.system.App.getBundle().getString("checkout.printFailed.msg")));
                 }
             }).start();
 
@@ -232,7 +240,9 @@ public class CheckoutController {
 
         checkoutTask.setOnFailed(e -> {
             e.getSource().getException().printStackTrace();
-            errorLabel.setText("Checkout Failed: " + e.getSource().getException().getMessage());
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            errorLabel
+                    .setText(String.format(b.getString("checkout.failed"), e.getSource().getException().getMessage()));
         });
 
         new Thread(checkoutTask).start();

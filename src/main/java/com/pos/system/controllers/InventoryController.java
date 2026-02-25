@@ -170,9 +170,10 @@ public class InventoryController {
             return;
         }
 
+        java.util.ResourceBundle b = com.pos.system.App.getBundle();
         boolean confirm = com.pos.system.utils.NotificationUtils.showConfirmation(
-                com.pos.system.App.getBundle().getString("dialog.confirm"),
-                "Delete " + selectedProduct.getName() + "? Are you sure you want to delete this product?");
+                b.getString("inventory.delete.title"),
+                String.format(b.getString("inventory.delete.confirmMsg"), selectedProduct.getName()));
 
         if (confirm) {
 
@@ -192,8 +193,9 @@ public class InventoryController {
 
             deleteTask.setOnFailed(e -> {
                 e.getSource().getException().printStackTrace();
-                com.pos.system.utils.NotificationUtils.showError("Database Error",
-                        "Failed to delete product: " + e.getSource().getException().getMessage());
+                com.pos.system.utils.NotificationUtils.showError(b.getString("dialog.dbError"),
+                        String.format(b.getString("inventory.delete.error"),
+                                e.getSource().getException().getMessage()));
             });
 
             new Thread(deleteTask).start();
@@ -285,14 +287,16 @@ public class InventoryController {
         };
 
         expireTask.setOnSucceeded(e -> {
-            com.pos.system.utils.NotificationUtils.showInfo("Expiry Check Complete",
-                    "Successfully scanned and retired expired batches.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            com.pos.system.utils.NotificationUtils.showInfo(b.getString("inventory.expiry.success.title"),
+                    b.getString("inventory.expiry.success.msg"));
             loadProducts();
         });
 
         expireTask.setOnFailed(e -> {
             e.getSource().getException().printStackTrace();
-            com.pos.system.utils.NotificationUtils.showError("Expiry Scan Failed",
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            com.pos.system.utils.NotificationUtils.showError(b.getString("inventory.expiry.fail.title"),
                     e.getSource().getException().getMessage());
         });
 
@@ -317,10 +321,11 @@ public class InventoryController {
         ledgerTask.setOnSucceeded(e -> {
             List<com.pos.system.models.InventoryTransaction> history = ledgerTask.getValue();
 
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
             javafx.scene.control.Dialog<Void> dialog = new javafx.scene.control.Dialog<>();
-            dialog.setTitle(com.pos.system.App.getBundle().getString("inventory.ledger.title") + " - "
+            dialog.setTitle(b.getString("inventory.ledger.title") + " - "
                     + selectedProduct.getName());
-            dialog.setHeaderText(com.pos.system.App.getBundle().getString("inventory.ledger.history"));
+            dialog.setHeaderText(b.getString("inventory.ledger.history"));
 
             javafx.scene.control.TableView<com.pos.system.models.InventoryTransaction> table = new javafx.scene.control.TableView<>();
 
@@ -366,7 +371,8 @@ public class InventoryController {
 
         ledgerTask.setOnFailed(e -> {
             e.getSource().getException().printStackTrace();
-            com.pos.system.utils.NotificationUtils.showError("Failed to load ledger",
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            com.pos.system.utils.NotificationUtils.showError(b.getString("inventory.ledger.error"),
                     e.getSource().getException().getMessage());
         });
 
@@ -388,9 +394,10 @@ public class InventoryController {
             controller.setProductToEdit(selectedProduct); // Pre-fill data
             controller.setOnSaveCallback(this::loadProducts);
 
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
             javafx.scene.Scene scene = new javafx.scene.Scene(root);
             javafx.stage.Stage stage = new javafx.stage.Stage();
-            stage.setTitle("Edit Product");
+            stage.setTitle(b.getString("product.editTitle"));
             stage.setScene(scene);
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.showAndWait();
@@ -411,9 +418,10 @@ public class InventoryController {
             AddProductController controller = loader.getController();
             controller.setOnSaveCallback(this::loadProducts);
 
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
             javafx.scene.Scene scene = new javafx.scene.Scene(root);
             javafx.stage.Stage stage = new javafx.stage.Stage();
-            stage.setTitle("Add Product");
+            stage.setTitle(b.getString("product.addTitle"));
             stage.setScene(scene);
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.showAndWait();
@@ -436,14 +444,17 @@ public class InventoryController {
             controller.setProductContext(selectedProduct);
             controller.setOnSaveCallback(this::handleRefresh); // Assuming there's a refresh or loadProducts
 
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
             javafx.scene.Scene scene = new javafx.scene.Scene(root);
             javafx.stage.Stage stage = new javafx.stage.Stage();
-            stage.setTitle("Adjust Stock");
+            stage.setTitle(b.getString("stock.adjust.title").replace("%s", selectedProduct.getName()));
             stage.setScene(scene);
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.showAndWait();
         } catch (java.io.IOException e) {
-            com.pos.system.utils.NotificationUtils.showError("Error", "Could not load adjust stock form.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            com.pos.system.utils.NotificationUtils.showError(b.getString("dialog.error"),
+                    b.getString("inventory.adjust.error"));
         }
     }
 }

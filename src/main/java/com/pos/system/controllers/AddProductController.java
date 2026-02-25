@@ -48,7 +48,8 @@ public class AddProductController {
     public void setProductToEdit(Product product) {
         this.productToEdit = product;
         if (product != null) {
-            titleLabel.setText("Edit Product");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            titleLabel.setText(b.getString("inventory.editProduct.title"));
             barcodeField.setText(product.getBarcode());
             nameField.setText(product.getName());
 
@@ -84,7 +85,8 @@ public class AddProductController {
             categoryComboBox.setItems(javafx.collections.FXCollections.observableArrayList(dao.getAllCategories()));
         } catch (SQLException e) {
             e.printStackTrace();
-            messageLabel.setText("Failed to load categories.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            messageLabel.setText(b.getString("inventory.addProduct.loadCategoriesFail"));
         }
     }
 
@@ -102,7 +104,8 @@ public class AddProductController {
                 java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(selectedImageData);
                 productImageView.setImage(new javafx.scene.image.Image(bis));
             } catch (java.io.IOException e) {
-                messageLabel.setText("Failed to load image: " + e.getMessage());
+                java.util.ResourceBundle b = com.pos.system.App.getBundle();
+                messageLabel.setText(String.format(b.getString("inventory.addProduct.loadImageFail"), e.getMessage()));
             }
         }
     }
@@ -133,7 +136,8 @@ public class AddProductController {
                         Double.parseDouble(sellingPriceField.getText().trim()), productToEdit.getStock(),
                         selectedImageData);
                 productDAO.updateProduct(product); // Update
-                messageLabel.setText("Product updated!");
+                java.util.ResourceBundle b = com.pos.system.App.getBundle();
+                messageLabel.setText(b.getString("inventory.editProduct.success"));
             } else {
                 // Adding an entirely new product
                 product = new Product(id, barcodeField.getText().trim(), nameField.getText().trim(), categoryId,
@@ -151,7 +155,8 @@ public class AddProductController {
                     }
                 }
 
-                messageLabel.setText("Product saved!");
+                java.util.ResourceBundle b = com.pos.system.App.getBundle();
+                messageLabel.setText(b.getString("inventory.addProduct.success"));
             }
 
             messageLabel.setStyle("-fx-text-fill: green;");
@@ -163,13 +168,15 @@ public class AddProductController {
             closeWindow();
 
         } catch (NumberFormatException e) {
-            messageLabel.setText("Invalid number format for price or stock.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            messageLabel.setText(b.getString("inventory.addProduct.invalidFormat"));
             messageLabel.setStyle("-fx-text-fill: red;");
         } catch (SQLException e) {
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
             if (e.getMessage().contains("SQLITE_CONSTRAINT_UNIQUE")) {
-                messageLabel.setText("Error: Barcode already exists.");
+                messageLabel.setText(b.getString("inventory.addProduct.barcodeExists"));
             } else {
-                messageLabel.setText("Database error: " + e.getMessage());
+                messageLabel.setText(b.getString("dialog.dbError") + ": " + e.getMessage());
             }
             messageLabel.setStyle("-fx-text-fill: red;");
         }
@@ -188,7 +195,8 @@ public class AddProductController {
     private boolean validateInput() {
         if (barcodeField.getText().isEmpty() || nameField.getText().isEmpty() ||
                 sellingPriceField.getText().isEmpty()) {
-            messageLabel.setText("Please fill all required fields.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            messageLabel.setText(b.getString("inventory.addProduct.fillRequired"));
             messageLabel.setStyle("-fx-text-fill: red;");
             return false;
         }

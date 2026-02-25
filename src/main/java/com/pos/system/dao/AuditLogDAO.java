@@ -45,10 +45,15 @@ public class AuditLogDAO extends BaseDAO {
     }
 
     public List<AuditLog> getRecentLogs(int limit) throws SQLException {
+        return getPaginatedLogs(limit, 0);
+    }
+
+    public List<AuditLog> getPaginatedLogs(int limit, int offset) throws SQLException {
         List<AuditLog> list = new ArrayList<>();
-        String sql = "SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT ?";
+        String sql = "SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT ? OFFSET ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, limit);
+            stmt.setInt(2, offset);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapResultSetToLog(rs));
@@ -56,6 +61,28 @@ public class AuditLogDAO extends BaseDAO {
             }
         }
         return list;
+    }
+
+    public int getTotalCount() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM audit_logs";
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+    public void deleteLogsOlderThan(int days) throws SQLException {
+        String sql = "DELETE FROM audit_logs WHERE created_at < datetime('now', '-' || ? || ' days')";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, days);
+            int deleted = stmt.executeUpdate();
+            if (deleted > 0) {
+                // logger? DAO doesn't have one usually, but we could add it
+            }
+        }
     }
 
     public List<AuditLog> getLogsByDateRange(LocalDateTime start, LocalDateTime end) throws SQLException {

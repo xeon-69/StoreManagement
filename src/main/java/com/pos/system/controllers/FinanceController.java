@@ -191,20 +191,23 @@ public class FinanceController {
     }
 
     private void handleDeleteExpense(Expense expense) {
+        java.util.ResourceBundle b = com.pos.system.App.getBundle();
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Delete Expense");
-        confirm.setHeaderText("Delete expense: " + expense.getCategory());
-        confirm.setContentText("Amount: " + String.format("%,.2f", expense.getAmount()) + " MMK\nAre you sure?");
+        confirm.setTitle(b.getString("finance.delete.title"));
+        confirm.setHeaderText(String.format(b.getString("finance.delete.header"), expense.getCategory()));
+        confirm.setContentText(String.format(b.getString("finance.delete.content"), expense.getAmount())
+                + "\n" + b.getString("dialog.confirm"));
 
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try (ExpenseDAO dao = createExpenseDAO()) {
                 dao.deleteExpense(expense.getId());
                 handleFilter(); // Refresh
-                NotificationUtils.showSuccess("Deleted", "Expense deleted successfully.");
+                NotificationUtils.showSuccess(b.getString("finance.delete.success"),
+                        b.getString("finance.delete.successMsg"));
             } catch (SQLException e) {
                 e.printStackTrace();
-                NotificationUtils.showError("Error", "Failed to delete expense.");
+                NotificationUtils.showError(b.getString("dialog.error"), b.getString("finance.delete.errorMsg"));
             }
         }
     }
@@ -264,9 +267,10 @@ public class FinanceController {
             List<Expense> expenses = expenseDAO.getExpensesBetween(start, end);
 
             // Update UI
-            totalIncomeLabel.setText(String.format("%,.2f MMK", totalIncome));
-            totalExpensesLabel.setText(String.format("%,.2f MMK", totalExpenses));
-            netProfitLabel.setText(String.format("%,.2f MMK", netProfit));
+            String mmk = com.pos.system.App.getBundle().getString("common.mmk");
+            totalIncomeLabel.setText(String.format("%,.2f %s", totalIncome, mmk));
+            totalExpensesLabel.setText(String.format("%,.2f %s", totalExpenses, mmk));
+            netProfitLabel.setText(String.format("%,.2f %s", netProfit, mmk));
 
             // Color-code net profit
             if (netProfit >= 0) {
@@ -279,7 +283,8 @@ public class FinanceController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            NotificationUtils.showError("Error", "Failed to load finance data.");
+            NotificationUtils.showError(com.pos.system.App.getBundle().getString("dialog.error"),
+                    com.pos.system.App.getBundle().getString("finance.load.error"));
         }
     }
 
@@ -305,10 +310,13 @@ public class FinanceController {
             handleFilter(); // Refresh with current filter
 
         } catch (NumberFormatException e) {
-            NotificationUtils.showWarning("Input Error", "Please enter a valid amount.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showWarning(b.getString("finance.input.error"),
+                    b.getString("finance.input.invalidAmount"));
         } catch (SQLException e) {
             e.printStackTrace();
-            NotificationUtils.showError("Database Error", "Failed to add expense.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showError(b.getString("finance.dbError"), b.getString("finance.add.error"));
         }
     }
 }

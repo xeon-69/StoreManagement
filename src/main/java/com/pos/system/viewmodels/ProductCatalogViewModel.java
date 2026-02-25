@@ -9,6 +9,10 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.property.SimpleStringProperty;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -20,6 +24,9 @@ public class ProductCatalogViewModel {
     private final ObservableList<Product> allProducts = FXCollections.observableArrayList();
     private final ObservableList<Product> filteredProducts = FXCollections.observableArrayList();
     private final ObjectProperty<Product> selectedProduct = new SimpleObjectProperty<>();
+
+    private String currentQuery = "";
+    private Integer currentCategoryId = null; // null or 0 for All
 
     // Use a shared daemon thread pool for DB loading to avoid unbounded thread
     // creation
@@ -67,7 +74,7 @@ public class ProductCatalogViewModel {
 
         loadTask.setOnSucceeded(e -> {
             allProducts.setAll(loadTask.getValue());
-            filteredProducts.setAll(loadTask.getValue()); // Initially show all
+            applyFilters(); // Initially show all/filtered
         });
 
         loadTask.setOnFailed(e -> loadTask.getException().printStackTrace());
@@ -92,31 +99,37 @@ public class ProductCatalogViewModel {
     }
 
     public void search(String query) {
-        if (pendingSearch != null) {
-            // No easy way to cancel a Runnable in vanilla Java Executor without Future,
-            // but for simple debounce, we can just schedule the latest one.
-            // A better way is:
+        this.currentQuery = query == null ? "" : query.trim().toLowerCase();
+        applyFilters();
+    }
+
+    public void filterByCategory(Integer categoryId) {
+        // Treat 0 or null as "All Categories"
+        if (categoryId != null && categoryId == 0) {
+            this.currentCategoryId = null;
+        } else {
+            this.currentCategoryId = categoryId;
         }
+        applyFilters();
+    }
 
-        // Simple Debounce: Schedule a task. If another request comes, ignore/override?
-        // Actually, correctly implementing debounce requires cancelling the previous
-        // future.
-        // Let's keep it simple: Filter immediately for now, or use ReactFX if
-        // available.
-        // I added ReactFX to pom!
-
-        // ReactFX approach (if I were using it fully):
-        // EventStreams.valuesOf(searchField.textProperty()).successionEnds(Duration.ofMillis(300)).subscribe(...)
-
-        // Standard JavaFX approach for filter:
-        if (query == null || query.isEmpty()) {
-            filteredProducts.setAll(allProducts);
-            return;
-        }
-
-        String lowerQuery = query.toLowerCase();
+    private void applyFilters() {
         List<Product> result = allProducts.stream()
-                .filter(p -> p.getName().toLowerCase().contains(lowerQuery) || p.getBarcode().contains(lowerQuery))
+                .filter(p -> {
+                    // Search Filter
+                    String name = p.getName() != null ? p.getName().toLowerCase() : "";
+                    String barcode = p.getBarcode() != null ? p.getBarcode().toLowerCase() : "";
+
+                    boolean matchesSearch = currentQuery.isEmpty() ||
+                            name.contains(currentQuery) ||
+                            barcode.contains(currentQuery);
+
+                    // Category Filter
+                    boolean matchesCategory = currentCategoryId == null ||
+                            p.getCategoryId() == currentCategoryId;
+
+                    return matchesSearch && matchesCategory;
+                })
                 .collect(Collectors.toList());
 
         filteredProducts.setAll(result);
@@ -124,6 +137,10 @@ public class ProductCatalogViewModel {
 
     public ObservableList<Product> getFilteredProducts() {
         return filteredProducts;
+    }
+
+    public ObservableList<Product> getAllProducts() {
+        return allProducts;
     }
 
     public ObjectProperty<Product> selectedProductProperty() {

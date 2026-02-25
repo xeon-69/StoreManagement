@@ -145,7 +145,8 @@ public class UsersController {
 
         loadTask.setOnFailed(e -> {
             e.getSource().getException().printStackTrace();
-            NotificationUtils.showError("Database Error", "Failed to load users.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showError(b.getString("dialog.dbError"), b.getString("users.load.error"));
         });
 
         new Thread(loadTask).start();
@@ -158,7 +159,8 @@ public class UsersController {
         boolean forceChange = forceChangeCheckBox.isSelected();
 
         if (username.isEmpty()) {
-            NotificationUtils.showError("Validation Error", "Username cannot be empty.");
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showError(b.getString("dialog.validationError"), b.getString("users.username.empty"));
             return;
         }
 
@@ -168,7 +170,9 @@ public class UsersController {
             String confirmPassword = confirmPasswordField.getText();
 
             if (password.isEmpty() || !password.equals(confirmPassword)) {
-                NotificationUtils.showError("Validation Error", "Passwords do not match or are empty.");
+                java.util.ResourceBundle b = com.pos.system.App.getBundle();
+                NotificationUtils.showError(b.getString("dialog.validationError"),
+                        b.getString("users.password.mismatch"));
                 return;
             }
 
@@ -188,12 +192,13 @@ public class UsersController {
             };
 
             saveTask.setOnSucceeded(e -> {
+                java.util.ResourceBundle b = com.pos.system.App.getBundle();
                 if (saveTask.getValue()) {
-                    NotificationUtils.showInfo("Success", "User added successfully.");
+                    NotificationUtils.showInfo(b.getString("dialog.successTitle"), b.getString("users.add.success"));
                     handleClearForm();
                     loadUsers();
                 } else {
-                    NotificationUtils.showError("Save Failed", "Could not insert user, username might be taken.");
+                    NotificationUtils.showError(b.getString("dialog.errorTitle"), b.getString("users.add.fail"));
                 }
             });
 
@@ -214,12 +219,13 @@ public class UsersController {
             };
 
             updateTask.setOnSucceeded(e -> {
+                java.util.ResourceBundle b = com.pos.system.App.getBundle();
                 if (updateTask.getValue()) {
-                    NotificationUtils.showInfo("Success", "User role updated successfully.");
+                    NotificationUtils.showInfo(b.getString("dialog.successTitle"), b.getString("users.update.success"));
                     handleClearForm();
                     loadUsers();
                 } else {
-                    NotificationUtils.showError("Update Failed", "Could not update user.");
+                    NotificationUtils.showError(b.getString("dialog.errorTitle"), b.getString("users.update.fail"));
                 }
             });
 
@@ -239,20 +245,20 @@ public class UsersController {
     }
 
     private void handlePasswordChangeRequest(User user) {
-        // Simple prompt or dialog using Dialog<String>
+        java.util.ResourceBundle b = com.pos.system.App.getBundle();
         javafx.scene.control.Dialog<String> dialog = new javafx.scene.control.Dialog<>();
-        dialog.setTitle(com.pos.system.App.getBundle().getString("users.changePassword"));
-        dialog.setHeaderText("Set a new password for " + user.getUsername());
+        dialog.setTitle(b.getString("users.changePassword"));
+        dialog.setHeaderText(String.format(b.getString("users.changePassword.header"), user.getUsername()));
 
-        ButtonType saveButtonType = new ButtonType(com.pos.system.App.getBundle().getString("dialog.save"),
+        ButtonType saveButtonType = new ButtonType(b.getString("dialog.save"),
                 ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
 
         PasswordField pwd = new PasswordField();
-        pwd.setPromptText("New Password");
+        pwd.setPromptText(b.getString("users.password.prompt"));
         PasswordField confirmPwd = new PasswordField();
-        confirmPwd.setPromptText("Confirm Password");
-        CheckBox forceChangeBox = new CheckBox("Force change on next login");
+        confirmPwd.setPromptText(b.getString("users.password.confirmPrompt"));
+        CheckBox forceChangeBox = new CheckBox(b.getString("users.forceChange.label"));
         forceChangeBox.setSelected(true);
 
         VBox vbox = new VBox(10, pwd, confirmPwd, forceChangeBox);
@@ -288,11 +294,14 @@ public class UsersController {
                 }
             };
             pTask.setOnSucceeded(e -> {
+                java.util.ResourceBundle b_inner = com.pos.system.App.getBundle();
                 if (pTask.getValue()) {
-                    NotificationUtils.showInfo("Success", "Password updated for " + user.getUsername());
+                    NotificationUtils.showInfo(b_inner.getString("dialog.successTitle"),
+                            String.format(b_inner.getString("users.password.updated"), user.getUsername()));
                     loadUsers();
                 } else {
-                    NotificationUtils.showError("Error", "Could not update password");
+                    NotificationUtils.showError(b_inner.getString("dialog.errorTitle"),
+                            b_inner.getString("users.password.updateFail"));
                 }
             });
             new Thread(pTask).start();
@@ -300,14 +309,15 @@ public class UsersController {
     }
 
     private void handleDeleteRequest(User user) {
+        java.util.ResourceBundle b = com.pos.system.App.getBundle();
         if (user.getUsername().equals("admin")) {
-            NotificationUtils.showError("Action Denied", "Cannot delete the default admin user.");
+            NotificationUtils.showError(b.getString("dialog.uiError"), b.getString("users.delete.adminDeny"));
             return;
         }
 
         boolean confirm = NotificationUtils.showConfirmation(
-                com.pos.system.App.getBundle().getString("dialog.confirm"),
-                "Are you sure you want to delete user " + user.getUsername() + "?");
+                b.getString("dialog.confirm"),
+                String.format(b.getString("users.delete.confirm"), user.getUsername()));
 
         if (confirm) {
             Task<Boolean> delTask = new Task<>() {
@@ -325,7 +335,9 @@ public class UsersController {
                 if (delTask.getValue()) {
                     loadUsers();
                 } else {
-                    NotificationUtils.showError("Delete Failed", "Could not delete user.");
+                    java.util.ResourceBundle b_inner = com.pos.system.App.getBundle();
+                    NotificationUtils.showError(b_inner.getString("dialog.errorTitle"),
+                            b_inner.getString("users.delete.fail"));
                 }
             });
             new Thread(delTask).start();
