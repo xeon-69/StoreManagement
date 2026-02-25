@@ -89,6 +89,9 @@ public class UserDAO extends BaseDAO { // Extended BaseDAO
             pstmt.setString(3, user.getRole());
             pstmt.setBoolean(4, user.isForcePasswordChange());
             int affected = pstmt.executeUpdate();
+            if (affected > 0) {
+                logAudit("CREATE", "User", user.getUsername(), "Role: " + user.getRole());
+            }
             return affected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -101,7 +104,11 @@ public class UserDAO extends BaseDAO { // Extended BaseDAO
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, role);
             pstmt.setInt(2, userId);
-            return pstmt.executeUpdate() > 0;
+            int affected = pstmt.executeUpdate();
+            if (affected > 0) {
+                logAudit("UPDATE_ROLE", "User", String.valueOf(userId), "New role: " + role);
+            }
+            return affected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -114,7 +121,11 @@ public class UserDAO extends BaseDAO { // Extended BaseDAO
             pstmt.setString(1, newPasswordHash);
             pstmt.setBoolean(2, forceChange);
             pstmt.setInt(3, userId);
-            return pstmt.executeUpdate() > 0;
+            int affected = pstmt.executeUpdate();
+            if (affected > 0) {
+                logAudit("UPDATE_PASSWORD", "User", String.valueOf(userId), "Force change: " + forceChange);
+            }
+            return affected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -125,7 +136,11 @@ public class UserDAO extends BaseDAO { // Extended BaseDAO
         String sql = "DELETE FROM users WHERE id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, userId);
-            return pstmt.executeUpdate() > 0;
+            int affected = pstmt.executeUpdate();
+            if (affected > 0) {
+                logAudit("DELETE", "User", String.valueOf(userId), "Deleted user");
+            }
+            return affected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

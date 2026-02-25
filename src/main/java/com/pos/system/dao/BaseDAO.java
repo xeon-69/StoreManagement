@@ -9,6 +9,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.pos.system.models.AuditLog;
+import com.pos.system.models.User;
+import com.pos.system.utils.SessionManager;
+
 public abstract class BaseDAO implements AutoCloseable {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     protected Connection connection;
@@ -59,6 +63,23 @@ public abstract class BaseDAO implements AutoCloseable {
         }
     }
 
-    // Helper helpers
+    protected void logAudit(String action, String entityName, String entityId, String details) {
+        try {
+            User currentUser = SessionManager.getInstance().getCurrentUser();
+            AuditLog log = new AuditLog();
+            if (currentUser != null) {
+                log.setUserId(currentUser.getId());
+            }
+            log.setAction(action);
+            log.setEntityName(entityName);
+            log.setEntityId(entityId);
+            log.setDetails(details);
 
+            try (AuditLogDAO auditLogDAO = new AuditLogDAO(this.connection)) {
+                auditLogDAO.create(log);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to write audit log: " + action + " on " + entityName, e);
+        }
+    }
 }

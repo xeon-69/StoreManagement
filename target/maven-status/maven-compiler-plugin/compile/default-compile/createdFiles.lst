@@ -11,12 +11,14 @@ com\pos\system\services\StoreEvents.class
 FixAdmin.class
 CheckAdmin.class
 com\pos\system\services\InventoryService.class
+com\pos\system\controllers\SettingsController$3.class
 com\pos\system\utils\SettingsManager.class
 com\pos\system\controllers\FinanceController$2.class
 com\pos\system\controllers\ReportsController$4.class
 com\pos\system\models\AuditLog.class
 com\pos\system\Launcher.class
 com\pos\system\controllers\ReportsController$1.class
+com\pos\system\controllers\SettingsController$BackupFile.class
 com\pos\system\dao\SettingsDAO.class
 com\pos\system\dao\UserDAO.class
 com\pos\system\controllers\CategoryController.class
@@ -33,6 +35,7 @@ com\pos\system\dao\CategoryDAO.class
 com\pos\system\controllers\FinanceController.class
 com\pos\system\controllers\DateRangeReportController.class
 com\pos\system\controllers\InventoryController$2.class
+com\pos\system\controllers\InventoryController$9.class
 com\pos\system\dao\BaseDAO.class
 com\pos\system\utils\NotificationUtils$DialogType.class
 com\pos\system\dao\ExpenseDAO.class
@@ -43,6 +46,7 @@ com\pos\system\controllers\UsersController$2.class
 com\pos\system\controllers\SettingsController$2.class
 com\pos\system\models\InventoryTransaction.class
 com\pos\system\services\ReportingService$AggregationLevel.class
+com\pos\system\controllers\SettingsController$4.class
 com\pos\system\services\StockAdjustmentService.class
 com\pos\system\controllers\AuditLogController.class
 com\pos\system\controllers\UsersController$6.class
@@ -94,6 +98,7 @@ com\pos\system\services\StoreEvents$LowStockEvent.class
 com\pos\system\services\CheckoutService.class
 com\pos\system\viewmodels\ProductCatalogViewModel.class
 com\pos\system\controllers\SettingsController.class
+com\pos\system\controllers\SettingsController$5.class
 com\pos\system\models\Sale.class
 com\pos\system\controllers\FinanceController$3.class
 com\pos\system\controllers\InventoryController$6.class

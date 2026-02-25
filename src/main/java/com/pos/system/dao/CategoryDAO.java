@@ -22,6 +22,7 @@ public class CategoryDAO extends BaseDAO {
             pstmt.setString(1, category.getName());
             pstmt.setString(2, category.getDescription());
             pstmt.executeUpdate();
+            logAudit("CREATE", "Category", category.getName(), "Description: " + category.getDescription());
         }
     }
 
@@ -32,6 +33,7 @@ public class CategoryDAO extends BaseDAO {
             pstmt.setString(2, category.getDescription());
             pstmt.setInt(3, category.getId());
             pstmt.executeUpdate();
+            logAudit("UPDATE", "Category", String.valueOf(category.getId()), "Name updated to " + category.getName());
         }
     }
 
@@ -40,6 +42,7 @@ public class CategoryDAO extends BaseDAO {
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
+            logAudit("DELETE", "Category", String.valueOf(id), "Deleted category");
         }
     }
 

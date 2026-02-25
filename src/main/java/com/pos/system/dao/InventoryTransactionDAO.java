@@ -22,7 +22,7 @@ public class InventoryTransactionDAO extends BaseDAO {
     }
 
     public void insertTransaction(InventoryTransaction tx) throws SQLException {
-        String sql = "INSERT INTO inventory_transactions (product_id, batch_id, quantity_change, transaction_type, reference_id, created_by) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO inventory_transactions (product_id, batch_id, quantity_change, transaction_type, reference_id, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, tx.getProductId());
 
@@ -41,8 +41,12 @@ public class InventoryTransactionDAO extends BaseDAO {
             } else {
                 stmt.setNull(6, java.sql.Types.INTEGER);
             }
+            stmt.setString(7,
+                    LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
             stmt.executeUpdate();
+            logAudit("CREATE", "InventoryTransaction", tx.getTransactionType().name(),
+                    "Product: " + tx.getProductId() + ", Change: " + tx.getQuantityChange());
         }
     }
 

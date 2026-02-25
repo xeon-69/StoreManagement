@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Pagination?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -14,9 +15,12 @@
 <?import javafx.scene.text.Font?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<HBox prefHeight="700.0" prefWidth="1000.0" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.POSController" stylesheets="@../css/styles.css">
-   <children>
-      <VBox spacing="20.0" HBox.hgrow="ALWAYS">
+<SplitPane dividerPositions="0.65" prefHeight="700.0" prefWidth="1000.0" styleClass="pos-split-pane" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.POSController" stylesheets="@../css/styles.css">
+   <items>
+      <VBox spacing="20.0">
+         <padding>
+            <Insets right="10.0" />
+         </padding>
          <children>
             <Label text="%pos.title" styleClass="header-label"/>
             <HBox spacing="10.0">
@@ -33,7 +37,7 @@
             <Pagination fx:id="pagination" maxPageIndicatorCount="5" VBox.vgrow="NEVER" />
          </children>
       </VBox>
-      <VBox minWidth="350.0" maxWidth="500.0" spacing="15.0" styleClass="report-card" style="-fx-background-color: white;">
+      <VBox minWidth="350.0" maxWidth="800.0" spacing="15.0" styleClass="report-card" style="-fx-background-color: white;">
          <children>
             <Label text="%pos.currentSale" styleClass="sub-header-label"/>
             <TableView fx:id="cartTable" VBox.vgrow="ALWAYS">
@@ -76,8 +80,8 @@
             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
          </padding>
       </VBox>
-   </children>
+   </items>
    <padding>
       <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
    </padding>
-</HBox>
+</SplitPane>

@@ -144,7 +144,7 @@ public class FinanceController {
             dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
             dateCol.setCellFactory(column -> new TableCell<Expense, LocalDateTime>() {
                 private final java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter
-                        .ofPattern("dd-MM-yyyy HH:mm:ss");
+                        .ofPattern("MMM dd, yyyy hh:mm a");
 
                 @Override
                 protected void updateItem(LocalDateTime item, boolean empty) {

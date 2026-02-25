@@ -22,7 +22,7 @@ public class BatchDAO extends BaseDAO {
     }
 
     public int insertBatch(Batch batch) throws SQLException {
-        String sql = "INSERT INTO batches (product_id, batch_number, expiry_date, cost_price, remaining_quantity) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO batches (product_id, batch_number, expiry_date, cost_price, remaining_quantity, created_at) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, batch.getProductId());
             stmt.setString(2, batch.getBatchNumber());
@@ -33,6 +33,8 @@ public class BatchDAO extends BaseDAO {
             }
             stmt.setDouble(4, batch.getCostPrice());
             stmt.setInt(5, batch.getRemainingQuantity());
+            stmt.setString(6,
+                    LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
             stmt.executeUpdate();
 
@@ -40,6 +42,8 @@ public class BatchDAO extends BaseDAO {
                 if (keys.next()) {
                     int id = keys.getInt(1);
                     batch.setId(id);
+                    logAudit("CREATE", "Batch", batch.getBatchNumber(),
+                            "Product ID: " + batch.getProductId() + ", Qty: " + batch.getRemainingQuantity());
                     return id;
                 } else {
                     throw new SQLException("Failed to create batch, no ID obtained.");
@@ -54,6 +58,7 @@ public class BatchDAO extends BaseDAO {
             stmt.setInt(1, remainingQuantity);
             stmt.setInt(2, batchId);
             stmt.executeUpdate();
+            logAudit("UPDATE", "Batch", String.valueOf(batchId), "Remaining quantity updated to: " + remainingQuantity);
         }
     }
 

@@ -329,9 +329,23 @@ public class InventoryController {
 
             javafx.scene.control.TableView<com.pos.system.models.InventoryTransaction> table = new javafx.scene.control.TableView<>();
 
-            TableColumn<com.pos.system.models.InventoryTransaction, String> dateCol = new TableColumn<>(
+            TableColumn<com.pos.system.models.InventoryTransaction, java.time.LocalDateTime> dateCol = new TableColumn<>(
                     com.pos.system.App.getBundle().getString("inventory.ledger.date"));
             dateCol.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+            dateCol.setCellFactory(col -> new javafx.scene.control.TableCell<>() {
+                private final java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter
+                        .ofPattern("MMM dd, yyyy hh:mm a");
+
+                @Override
+                protected void updateItem(java.time.LocalDateTime item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(formatter.format(item));
+                    }
+                }
+            });
             dateCol.setPrefWidth(180);
             dateCol.setMinWidth(150);
 

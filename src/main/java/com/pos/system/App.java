@@ -54,6 +54,12 @@ public class App extends Application {
         currentFxml = fxml;
         if (scene != null) {
             scene.setRoot(loadFXML(fxml));
+            if (fxml.equals("dashboard")) {
+                Stage stage = (Stage) scene.getWindow();
+                stage.setWidth(1280);
+                stage.setHeight(800);
+                stage.centerOnScreen();
+            }
         }
     }
 

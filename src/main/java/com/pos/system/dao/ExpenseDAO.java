@@ -18,12 +18,15 @@ public class ExpenseDAO extends BaseDAO {
     }
 
     public void addExpense(Expense expense) throws SQLException {
-        String sql = "INSERT INTO expenses (category, amount, description) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO expenses (category, amount, description, expense_date) VALUES (?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, expense.getCategory());
             pstmt.setDouble(2, expense.getAmount());
             pstmt.setString(3, expense.getDescription());
+            pstmt.setString(4,
+                    LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             pstmt.executeUpdate();
+            logAudit("CREATE", "Expense", expense.getCategory(), "Amount: " + expense.getAmount());
         }
     }
 
@@ -32,6 +35,7 @@ public class ExpenseDAO extends BaseDAO {
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
+            logAudit("DELETE", "Expense", String.valueOf(id), "Deleted expense");
         }
     }
 

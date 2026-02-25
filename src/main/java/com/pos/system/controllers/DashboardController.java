@@ -8,6 +8,8 @@ import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.control.ContentDisplay;
 import java.util.Locale;
 
 import java.io.IOException;
@@ -25,10 +27,28 @@ public class DashboardController {
     private BorderPane mainPane;
 
     @FXML
+    private VBox sidebar;
+
+    @FXML
     private Label currentUserLabel;
 
     @FXML
     private ComboBox<String> languageComboBox;
+
+    @FXML
+    private Button navPosBtn;
+
+    @FXML
+    private Button navInventoryBtn;
+
+    @FXML
+    private Button navCategoriesBtn;
+
+    @FXML
+    private Button navFinanceBtn;
+
+    @FXML
+    private Button navReportsBtn;
 
     @FXML
     private Button navAuditBtn;
@@ -38,6 +58,11 @@ public class DashboardController {
 
     @FXML
     private Button navSettingsBtn;
+
+    @FXML
+    private Button logoutBtn;
+
+    private boolean isSidebarExpanded = true;
 
     @FXML
     public void initialize() {
@@ -95,6 +120,38 @@ public class DashboardController {
     }
 
     @FXML
+    private void toggleSidebar() {
+        isSidebarExpanded = !isSidebarExpanded;
+
+        Button[] allNavButtons = { navPosBtn, navInventoryBtn, navCategoriesBtn, navFinanceBtn, navReportsBtn,
+                navAuditBtn, navUsersBtn, navSettingsBtn, logoutBtn };
+
+        if (isSidebarExpanded) {
+            sidebar.setPrefWidth(200.0);
+            sidebar.setMinWidth(200.0);
+            for (Button btn : allNavButtons) {
+                if (btn != null)
+                    btn.setContentDisplay(ContentDisplay.LEFT);
+            }
+            languageComboBox.setVisible(true);
+            languageComboBox.setManaged(true);
+            currentUserLabel.setVisible(true);
+            currentUserLabel.setManaged(true);
+        } else {
+            sidebar.setPrefWidth(70.0);
+            sidebar.setMinWidth(70.0);
+            for (Button btn : allNavButtons) {
+                if (btn != null)
+                    btn.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+            }
+            languageComboBox.setVisible(false);
+            languageComboBox.setManaged(false);
+            currentUserLabel.setVisible(false);
+            currentUserLabel.setManaged(false);
+        }
+    }
+
+    @FXML
     private void showPOS() {
         loadView("pos");
     }
@@ -142,8 +199,37 @@ public class DashboardController {
         App.setRoot("login");
     }
 
+    private void updateActiveButton(String fxml) {
+        Button[] allNavButtons = { navPosBtn, navInventoryBtn, navCategoriesBtn, navFinanceBtn, navReportsBtn,
+                navAuditBtn, navUsersBtn, navSettingsBtn };
+        Button activeBtn = switch (fxml) {
+            case "pos" -> navPosBtn;
+            case "inventory" -> navInventoryBtn;
+            case "categories" -> navCategoriesBtn;
+            case "finance" -> navFinanceBtn;
+            case "reports" -> navReportsBtn;
+            case "audit_logs" -> navAuditBtn;
+            case "users" -> navUsersBtn;
+            case "settings" -> navSettingsBtn;
+            default -> null;
+        };
+
+        for (Button btn : allNavButtons) {
+            if (btn != null) {
+                btn.getStyleClass().remove("active");
+            }
+        }
+
+        if (activeBtn != null) {
+            if (!activeBtn.getStyleClass().contains("active")) {
+                activeBtn.getStyleClass().add("active");
+            }
+        }
+    }
+
     private void loadView(String fxml) {
         currentActiveView = fxml;
+        updateActiveButton(fxml);
 
         // Pages with live data should always reload fresh
         boolean shouldCache = !fxml.equals("reports") && !fxml.equals("inventory")

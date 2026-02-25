@@ -151,8 +151,8 @@
                                     </VBox>
                                     <VBox styleClass="report-card" HBox.hgrow="ALWAYS">
                                        <children>
-                                          <Label styleClass="sub-header-label" text="%reports.chart.paymentMethods" />
-                                          <PieChart fx:id="paymentPieChart" prefHeight="300.0" />
+                                             <Label styleClass="sub-header-label" text="%reports.analysis.barTitle" />
+                                             <PieChart fx:id="paymentPieChart" prefHeight="300.0" labelsVisible="false" />
                                        </children>
                                     </VBox>
                                  </children>
@@ -160,20 +160,20 @@
                               
                               <VBox styleClass="report-card">
                                  <children>
-                                    <Label styleClass="sub-header-label" text="%reports.chart.profitStructure" />
-                                    <ScrollPane fx:id="profitScrollPane" fitToHeight="true" fitToWidth="false" vbarPolicy="NEVER" hbarPolicy="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent;">
-                                       <content>
-                                          <StackedBarChart fx:id="profitStackedBarChart" prefHeight="300.0" minWidth="800.0">
-                                             <padding>
-                                                <Insets bottom="20.0" />
-                                             </padding>
-                                             <xAxis>
-                                                <CategoryAxis side="BOTTOM" animated="false" />
-                                             </xAxis>
-                                             <yAxis><NumberAxis side="LEFT" /></yAxis>
-                                          </StackedBarChart>
-                                       </content>
-                                    </ScrollPane>
+                                     <Label styleClass="sub-header-label" text="%reports.chart.peakHour" />
+                                     <ScrollPane fx:id="profitScrollPane" fitToHeight="true" fitToWidth="false" vbarPolicy="NEVER" hbarPolicy="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent;">
+                                        <content>
+                                           <BarChart fx:id="peakHourBarChart" prefHeight="300.0" minWidth="1200.0">
+                                              <padding>
+                                                 <Insets bottom="20.0" />
+                                              </padding>
+                                              <xAxis>
+                                                 <CategoryAxis side="BOTTOM" animated="false" />
+                                              </xAxis>
+                                              <yAxis><NumberAxis side="LEFT" /></yAxis>
+                                           </BarChart>
+                                        </content>
+                                     </ScrollPane>
                                  </children>
                               </VBox>
                            </children>

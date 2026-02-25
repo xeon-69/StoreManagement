@@ -62,6 +62,15 @@
     -fx-icon-color: white;
 }
 
+.sidebar-button.active {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-text-fill: white;
+}
+
+.sidebar-button.active .ikonli-font-icon {
+    -fx-icon-color: white;
+}
+
 /* Cards & Containers */
 .report-card,
 .product-card {
@@ -142,6 +151,21 @@
 
 .btn-warning:hover {
     -fx-background-color: #f39c12;
+}
+
+/* POS Split Pane */
+.pos-split-pane {
+    -fx-background-color: transparent;
+}
+
+.pos-split-pane>.split-pane-divider {
+    -fx-background-color: transparent;
+    -fx-pref-width: 10px;
+}
+
+.pos-split-pane>.split-pane-divider:hover {
+    -fx-background-color: rgba(52, 152, 219, 0.2);
+    -fx-cursor: ew-resize;
 }
 
 /* Input Fields */

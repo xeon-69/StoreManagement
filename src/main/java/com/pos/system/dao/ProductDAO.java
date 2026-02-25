@@ -27,6 +27,8 @@ public class ProductDAO extends BaseDAO {
             pstmt.setInt(6, product.getStock());
             pstmt.setBytes(7, product.getImageData());
             pstmt.executeUpdate();
+            logAudit("CREATE", "Product", product.getBarcode(),
+                    "Name: " + product.getName() + ", Price: " + product.getSellingPrice());
         }
     }
 
@@ -41,6 +43,8 @@ public class ProductDAO extends BaseDAO {
             pstmt.setBytes(6, product.getImageData());
             pstmt.setInt(7, product.getId());
             pstmt.executeUpdate();
+            logAudit("UPDATE", "Product", String.valueOf(product.getId()),
+                    "Barcode: " + product.getBarcode() + ", Name: " + product.getName());
         }
     }
 
@@ -49,6 +53,7 @@ public class ProductDAO extends BaseDAO {
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
+            logAudit("DELETE", "Product", String.valueOf(id), "Deleted product");
         }
     }
 

@@ -83,7 +83,7 @@ public class ReportsController {
     @FXML
     private PieChart paymentPieChart;
     @FXML
-    private StackedBarChart<String, Number> profitStackedBarChart;
+    private BarChart<String, Number> peakHourBarChart;
     @FXML
     private javafx.scene.control.ScrollPane revenueScrollPane;
     @FXML
@@ -224,7 +224,7 @@ public class ReportsController {
             dateCol.setCellValueFactory(new PropertyValueFactory<>("saleDate"));
             dateCol.setCellFactory(column -> new javafx.scene.control.TableCell<Sale, LocalDateTime>() {
                 private final java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter
-                        .ofPattern("dd-MM-yyyy HH:mm:ss");
+                        .ofPattern("MMM dd, yyyy hh:mm a");
 
                 @Override
                 protected void updateItem(LocalDateTime item, boolean empty) {
@@ -586,7 +586,7 @@ public class ReportsController {
         // horizontal scrolling
         double requiredWidth = Math.max(800.0, orderPreservingRev.size() * 60.0);
         revenueLineChart.setMinWidth(requiredWidth);
-        profitStackedBarChart.setMinWidth(requiredWidth);
+        peakHourBarChart.setMinWidth(Math.max(800.0, 24 * 60.0));
 
         String mmk = b.getString("common.mmk");
         for (XYChart.Data<String, Number> dataNode : revSeries.getData()) {
@@ -598,20 +598,31 @@ public class ReportsController {
 
         // 2. Sales by Category (Bar Chart)
         categoryBarChart.getData().clear();
+        paymentPieChart.getData().clear();
         XYChart.Series<String, Number> catSeries = new XYChart.Series<>();
         catSeries.setName(b.getString("reports.chart.revenue"));
 
         java.util.Map<String, Double> revByCat = new java.util.TreeMap<>();
+        java.util.Map<String, Double> qtyByCat = new java.util.TreeMap<>();
+        java.util.Map<String, Double> itemsPerHour = new java.util.TreeMap<>();
+        for (int i = 0; i < 24; i++) {
+            itemsPerHour.put(String.format("%02d:00", i), 0.0);
+        }
 
         try (com.pos.system.dao.SaleDAO saleDAO = new com.pos.system.dao.SaleDAO()) {
             for (Sale s : data) {
+                String hourKey = String.format("%02d:00", s.getSaleDate().getHour());
+                double itemsInSale = 0;
                 List<com.pos.system.models.SaleItem> items = saleDAO.getItemsBySaleId(s.getId());
                 for (com.pos.system.models.SaleItem item : items) {
                     String cat = item.getCategoryName();
                     if (cat == null)
                         cat = "Uncategorized";
                     revByCat.put(cat, revByCat.getOrDefault(cat, 0.0) + (item.getQuantity() * item.getPriceAtSale()));
+                    qtyByCat.put(cat, qtyByCat.getOrDefault(cat, 0.0) + item.getQuantity());
+                    itemsInSale += item.getQuantity();
                 }
+                itemsPerHour.put(hourKey, itemsPerHour.get(hourKey) + itemsInSale);
             }
         } catch (Exception ignored) {
         }
@@ -621,72 +632,38 @@ public class ReportsController {
         }
         categoryBarChart.getData().add(catSeries);
 
+        for (java.util.Map.Entry<String, Double> entry : qtyByCat.entrySet()) {
+            paymentPieChart.getData().add(new PieChart.Data(entry.getKey(), entry.getValue()));
+        }
+
         for (XYChart.Data<String, Number> dataNode : catSeries.getData()) {
             installTooltip(dataNode, "%s\nSales: %,.2f " + mmk);
         }
 
-        // 3. Payment Methods (Pie Chart)
-        paymentPieChart.getData().clear();
-        for (Sale s : data) {
-            String pMethods = s.getPaymentMethods();
-            if (pMethods == null || pMethods.isEmpty())
-                continue;
-
-            String[] methods = pMethods.split(",");
-            for (String methodStr : methods) {
-                // p.getPaymentMethod() + " (" + String.format("%,.0f", p.getAmount()) + ")"
-                int startParen = methodStr.lastIndexOf('(');
-                if (startParen != -1) {
-                    String method = methodStr.substring(0, startParen).trim();
-                    try {
-                        String amtStr = methodStr.substring(startParen + 1, methodStr.length() - 1)
-                                .replaceAll("[,\\s]", "");
-                        double amt = Double.parseDouble(amtStr);
-                        // accumulate
-                        PieChart.Data existingData = null;
-                        for (PieChart.Data dp : paymentPieChart.getData()) {
-                            if (dp.getName().equals(method)) {
-                                existingData = dp;
-                                break;
-                            }
-                        }
-                        if (existingData != null) {
-                            existingData.setPieValue(existingData.getPieValue() + amt);
-                        } else {
-                            paymentPieChart.getData().add(new PieChart.Data(method, amt));
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-
         for (PieChart.Data d : paymentPieChart.getData()) {
-            installTooltip(d, "%s\nAmount: %,.2f " + mmk);
+            installTooltip(d, "%s\nQuantity: %,.0f");
         }
 
-        // 4. Profit Structure (Stacked Bar)
-        profitStackedBarChart.getData().clear();
-        XYChart.Series<String, Number> costSeries = new XYChart.Series<>();
-        costSeries.setName(b.getString("report.excel.pl.cogs"));
-        XYChart.Series<String, Number> netProfitSeries = new XYChart.Series<>();
-        netProfitSeries.setName(b.getString("reports.chart.profit"));
+        // 4. Peak Hour (Bar Chart)
+        peakHourBarChart.getData().clear();
+        XYChart.Series<String, Number> peakHourSeries = new XYChart.Series<>();
+        peakHourSeries.setName(b.getString("reports.chart.avgItems"));
 
-        for (String key : orderPreservingRev.keySet()) {
-            double r = orderPreservingRev.get(key);
-            double p = orderPreservingProfit.get(key);
-            costSeries.getData().add(new XYChart.Data<>(key, r - p));
-            netProfitSeries.getData().add(new XYChart.Data<>(key, p));
-        }
-        profitStackedBarChart.getData().add(costSeries);
-        profitStackedBarChart.getData().add(netProfitSeries);
+        long uniqueActiveDays = data.stream()
+                .map(s -> s.getSaleDate().toLocalDate())
+                .distinct()
+                .count();
+        if (uniqueActiveDays <= 0)
+            uniqueActiveDays = 1;
 
-        for (XYChart.Data<String, Number> dataNode : costSeries.getData()) {
-            installTooltip(dataNode, "%s\nCOGS: %,.2f " + mmk);
+        for (java.util.Map.Entry<String, Double> entry : itemsPerHour.entrySet()) {
+            double avgItems = entry.getValue() / uniqueActiveDays;
+            peakHourSeries.getData().add(new XYChart.Data<>(entry.getKey(), avgItems));
         }
-        for (XYChart.Data<String, Number> dataNode : netProfitSeries.getData()) {
-            installTooltip(dataNode, "%s\nNet Profit: %,.2f " + mmk);
+        peakHourBarChart.getData().add(peakHourSeries);
+
+        for (XYChart.Data<String, Number> dataNode : peakHourSeries.getData()) {
+            installTooltip(dataNode, "%s\nAvg Items: %,.1f");
         }
 
         // Auto-scroll the charts to the end (newest data)

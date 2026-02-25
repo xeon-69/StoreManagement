@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class DatabaseManager {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseManager.class);
@@ -183,7 +184,7 @@ public class DatabaseManager {
         }
     }
 
-    private void performBackup() {
+    public void performBackup(boolean isManual) {
         try {
             logger.info("Starting database backup...");
             File dbFile = new File("store.db");
@@ -195,20 +196,131 @@ public class DatabaseManager {
                 Files.createDirectories(backupDir);
             }
 
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
-            Path backupFile = backupDir.resolve("store.db_" + timestamp + ".bak");
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm"));
+            String prefix = isManual ? "manual_" : "auto_";
+            String baseFilename = "store_" + prefix + timestamp;
+            Path tempSqliteFile = backupDir.resolve(baseFilename + ".db");
+            Path finalZipFile = backupDir.resolve(baseFilename + ".zip");
 
-            Files.copy(dbFile.toPath(), backupFile, StandardCopyOption.REPLACE_EXISTING);
-            logger.info("Database backup created at: {}", backupFile);
+            // 1. Safe SQLite Online Backup (writes to a temporary .db file first)
+            try (Connection conn = dataSource.getConnection();
+                    java.sql.Statement stmt = conn.createStatement()) {
+                stmt.executeUpdate("backup to '" + tempSqliteFile.toAbsolutePath().toString().replace("\\", "/") + "'");
+            } catch (SQLException e) {
+                logger.error("SQLite backup command failed", e);
+                return;
+            }
 
-            // Close pool after backup if not already closed (though usually pool closes
-            // before file access if wrapped correctly,
-            // but for SQLite file copy, it's safer to ensure consistency.
-            // However, HikariDataSource is closeable. Ideally we close it before backup.)
-            close();
+            // 2. Zip the resulting safe backup file
+            try (java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(
+                    new java.io.FileOutputStream(finalZipFile.toFile()));
+                    java.io.FileInputStream fis = new java.io.FileInputStream(tempSqliteFile.toFile())) {
+
+                java.util.zip.ZipEntry zipEntry = new java.util.zip.ZipEntry("store.db");
+                zos.putNextEntry(zipEntry);
+
+                byte[] bytes = new byte[1024];
+                int length;
+                while ((length = fis.read(bytes)) >= 0) {
+                    zos.write(bytes, 0, length);
+                }
+                zos.closeEntry();
+            }
+
+            // 3. Delete the temporary uncompressed file
+            Files.deleteIfExists(tempSqliteFile);
+            logger.info("Database backup created and compressed at: {}", finalZipFile);
+
+            // 4. Prune old backups (only if this isn't a manual backup)
+            if (!isManual) {
+                pruneOldBackups(backupDir);
+            }
 
         } catch (IOException e) {
-            logger.error("Failed to perform database backup", e);
+            logger.error("Failed to perform the backup process", e);
         }
+    }
+
+    private void performBackup() {
+        performBackup(false);
+        close();
+    }
+
+    private void pruneOldBackups(Path backupDir) {
+        try {
+            // Find all auto backups
+            java.util.stream.Stream<Path> stream = Files.list(backupDir)
+                    .filter(path -> path.getFileName().toString().startsWith("store_auto_")
+                            && path.toString().endsWith(".zip"));
+
+            List<Path> autoBackups = stream.sorted((p1, p2) -> {
+                try {
+                    return Files.getLastModifiedTime(p2).compareTo(Files.getLastModifiedTime(p1)); // Newest first
+                } catch (IOException e) {
+                    return 0;
+                }
+            }).collect(java.util.stream.Collectors.toList());
+
+            // Tiered Retention: 14 Daily + 8 Weekly
+            // For simplicity, we keep the absolute 30 newest auto backups as discussed.
+            int retentionLimit = 30;
+            if (autoBackups.size() > retentionLimit) {
+                for (int i = retentionLimit; i < autoBackups.size(); i++) {
+                    Path toDelete = autoBackups.get(i);
+                    Files.deleteIfExists(toDelete);
+                    logger.info("Pruned old backup file: {}", toDelete.getFileName());
+                }
+            }
+
+        } catch (IOException e) {
+            logger.error("Failed to prune old backups", e);
+        }
+    }
+
+    public void createPreRestoreBackup() throws IOException {
+        logger.info("Creating pre-restore safety backup...");
+        File dbFile = new File("store.db");
+        if (!dbFile.exists())
+            return;
+
+        Path backupDir = Path.of("backup");
+        if (!Files.exists(backupDir)) {
+            Files.createDirectories(backupDir);
+        }
+
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
+        Path tempSqliteFile = backupDir.resolve("store_pre_restore_" + timestamp + ".db");
+        Path finalZipFile = backupDir.resolve("store_pre_restore_" + timestamp + ".zip");
+
+        // Because the pool is closed for restoration, we can safely just copy the file
+        // directly
+        Files.copy(dbFile.toPath(), tempSqliteFile, StandardCopyOption.REPLACE_EXISTING);
+
+        try (java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(
+                new java.io.FileOutputStream(finalZipFile.toFile()));
+                java.io.FileInputStream fis = new java.io.FileInputStream(tempSqliteFile.toFile())) {
+
+            java.util.zip.ZipEntry zipEntry = new java.util.zip.ZipEntry("store.db");
+            zos.putNextEntry(zipEntry);
+
+            byte[] bytes = new byte[1024];
+            int length;
+            while ((length = fis.read(bytes)) >= 0) {
+                zos.write(bytes, 0, length);
+            }
+            zos.closeEntry();
+        }
+        Files.deleteIfExists(tempSqliteFile);
+        logger.info("Pre-restore backup successfully created at: {}", finalZipFile);
+    }
+
+    public void closeForRestore() {
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
+        }
+    }
+
+    public void reinitializeAfterRestore() {
+        initialize();
     }
 }

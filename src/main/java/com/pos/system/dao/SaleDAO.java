@@ -74,6 +74,7 @@ public class SaleDAO extends BaseDAO {
 
             itemStmt.executeBatch();
             updateStockStmt.executeBatch();
+            logAudit("CREATE", "Sale", String.valueOf(saleId), "Total: " + sale.getTotalAmount());
 
             connection.commit(); // Global Commit
 
@@ -114,6 +115,7 @@ public class SaleDAO extends BaseDAO {
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     sale.setId(generatedKeys.getInt(1));
+                    logAudit("CREATE", "Sale", String.valueOf(sale.getId()), "Total: " + sale.getTotalAmount());
                     return sale.getId();
                 } else {
                     throw new SQLException("Creating sale failed, no ID obtained.");

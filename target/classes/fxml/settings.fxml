@@ -46,8 +46,38 @@
             <Button mnemonicParsing="false" onAction="#handleSaveSettings" styleClass="btn-primary" text="%dialog.save" prefWidth="120.0" />
          </children>
          <VBox.margin>
-            <Insets top="20.0" />
+            <Insets top="10.0" bottom="20.0" />
          </VBox.margin>
+      </HBox>
+
+      <javafx.scene.control.Separator />
+
+      <Label styleClass="header-label" text="%settings.backup.title">
+         <font>
+            <Font name="System Bold" size="20.0" />
+         </font>
+      </Label>
+      
+      <HBox spacing="20.0" alignment="CENTER_LEFT">
+          <Label fx:id="backupStorageLabel" text="%settings.backup.storage" style="-fx-font-weight: bold;"/>
+          <Label fx:id="backupWarningLabel" text="%settings.backup.warning" textFill="red" visible="false" managed="false" style="-fx-font-weight: bold;"/>
+          <javafx.scene.layout.Region HBox.hgrow="ALWAYS" />
+          <Button mnemonicParsing="false" onAction="#handleCreateManualBackup" styleClass="btn-secondary" text="%settings.backup.create" />
+      </HBox>
+
+      <javafx.scene.control.TableView fx:id="backupTable" prefHeight="200.0" VBox.vgrow="ALWAYS">
+        <columns>
+          <javafx.scene.control.TableColumn fx:id="colBackupName" prefWidth="250.0" text="%settings.backup.col.name" />
+          <javafx.scene.control.TableColumn fx:id="colBackupDate" prefWidth="200.0" text="%settings.backup.col.date" />
+          <javafx.scene.control.TableColumn fx:id="colBackupType" prefWidth="150.0" text="%settings.backup.col.type" />
+          <javafx.scene.control.TableColumn fx:id="colBackupSize" prefWidth="150.0" text="%settings.backup.col.size" />
+        </columns>
+      </javafx.scene.control.TableView>
+
+      <HBox spacing="10.0" alignment="CENTER_RIGHT">
+         <children>
+            <Button fx:id="restoreButton" mnemonicParsing="false" onAction="#handleRestoreBackup" styleClass="btn-danger" text="%settings.backup.restore" disable="true" />
+         </children>
       </HBox>
    </children>
    <padding>

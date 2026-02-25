@@ -55,7 +55,7 @@ public class AdjustStockController {
             int qtyChange = Integer.parseInt(qtyField.getText().trim());
             String reason = reasonArea.getText().trim();
             if (reason.isEmpty())
-                reason = b.getString("inventory.adjustStock.manualReason");
+                reason = "Manual Adjustment";
 
             StockAdjustmentService service = this.adjustmentService != null ? this.adjustmentService
                     : new StockAdjustmentService();

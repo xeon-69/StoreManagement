@@ -52,7 +52,11 @@ public class SettingsDAO extends BaseDAO {
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, key);
             pstmt.setString(2, value);
-            return pstmt.executeUpdate() > 0;
+            int affected = pstmt.executeUpdate();
+            if (affected > 0) {
+                logAudit("UPDATE", "Setting", key, "Value: " + value);
+            }
+            return affected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

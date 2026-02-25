@@ -1,0 +1,416 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------------< com.pos:store-manager >------------------------
+[INFO] Building store-manager 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] 6 problems were encountered while building the effective model for org.openjfx:javafx-controls:jar:21 during dependency collection step for project (use -X to see details)
+[WARNING] 6 problems were encountered while building the effective model for org.openjfx:javafx-controls:jar:20 during dependency collection step for project (use -X to see details)
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ store-manager ---
+[INFO] Deleting C:\POS\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ store-manager ---
+[INFO] Copying 21 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ store-manager ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 60 source files with javac [debug target 17] to target\classes
+[WARNING] location of system modules is not set in conjunction with -source 17
+  not setting the location of system modules may lead to class files that cannot run on JDK 17
+    --release 17 is recommended instead of -source 17 -target 17 because it sets the location of system modules automatically
+[INFO] /C:/POS/src/main/java/com/pos/system/controllers/CheckoutController.java: C:\POS\src\main\java\com\pos\system\controllers\CheckoutController.java uses or overrides a deprecated API.
+[INFO] /C:/POS/src/main/java/com/pos/system/controllers/CheckoutController.java: Recompile with -Xlint:deprecation for details.
+[INFO] /C:/POS/src/main/java/com/pos/system/controllers/InventoryController.java: C:\POS\src\main\java\com\pos\system\controllers\InventoryController.java uses unchecked or unsafe operations.
+[INFO] /C:/POS/src/main/java/com/pos/system/controllers/InventoryController.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] >>> javafx:0.0.8:run (default-cli) > process-classes @ store-manager >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ store-manager ---
+[INFO] Copying 21 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ store-manager ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] <<< javafx:0.0.8:run (default-cli) < process-classes @ store-manager <<<
+[INFO] 
+[INFO] 
+[INFO] --- javafx:0.0.8:run (default-cli) @ store-manager ---
+[WARNING] There are 1 pathException(s). The related dependencies will be ignored.
+[WARNING] Dependency: C:\Users\User\.m2\repository\com\itextpdf\itext7-core\7.2.5\itext7-core-7.2.5.pom
+   - exception: Only outputDirectories and jars are accepted on the path
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by com.sun.glass.utils.NativeLibLoader in module javafx.graphics (file:/C:/Users/User/.m2/repository/org/openjfx/javafx-graphics/21/javafx-graphics-21-win.jar)
+WARNING: Use --enable-native-access=javafx.graphics to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+Feb 25, 2026 2:44:23 PM javafx.fxml.FXMLLoader$ValueElement processValue
+WARNING: Loading FXML document with JavaFX API of version 23.0.1 by JavaFX runtime of version 21
+14:44:24.674 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- Driver class org.sqlite.JDBC found in Thread context class loader jdk.internal.loader.ClassLoaders$AppClassLoader@d716361
+14:44:24.681 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- POS-HikariPool - configuration:
+14:44:24.686 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- allowPoolSuspension.............false
+14:44:24.686 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- autoCommit......................true
+14:44:24.686 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- catalog.........................none
+14:44:24.686 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- connectionInitSql...............none
+14:44:24.688 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- connectionTestQuery.............none
+14:44:24.690 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- connectionTimeout...............5000
+14:44:24.690 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- dataSource......................none
+14:44:24.690 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- dataSourceClassName.............none
+14:44:24.691 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- dataSourceJNDI..................none
+14:44:24.692 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- dataSourceProperties............{password=<masked>, prepStmtCacheSqlLimit=2048, cachePrepStmts=true, prepStmtCacheSize=250}
+14:44:24.692 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- driverClassName................."org.sqlite.JDBC"
+14:44:24.692 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- exceptionOverrideClassName......none
+14:44:24.692 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- healthCheckProperties...........{}
+14:44:24.694 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- healthCheckRegistry.............none
+14:44:24.694 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- idleTimeout.....................600000
+14:44:24.694 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- initializationFailTimeout.......1
+14:44:24.694 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- isolateInternalQueries..........false
+14:44:24.695 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- jdbcUrl.........................jdbc:sqlite:store.db
+14:44:24.695 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- keepaliveTime...................0
+14:44:24.695 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- leakDetectionThreshold..........30000
+14:44:24.695 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- maxLifetime.....................1800000
+14:44:24.696 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- maximumPoolSize.................20
+14:44:24.696 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- metricRegistry..................none
+14:44:24.696 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- metricsTrackerFactory...........none
+14:44:24.696 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- minimumIdle.....................2
+14:44:24.696 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- password........................<masked>
+14:44:24.696 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- poolName........................"POS-HikariPool"
+14:44:24.696 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- readOnly........................false
+14:44:24.696 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- registerMbeans..................false
+14:44:24.696 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- scheduledExecutor...............none
+14:44:24.698 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- schema..........................none
+14:44:24.698 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- threadFactory...................internal
+14:44:24.698 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- transactionIsolation............default
+14:44:24.698 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- username........................none
+14:44:24.698 [JavaFX Application Thread] DEBUG com.zaxxer.hikari.HikariConfig -- validationTimeout...............5000
+14:44:24.708 [JavaFX Application Thread] INFO com.zaxxer.hikari.HikariDataSource -- POS-HikariPool - Starting...
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.sqlite.SQLiteJDBCLoader in an unnamed module (file:/C:/Users/User/.m2/repository/org/xerial/sqlite-jdbc/3.45.1.0/sqlite-jdbc-3.45.1.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+14:44:24.845 [JavaFX Application Thread] INFO com.zaxxer.hikari.pool.HikariPool -- POS-HikariPool - Added connection org.sqlite.jdbc4.JDBC4Connection@6c374110
+14:44:24.846 [JavaFX Application Thread] INFO com.zaxxer.hikari.HikariDataSource -- POS-HikariPool - Start completed.
+14:44:24.846 [JavaFX Application Thread] INFO com.pos.system.database.DatabaseManager -- Database connection pool initialized.
+14:44:24.865 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): -- Migration for existing databases
+ALTER TABLE users
+ADD COLUMN force_password_change BOOLEAN DEFAULT 0 - [SQLITE_ERROR] SQL error or missing database (duplicate column name: force_password_change)
+14:44:24.865 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): -- Migration: Add image_path if missing (for existing databases)
+ALTER TABLE products
+ADD COLUMN image_path TEXT - [SQLITE_ERROR] SQL error or missing database (duplicate column name: image_path)
+14:44:24.865 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): ALTER TABLE products
+ADD COLUMN image_blob BLOB - [SQLITE_ERROR] SQL error or missing database (duplicate column name: image_blob)
+14:44:24.866 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): -- Migrations for existing databases
+ALTER TABLE sales
+ADD COLUMN subtotal REAL DEFAULT 0.0 - [SQLITE_ERROR] SQL error or missing database (duplicate column name: subtotal)
+14:44:24.866 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): ALTER TABLE sales
+ADD COLUMN tax_amount REAL DEFAULT 0.0 - [SQLITE_ERROR] SQL error or missing database (duplicate column name: tax_amount)
+14:44:24.866 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): ALTER TABLE sales
+ADD COLUMN discount_amount REAL DEFAULT 0.0 - [SQLITE_ERROR] SQL error or missing database (duplicate column name: discount_amount)
+14:44:24.866 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): -- Migrations for existing databases
+ALTER TABLE sale_items
+ADD COLUMN discount_amount REAL DEFAULT 0.0 - [SQLITE_ERROR] SQL error or missing database (duplicate column name: discount_amount)
+14:44:24.867 [JavaFX Application Thread] WARN com.pos.system.database.DatabaseManager -- Statement failed (might be expected for existing tables/columns): ALTER TABLE sale_items
+ADD COLUMN tax_amount REAL DEFAULT 0.0 - [SQLITE_ERROR] SQL error or missing database (duplicate column name: tax_amount)
+14:44:24.883 [JavaFX Application Thread] INFO com.pos.system.database.DatabaseManager -- Database tables/schema initialized.
+14:44:24.889 [JavaFX Application Thread] INFO com.pos.system.database.DatabaseManager -- Normalized sale_date format in sales table.
+14:44:24.948 [POS-HikariPool housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool -- POS-HikariPool - Before cleanup stats (total=1, active=0, idle=1, waiting=0)
+14:44:24.949 [POS-HikariPool housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool -- POS-HikariPool - After cleanup  stats (total=1, active=0, idle=1, waiting=0)
+14:44:24.952 [POS-HikariPool connection adder] DEBUG com.zaxxer.hikari.pool.HikariPool -- POS-HikariPool - Added connection org.sqlite.jdbc4.JDBC4Connection@5d80a109
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::allocateMemory has been called by com.sun.marlin.OffHeapArray (file:/C:/Users/User/.m2/repository/org/openjfx/javafx-graphics/21/javafx-graphics-21-win.jar)
+WARNING: Please consider reporting this to the maintainers of class com.sun.marlin.OffHeapArray
+WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
+14:44:24.983 [POS-HikariPool connection adder] DEBUG com.zaxxer.hikari.pool.HikariPool -- POS-HikariPool - After adding stats (total=2, active=0, idle=2, waiting=0)
+14:44:29.899 [Thread-6] DEBUG com.pos.system.services.StoreMonitorService -- Store Monitor: Starting background check...
+14:44:29.905 [Thread-6] INFO com.pos.system.services.StoreMonitorService -- Audit Log cleanup completed (90 days retention).
+javafx.fxml.LoadException: Resource "reports.analysis.barTitle" not found.
+/C:/POS/target/classes/fxml/reports.fxml:154
+
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.constructLoadException(FXMLLoader.java:2718)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.resolvePrefixedValue(FXMLLoader.java:437)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processValue(FXMLLoader.java:375)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processPropertyAttribute(FXMLLoader.java:337)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processInstancePropertyAttributes(FXMLLoader.java:248)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ValueElement.processEndElement(FXMLLoader.java:780)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.processEndElement(FXMLLoader.java:2969)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2654)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.load(FXMLLoader.java:2531)
+	at com.pos.system.controllers.DashboardController.loadView(DashboardController.java:249)
+	at com.pos.system.controllers.DashboardController.showReports(DashboardController.java:176)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at com.sun.javafx.reflect.Trampoline.invoke(MethodUtil.java:72)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at javafx.base@21/com.sun.javafx.reflect.MethodUtil.invoke(MethodUtil.java:270)
+	at javafx.fxml@21/com.sun.javafx.fxml.MethodHelper.invoke(MethodHelper.java:84)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$MethodHandler.invoke(FXMLLoader.java:1855)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ControllerMethodEventHandler.handle(FXMLLoader.java:1726)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:86)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:49)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21/javafx.scene.Node.fireEvent(Node.java:8875)
+	at javafx.controls@21/javafx.scene.control.Button.fire(Button.java:203)
+	at javafx.controls@21/com.sun.javafx.scene.control.behavior.ButtonBehavior.mouseReleased(ButtonBehavior.java:207)
+	at javafx.controls@21/com.sun.javafx.scene.control.inputmap.InputMap.handle(InputMap.java:274)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler$NormalEventHandlerRecord.handleBubblingEvent(CompositeEventHandler.java:247)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:80)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:54)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21/javafx.scene.Scene$MouseHandler.process(Scene.java:3984)
+	at javafx.graphics@21/javafx.scene.Scene.processMouseEvent(Scene.java:1890)
+	at javafx.graphics@21/javafx.scene.Scene$ScenePeerListener.mouseEvent(Scene.java:2708)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:411)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:301)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:138)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.lambda$handleMouseEvent$2(GlassViewEventHandler.java:450)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.QuantumToolkit.runWithoutRenderLock(QuantumToolkit.java:424)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.handleMouseEvent(GlassViewEventHandler.java:449)
+	at javafx.graphics@21/com.sun.glass.ui.View.handleMouseEvent(View.java:551)
+	at javafx.graphics@21/com.sun.glass.ui.View.notifyMouse(View.java:937)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1447)
+javafx.fxml.LoadException: Resource "reports.analysis.barTitle" not found.
+/C:/POS/target/classes/fxml/reports.fxml:154
+
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.constructLoadException(FXMLLoader.java:2718)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.resolvePrefixedValue(FXMLLoader.java:437)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processValue(FXMLLoader.java:375)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processPropertyAttribute(FXMLLoader.java:337)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processInstancePropertyAttributes(FXMLLoader.java:248)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ValueElement.processEndElement(FXMLLoader.java:780)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.processEndElement(FXMLLoader.java:2969)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2654)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.load(FXMLLoader.java:2531)
+	at com.pos.system.controllers.DashboardController.loadView(DashboardController.java:249)
+	at com.pos.system.controllers.DashboardController.showReports(DashboardController.java:176)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at com.sun.javafx.reflect.Trampoline.invoke(MethodUtil.java:72)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at javafx.base@21/com.sun.javafx.reflect.MethodUtil.invoke(MethodUtil.java:270)
+	at javafx.fxml@21/com.sun.javafx.fxml.MethodHelper.invoke(MethodHelper.java:84)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$MethodHandler.invoke(FXMLLoader.java:1855)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ControllerMethodEventHandler.handle(FXMLLoader.java:1726)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:86)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:49)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21/javafx.scene.Node.fireEvent(Node.java:8875)
+	at javafx.controls@21/javafx.scene.control.Button.fire(Button.java:203)
+	at javafx.controls@21/com.sun.javafx.scene.control.behavior.ButtonBehavior.mouseReleased(ButtonBehavior.java:207)
+	at javafx.controls@21/com.sun.javafx.scene.control.inputmap.InputMap.handle(InputMap.java:274)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler$NormalEventHandlerRecord.handleBubblingEvent(CompositeEventHandler.java:247)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:80)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:54)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21/javafx.scene.Scene$MouseHandler.process(Scene.java:3984)
+	at javafx.graphics@21/javafx.scene.Scene.processMouseEvent(Scene.java:1890)
+	at javafx.graphics@21/javafx.scene.Scene$ScenePeerListener.mouseEvent(Scene.java:2708)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:411)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:301)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:138)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.lambda$handleMouseEvent$2(GlassViewEventHandler.java:450)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.QuantumToolkit.runWithoutRenderLock(QuantumToolkit.java:424)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.handleMouseEvent(GlassViewEventHandler.java:449)
+	at javafx.graphics@21/com.sun.glass.ui.View.handleMouseEvent(View.java:551)
+	at javafx.graphics@21/com.sun.glass.ui.View.notifyMouse(View.java:937)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1447)
+javafx.fxml.LoadException: Resource "reports.analysis.barTitle" not found.
+/C:/POS/target/classes/fxml/reports.fxml:154
+
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.constructLoadException(FXMLLoader.java:2718)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.resolvePrefixedValue(FXMLLoader.java:437)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processValue(FXMLLoader.java:375)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processPropertyAttribute(FXMLLoader.java:337)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processInstancePropertyAttributes(FXMLLoader.java:248)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ValueElement.processEndElement(FXMLLoader.java:780)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.processEndElement(FXMLLoader.java:2969)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2654)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.load(FXMLLoader.java:2531)
+	at com.pos.system.controllers.DashboardController.loadView(DashboardController.java:249)
+	at com.pos.system.controllers.DashboardController.showReports(DashboardController.java:176)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at com.sun.javafx.reflect.Trampoline.invoke(MethodUtil.java:72)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at javafx.base@21/com.sun.javafx.reflect.MethodUtil.invoke(MethodUtil.java:270)
+	at javafx.fxml@21/com.sun.javafx.fxml.MethodHelper.invoke(MethodHelper.java:84)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$MethodHandler.invoke(FXMLLoader.java:1855)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ControllerMethodEventHandler.handle(FXMLLoader.java:1726)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:86)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:49)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21/javafx.scene.Node.fireEvent(Node.java:8875)
+	at javafx.controls@21/javafx.scene.control.Button.fire(Button.java:203)
+	at javafx.controls@21/com.sun.javafx.scene.control.behavior.ButtonBehavior.mouseReleased(ButtonBehavior.java:207)
+	at javafx.controls@21/com.sun.javafx.scene.control.inputmap.InputMap.handle(InputMap.java:274)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler$NormalEventHandlerRecord.handleBubblingEvent(CompositeEventHandler.java:247)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:80)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:54)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21/javafx.scene.Scene$MouseHandler.process(Scene.java:3984)
+	at javafx.graphics@21/javafx.scene.Scene.processMouseEvent(Scene.java:1890)
+	at javafx.graphics@21/javafx.scene.Scene$ScenePeerListener.mouseEvent(Scene.java:2708)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:411)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:301)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:138)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.lambda$handleMouseEvent$2(GlassViewEventHandler.java:450)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.QuantumToolkit.runWithoutRenderLock(QuantumToolkit.java:424)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.handleMouseEvent(GlassViewEventHandler.java:449)
+	at javafx.graphics@21/com.sun.glass.ui.View.handleMouseEvent(View.java:551)
+	at javafx.graphics@21/com.sun.glass.ui.View.notifyMouse(View.java:937)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1447)
+javafx.fxml.LoadException: Resource "reports.analysis.barTitle" not found.
+/C:/POS/target/classes/fxml/reports.fxml:154
+
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.constructLoadException(FXMLLoader.java:2718)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.resolvePrefixedValue(FXMLLoader.java:437)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processValue(FXMLLoader.java:375)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processPropertyAttribute(FXMLLoader.java:337)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$Element.processInstancePropertyAttributes(FXMLLoader.java:248)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ValueElement.processEndElement(FXMLLoader.java:780)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.processEndElement(FXMLLoader.java:2969)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2654)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.loadImpl(FXMLLoader.java:2563)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader.load(FXMLLoader.java:2531)
+	at com.pos.system.controllers.DashboardController.loadView(DashboardController.java:249)
+	at com.pos.system.controllers.DashboardController.showReports(DashboardController.java:176)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at com.sun.javafx.reflect.Trampoline.invoke(MethodUtil.java:72)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at javafx.base@21/com.sun.javafx.reflect.MethodUtil.invoke(MethodUtil.java:270)
+	at javafx.fxml@21/com.sun.javafx.fxml.MethodHelper.invoke(MethodHelper.java:84)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$MethodHandler.invoke(FXMLLoader.java:1855)
+	at javafx.fxml@21/javafx.fxml.FXMLLoader$ControllerMethodEventHandler.handle(FXMLLoader.java:1726)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:86)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:49)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21/javafx.scene.Node.fireEvent(Node.java:8875)
+	at javafx.controls@21/javafx.scene.control.Button.fire(Button.java:203)
+	at javafx.controls@21/com.sun.javafx.scene.control.behavior.ButtonBehavior.mouseReleased(ButtonBehavior.java:207)
+	at javafx.controls@21/com.sun.javafx.scene.control.inputmap.InputMap.handle(InputMap.java:274)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler$NormalEventHandlerRecord.handleBubblingEvent(CompositeEventHandler.java:247)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:80)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:54)
+	at javafx.base@21/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21/javafx.scene.Scene$MouseHandler.process(Scene.java:3984)
+	at javafx.graphics@21/javafx.scene.Scene.processMouseEvent(Scene.java:1890)
+	at javafx.graphics@21/javafx.scene.Scene$ScenePeerListener.mouseEvent(Scene.java:2708)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:411)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:301)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:138)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.lambda$handleMouseEvent$2(GlassViewEventHandler.java:450)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.QuantumToolkit.runWithoutRenderLock(QuantumToolkit.java:424)
+	at javafx.graphics@21/com.sun.javafx.tk.quantum.GlassViewEventHandler.handleMouseEvent(GlassViewEventHandler.java:449)
+	at javafx.graphics@21/com.sun.glass.ui.View.handleMouseEvent(View.java:551)
+	at javafx.graphics@21/com.sun.glass.ui.View.notifyMouse(View.java:937)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1447)
+14:44:35.036 [Thread-4] INFO com.pos.system.database.DatabaseManager -- Starting database backup...
+14:44:35.040 [Thread-4] INFO com.pos.system.database.DatabaseManager -- Database backup created at: backup\store.db_2026-02-25_14-44-35.bak
+14:44:35.040 [Thread-4] INFO com.zaxxer.hikari.HikariDataSource -- POS-HikariPool - Shutdown initiated...
+14:44:35.040 [Thread-4] DEBUG com.zaxxer.hikari.pool.HikariPool -- POS-HikariPool - Before shutdown stats (total=2, active=1, idle=1, waiting=0)
+14:44:35.042 [POS-HikariPool connection closer] DEBUG com.zaxxer.hikari.pool.PoolBase -- POS-HikariPool - Closing connection org.sqlite.jdbc4.JDBC4Connection@6c374110: (connection evicted)
+14:44:35.042 [Thread-4] DEBUG com.zaxxer.hikari.pool.HikariPool -- POS-HikariPool - After shutdown stats (total=0, active=0, idle=0, waiting=0)
+14:44:35.042 [Thread-4] INFO com.zaxxer.hikari.HikariDataSource -- POS-HikariPool - Shutdown completed.
+14:44:35.042 [Thread-4] INFO com.pos.system.database.DatabaseManager -- Database connection pool closed.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  16.100 s
+[INFO] Finished at: 2026-02-25T14:44:35+06:30
+[INFO] ------------------------------------------------------------------------
