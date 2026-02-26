@@ -231,9 +231,11 @@ public class DatabaseManager {
             Files.deleteIfExists(tempSqliteFile);
             logger.info("Database backup created and compressed at: {}", finalZipFile);
 
-            // 4. Prune old backups (only if this isn't a manual backup)
-            if (!isManual) {
-                pruneOldBackups(backupDir);
+            // 4. Prune old backups
+            if (isManual) {
+                pruneBackupsByPrefix(backupDir, "store_manual_", 10);
+            } else {
+                pruneBackupsByPrefix(backupDir, "store_auto_", 30);
             }
 
         } catch (IOException e) {
@@ -246,14 +248,13 @@ public class DatabaseManager {
         close();
     }
 
-    private void pruneOldBackups(Path backupDir) {
+    private void pruneBackupsByPrefix(Path backupDir, String prefix, int limit) {
         try {
-            // Find all auto backups
             java.util.stream.Stream<Path> stream = Files.list(backupDir)
-                    .filter(path -> path.getFileName().toString().startsWith("store_auto_")
+                    .filter(path -> path.getFileName().toString().startsWith(prefix)
                             && path.toString().endsWith(".zip"));
 
-            List<Path> autoBackups = stream.sorted((p1, p2) -> {
+            List<Path> backups = stream.sorted((p1, p2) -> {
                 try {
                     return Files.getLastModifiedTime(p2).compareTo(Files.getLastModifiedTime(p1)); // Newest first
                 } catch (IOException e) {
@@ -261,19 +262,15 @@ public class DatabaseManager {
                 }
             }).collect(java.util.stream.Collectors.toList());
 
-            // Tiered Retention: 14 Daily + 8 Weekly
-            // For simplicity, we keep the absolute 30 newest auto backups as discussed.
-            int retentionLimit = 30;
-            if (autoBackups.size() > retentionLimit) {
-                for (int i = retentionLimit; i < autoBackups.size(); i++) {
-                    Path toDelete = autoBackups.get(i);
+            if (backups.size() > limit) {
+                for (int i = limit; i < backups.size(); i++) {
+                    Path toDelete = backups.get(i);
                     Files.deleteIfExists(toDelete);
                     logger.info("Pruned old backup file: {}", toDelete.getFileName());
                 }
             }
-
         } catch (IOException e) {
-            logger.error("Failed to prune old backups", e);
+            logger.error("Failed to prune backups for prefix: " + prefix, e);
         }
     }
 
