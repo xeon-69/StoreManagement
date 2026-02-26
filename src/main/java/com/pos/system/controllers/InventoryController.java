@@ -9,8 +9,15 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.concurrent.Task;
+import javafx.application.Platform;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import com.pos.system.services.SecurityService;
 import com.pos.system.utils.SessionManager;
 
@@ -45,12 +52,20 @@ public class InventoryController {
     @FXML
     private TextField searchField;
 
+    private final ExecutorService imageLoadingExecutor = Executors.newFixedThreadPool(3, r -> {
+        Thread t = new Thread(r);
+        t.setDaemon(true);
+        return t;
+    });
+    private final java.util.Map<Integer, Image> imageCache = java.util.Collections.synchronizedMap(new java.util.HashMap<>());
+    private final java.util.Set<Integer> pendingImages = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
+
     @FXML
     public void initialize() {
         // Image Column Setup
         imageCol.setCellValueFactory(new PropertyValueFactory<>("imageData"));
         imageCol.setCellFactory(col -> new javafx.scene.control.TableCell<Product, byte[]>() {
-            private final javafx.scene.image.ImageView imageView = new javafx.scene.image.ImageView();
+            private final ImageView imageView = new ImageView();
             {
                 imageView.setFitHeight(40);
                 imageView.setFitWidth(40);
@@ -60,15 +75,31 @@ public class InventoryController {
             @Override
             protected void updateItem(byte[] imageData, boolean empty) {
                 super.updateItem(imageData, empty);
-                if (empty || imageData == null || imageData.length == 0) {
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                 } else {
-                    try {
-                        java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(imageData);
-                        imageView.setImage(new javafx.scene.image.Image(bis));
-                        setGraphic(imageView);
-                    } catch (Exception e) {
-                        setGraphic(null);
+                    Product p = getTableRow().getItem();
+                    // Check if we have image data already (e.g. from edit)
+                    if (imageData != null && imageData.length > 0) {
+                         try {
+                             imageView.setImage(new Image(new java.io.ByteArrayInputStream(imageData)));
+                             setGraphic(imageView);
+                         } catch (Exception e) { setGraphic(null); }
+                         return;
+                    }
+
+                    // Lazy load
+                    if (imageCache.containsKey(p.getId())) {
+                        Image cached = imageCache.get(p.getId());
+                        if (cached != null) {
+                            imageView.setImage(cached);
+                            setGraphic(imageView);
+                        } else {
+                            setGraphic(null);
+                        }
+                    } else {
+                        setGraphic(null); // Clear while loading
+                        lazyLoadImage(p.getId(), imageView, this);
                     }
                 }
             }
@@ -109,6 +140,46 @@ public class InventoryController {
         // No longer create a stored productDAO here - use try-with-resources in tasks
 
         loadProducts();
+    }
+
+    private void lazyLoadImage(int productId, ImageView imageView, javafx.scene.control.TableCell<Product, byte[]> cell) {
+        if (pendingImages.contains(productId)) return;
+
+        pendingImages.add(productId);
+
+        Task<byte[]> task = new Task<>() {
+            @Override
+            protected byte[] call() throws Exception {
+                try (ProductDAO dao = new ProductDAO()) {
+                    return dao.getProductImage(productId);
+                }
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            byte[] data = task.getValue();
+            pendingImages.remove(productId);
+            if (data != null && data.length > 0) {
+                try {
+                    Image img = new Image(new java.io.ByteArrayInputStream(data));
+                    imageCache.put(productId, img);
+
+                    // Only update if cell still contains same product
+                    if (cell.getTableRow() != null && cell.getTableRow().getItem() != null && cell.getTableRow().getItem().getId() == productId) {
+                         imageView.setImage(img);
+                         cell.setGraphic(imageView);
+                    }
+                } catch (Exception ex) {
+                    imageCache.put(productId, null);
+                }
+            } else {
+                imageCache.put(productId, null);
+            }
+        });
+
+        task.setOnFailed(e -> pendingImages.remove(productId));
+
+        imageLoadingExecutor.submit(task);
     }
 
     private void setupActionColumn() {
@@ -217,7 +288,7 @@ public class InventoryController {
             protected List<Product> call() throws Exception {
                 try (ProductDAO dao = injectedProductDAO != null ? null : new ProductDAO()) {
                     ProductDAO activeDAO = injectedProductDAO != null ? injectedProductDAO : dao;
-                    return activeDAO.getAllProducts();
+                    return activeDAO.getAllProductsSummary(); // Changed to Summary
                 } catch (java.sql.SQLException e) {
                     e.printStackTrace();
                     return java.util.Collections.emptyList();
@@ -253,7 +324,7 @@ public class InventoryController {
             protected List<Product> call() throws Exception {
                 try (ProductDAO dao = injectedProductDAO != null ? null : new ProductDAO()) {
                     ProductDAO activeDAO = injectedProductDAO != null ? injectedProductDAO : dao;
-                    List<Product> allProducts = activeDAO.getAllProducts();
+                    List<Product> allProducts = activeDAO.getAllProductsSummary(); // Changed to Summary
                     return allProducts.stream()
                             .filter(p -> p.getName().toLowerCase().contains(lowerCaseQuery) ||
                                     (p.getBarcode() != null && p.getBarcode().toLowerCase().contains(lowerCaseQuery)))
@@ -381,6 +452,26 @@ public class InventoryController {
             return;
         }
 
+        Task<Product> task = new Task<>() {
+            @Override
+            protected Product call() throws Exception {
+                try (ProductDAO dao = new ProductDAO()) {
+                     return dao.getProductById(selectedProduct.getId());
+                }
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+             Product fullProduct = task.getValue();
+             openEditDialog(fullProduct);
+        });
+
+        task.setOnFailed(e -> e.getSource().getException().printStackTrace());
+
+        new Thread(task).start();
+    }
+
+    private void openEditDialog(Product selectedProduct) {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/fxml/add_product.fxml"));

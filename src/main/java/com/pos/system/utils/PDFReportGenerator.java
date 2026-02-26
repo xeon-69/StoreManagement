@@ -32,10 +32,8 @@ public class PDFReportGenerator {
             table.addCell("Price");
             table.addCell("Stock");
 
-            table.addCell("Stock");
-
             try (ProductDAO productDAO = new ProductDAO()) {
-                List<Product> products = productDAO.getAllProducts();
+                List<Product> products = productDAO.getAllProductsSummary();
 
                 for (Product p : products) {
                     table.addCell(p.getBarcode());
