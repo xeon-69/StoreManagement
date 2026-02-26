@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: com.pos.system.controllers.InventoryControllerTest
 -------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.039 s <<< FAILURE! -- in com.pos.system.controllers.InventoryControllerTest
-com.pos.system.controllers.InventoryControllerTest.testInventoryLoadsDataOnStart(FxRobot) -- Time elapsed: 0.006 s <<< ERROR!
+Tests run: 2, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.036 s <<< FAILURE! -- in com.pos.system.controllers.InventoryControllerTest
+com.pos.system.controllers.InventoryControllerTest.testInventoryLoadsDataOnStart(FxRobot) -- Time elapsed: 0.005 s <<< ERROR!
 java.lang.RuntimeException: java.lang.UnsupportedOperationException: Unable to open DISPLAY
 	at org.testfx.util.WaitForAsyncUtils.waitFor(WaitForAsyncUtils.java:301)
 	at org.testfx.api.FxToolkit.registerPrimaryStage(FxToolkit.java:113)
@@ -28,7 +28,7 @@ Caused by: java.lang.UnsupportedOperationException: Unable to open DISPLAY
 	at com.sun.javafx.application.LauncherImpl.lambda$launchApplication$2(LauncherImpl.java:196)
 	at java.base/java.lang.Thread.run(Thread.java:1583)
 
-com.pos.system.controllers.InventoryControllerTest.testInventorySearchFiltersData(FxRobot) -- Time elapsed: 0.012 s <<< ERROR!
+com.pos.system.controllers.InventoryControllerTest.testInventorySearchFiltersData(FxRobot) -- Time elapsed: 0.005 s <<< ERROR!
 java.lang.RuntimeException: java.lang.UnsupportedOperationException: Unable to open DISPLAY
 	at org.testfx.util.WaitForAsyncUtils.waitFor(WaitForAsyncUtils.java:301)
 	at org.testfx.api.FxToolkit.registerPrimaryStage(FxToolkit.java:113)

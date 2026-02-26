@@ -4,6 +4,7 @@ FixAdmin.class
 CheckAdmin.class
 com/pos/system/controllers/DateRangeReportController$3.class
 com/pos/system/controllers/InventoryController$9.class
-com/pos/system/controllers/InventoryController$10.class
+com/pos/system/services/ImageCacheService$1.class
+com/pos/system/services/ImageCacheService.class
+com/pos/system/services/ImageCacheService$2.class
 com/pos/system/controllers/POSController$4.class
-com/pos/system/controllers/POSController$5.class

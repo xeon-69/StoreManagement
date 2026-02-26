@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: com.pos.system.controllers.ReportsControllerTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.005 s <<< FAILURE! -- in com.pos.system.controllers.ReportsControllerTest
-com.pos.system.controllers.ReportsControllerTest.testReportsLoaded(FxRobot) -- Time elapsed: 0.003 s <<< ERROR!
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.006 s <<< FAILURE! -- in com.pos.system.controllers.ReportsControllerTest
+com.pos.system.controllers.ReportsControllerTest.testReportsLoaded(FxRobot) -- Time elapsed: 0.004 s <<< ERROR!
 java.lang.RuntimeException: java.lang.UnsupportedOperationException: Unable to open DISPLAY
 	at org.testfx.util.WaitForAsyncUtils.waitFor(WaitForAsyncUtils.java:301)
 	at org.testfx.api.FxToolkit.registerPrimaryStage(FxToolkit.java:113)

@@ -15,9 +15,8 @@ import javafx.concurrent.Task;
 import javafx.application.Platform;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
+import com.pos.system.services.ImageCacheService;
 import com.pos.system.services.SecurityService;
 import com.pos.system.utils.SessionManager;
 
@@ -52,14 +51,6 @@ public class InventoryController {
     @FXML
     private TextField searchField;
 
-    private final ExecutorService imageLoadingExecutor = Executors.newFixedThreadPool(3, r -> {
-        Thread t = new Thread(r);
-        t.setDaemon(true);
-        return t;
-    });
-    private final java.util.Map<Integer, Image> imageCache = java.util.Collections.synchronizedMap(new java.util.HashMap<>());
-    private final java.util.Set<Integer> pendingImages = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
-
     @FXML
     public void initialize() {
         // Image Column Setup
@@ -88,18 +79,21 @@ public class InventoryController {
                          return;
                     }
 
-                    // Lazy load
-                    if (imageCache.containsKey(p.getId())) {
-                        Image cached = imageCache.get(p.getId());
-                        if (cached != null) {
-                            imageView.setImage(cached);
-                            setGraphic(imageView);
-                        } else {
-                            setGraphic(null);
-                        }
+                    // Lazy load via ImageCacheService
+                    Image cached = ImageCacheService.getInstance().getCachedImage(p.getId());
+                    if (cached != null) {
+                        imageView.setImage(cached);
+                        setGraphic(imageView);
                     } else {
                         setGraphic(null); // Clear while loading
-                        lazyLoadImage(p.getId(), imageView, this);
+                        ImageCacheService.getInstance().loadImage(p.getId(), img -> {
+                            // Only update if cell still contains same product
+                            if (getTableRow() != null && getTableRow().getItem() != null
+                                    && getTableRow().getItem().getId() == p.getId()) {
+                                 imageView.setImage(img);
+                                 setGraphic(imageView);
+                            }
+                        });
                     }
                 }
             }
@@ -142,45 +136,6 @@ public class InventoryController {
         loadProducts();
     }
 
-    private void lazyLoadImage(int productId, ImageView imageView, javafx.scene.control.TableCell<Product, byte[]> cell) {
-        if (pendingImages.contains(productId)) return;
-
-        pendingImages.add(productId);
-
-        Task<byte[]> task = new Task<>() {
-            @Override
-            protected byte[] call() throws Exception {
-                try (ProductDAO dao = new ProductDAO()) {
-                    return dao.getProductImage(productId);
-                }
-            }
-        };
-
-        task.setOnSucceeded(e -> {
-            byte[] data = task.getValue();
-            pendingImages.remove(productId);
-            if (data != null && data.length > 0) {
-                try {
-                    Image img = new Image(new java.io.ByteArrayInputStream(data));
-                    imageCache.put(productId, img);
-
-                    // Only update if cell still contains same product
-                    if (cell.getTableRow() != null && cell.getTableRow().getItem() != null && cell.getTableRow().getItem().getId() == productId) {
-                         imageView.setImage(img);
-                         cell.setGraphic(imageView);
-                    }
-                } catch (Exception ex) {
-                    imageCache.put(productId, null);
-                }
-            } else {
-                imageCache.put(productId, null);
-            }
-        });
-
-        task.setOnFailed(e -> pendingImages.remove(productId));
-
-        imageLoadingExecutor.submit(task);
-    }
 
     private void setupActionColumn() {
         actionCol.setCellFactory(param -> new javafx.scene.control.TableCell<Product, Void>() {

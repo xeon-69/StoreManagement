@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 Test set: com.pos.system.controllers.LoginControllerTest
 -------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 3, Skipped: 0, Time elapsed: 0.012 s <<< FAILURE! -- in com.pos.system.controllers.LoginControllerTest
+Tests run: 3, Failures: 0, Errors: 3, Skipped: 0, Time elapsed: 0.010 s <<< FAILURE! -- in com.pos.system.controllers.LoginControllerTest
 com.pos.system.controllers.LoginControllerTest.testValidLogin(FxRobot) -- Time elapsed: 0.003 s <<< ERROR!
 java.lang.RuntimeException: java.lang.UnsupportedOperationException: Unable to open DISPLAY
 	at org.testfx.util.WaitForAsyncUtils.waitFor(WaitForAsyncUtils.java:301)
@@ -28,7 +28,7 @@ Caused by: java.lang.UnsupportedOperationException: Unable to open DISPLAY
 	at com.sun.javafx.application.LauncherImpl.lambda$launchApplication$2(LauncherImpl.java:196)
 	at java.base/java.lang.Thread.run(Thread.java:1583)
 
-com.pos.system.controllers.LoginControllerTest.testInvalidLoginShowsError(FxRobot) -- Time elapsed: 0.002 s <<< ERROR!
+com.pos.system.controllers.LoginControllerTest.testInvalidLoginShowsError(FxRobot) -- Time elapsed: 0.001 s <<< ERROR!
 java.lang.RuntimeException: java.lang.UnsupportedOperationException: Unable to open DISPLAY
 	at org.testfx.util.WaitForAsyncUtils.waitFor(WaitForAsyncUtils.java:301)
 	at org.testfx.api.FxToolkit.registerPrimaryStage(FxToolkit.java:113)
@@ -54,7 +54,7 @@ Caused by: java.lang.UnsupportedOperationException: Unable to open DISPLAY
 	at com.sun.javafx.application.LauncherImpl.lambda$launchApplication$2(LauncherImpl.java:196)
 	at java.base/java.lang.Thread.run(Thread.java:1583)
 
-com.pos.system.controllers.LoginControllerTest.testEmptyFieldsShowError(FxRobot) -- Time elapsed: 0.003 s <<< ERROR!
+com.pos.system.controllers.LoginControllerTest.testEmptyFieldsShowError(FxRobot) -- Time elapsed: 0.002 s <<< ERROR!
 java.lang.RuntimeException: java.lang.UnsupportedOperationException: Unable to open DISPLAY
 	at org.testfx.util.WaitForAsyncUtils.waitFor(WaitForAsyncUtils.java:301)
 	at org.testfx.api.FxToolkit.registerPrimaryStage(FxToolkit.java:113)

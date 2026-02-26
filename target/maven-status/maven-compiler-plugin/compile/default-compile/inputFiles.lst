@@ -33,6 +33,7 @@
 /app/src/main/java/com/pos/system/controllers/UsersController.java
 /app/src/main/java/com/pos/system/controllers/LoginController.java
 /app/src/main/java/FixAdmin.java
+/app/src/main/java/com/pos/system/services/ImageCacheService.java
 /app/src/main/java/com/pos/system/models/User.java
 /app/src/main/java/com/pos/system/database/DatabaseManager.java
 /app/src/main/java/com/pos/system/models/SalePayment.java

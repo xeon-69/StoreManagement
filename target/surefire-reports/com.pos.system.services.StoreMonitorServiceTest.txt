@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: com.pos.system.services.StoreMonitorServiceTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.144 s <<< FAILURE! -- in com.pos.system.services.StoreMonitorServiceTest
-com.pos.system.services.StoreMonitorServiceTest.testMonitorTaskExecution -- Time elapsed: 0.141 s <<< ERROR!
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.188 s <<< FAILURE! -- in com.pos.system.services.StoreMonitorServiceTest
+com.pos.system.services.StoreMonitorServiceTest.testMonitorTaskExecution -- Time elapsed: 0.186 s <<< ERROR!
 java.lang.NullPointerException: Cannot invoke "java.util.ResourceBundle.getString(String)" because the return value of "com.pos.system.App.getBundle()" is null
 	at com.pos.system.services.StoreMonitorServiceTest.testMonitorTaskExecution(StoreMonitorServiceTest.java:89)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:580)

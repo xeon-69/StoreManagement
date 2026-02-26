@@ -30,8 +30,7 @@ import javafx.geometry.Bounds;
 import org.controlsfx.control.GridView;
 import org.controlsfx.control.GridCell;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import com.pos.system.services.ImageCacheService;
 
 public class POSController {
 
@@ -62,14 +61,6 @@ public class POSController {
     private ProductCatalogViewModel catalogViewModel;
     private String currencySymbol;
     private PauseTransition searchDebounce;
-
-    private final ExecutorService imageLoadingExecutor = Executors.newFixedThreadPool(3, r -> {
-        Thread t = new Thread(r);
-        t.setDaemon(true);
-        return t;
-    });
-    private final java.util.Map<Integer, Image> imageCache = java.util.Collections.synchronizedMap(new java.util.HashMap<>());
-    private final java.util.Set<Integer> pendingImages = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
 
     // For Dependency Injection in Tests
     public void setCatalogViewModel(ProductCatalogViewModel catalogViewModel) {
@@ -246,7 +237,7 @@ public class POSController {
         imageView.setFitWidth(80);
         imageView.setPreserveRatio(true);
 
-        // Check if we already have the image data (e.g. freshly added/edited product might have it, or previously cached)
+        // Check if we already have the image data
         if (p.getImageData() != null && p.getImageData().length > 0) {
              try {
                 java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(p.getImageData());
@@ -256,15 +247,18 @@ public class POSController {
                 // Ignore image load error, placeholder remains
             }
         } else {
-            // Lazy load
-            if (imageCache.containsKey(p.getId())) {
-                Image cached = imageCache.get(p.getId());
-                if (cached != null) {
-                    imageView.setImage(cached);
-                    imageContainer.getChildren().add(imageView);
-                }
+            // Lazy load via ImageCacheService
+            Image cached = ImageCacheService.getInstance().getCachedImage(p.getId());
+            if (cached != null) {
+                imageView.setImage(cached);
+                imageContainer.getChildren().add(imageView);
             } else {
-                lazyLoadImage(p.getId(), imageView, imageContainer);
+                ImageCacheService.getInstance().loadImage(p.getId(), img -> {
+                    imageView.setImage(img);
+                    if (!imageContainer.getChildren().contains(imageView)) {
+                        imageContainer.getChildren().add(imageView);
+                    }
+                });
             }
         }
 
@@ -291,43 +285,6 @@ public class POSController {
         return card;
     }
 
-    private void lazyLoadImage(int productId, javafx.scene.image.ImageView imageView, StackPane container) {
-        if (pendingImages.contains(productId)) return; // Already loading
-
-        pendingImages.add(productId);
-
-        Task<byte[]> task = new Task<>() {
-            @Override
-            protected byte[] call() throws Exception {
-                try (ProductDAO dao = new ProductDAO()) {
-                    return dao.getProductImage(productId);
-                }
-            }
-        };
-
-        task.setOnSucceeded(e -> {
-            byte[] data = task.getValue();
-            pendingImages.remove(productId);
-            if (data != null && data.length > 0) {
-                try {
-                    Image img = new Image(new java.io.ByteArrayInputStream(data));
-                    imageCache.put(productId, img);
-                    imageView.setImage(img);
-                    if (!container.getChildren().contains(imageView)) {
-                        container.getChildren().add(imageView);
-                    }
-                } catch (Exception ex) {
-                    imageCache.put(productId, null); // invalid image data
-                }
-            } else {
-                imageCache.put(productId, null); // no image
-            }
-        });
-
-        task.setOnFailed(e -> pendingImages.remove(productId));
-
-        imageLoadingExecutor.submit(task);
-    }
 
     private boolean isProductInCart(Product p) {
         return cartItems.stream().anyMatch(item -> item.getProductId() == p.getId());
