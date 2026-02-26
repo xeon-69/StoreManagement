@@ -3,16 +3,12 @@ package com.pos.system.controllers;
 import com.pos.system.App;
 import com.pos.system.models.Product;
 import com.pos.system.viewmodels.ProductCatalogViewModel;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -23,9 +19,6 @@ import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
 import org.testfx.matcher.control.LabeledMatchers;
 import org.testfx.util.WaitForAsyncUtils;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -83,9 +76,8 @@ public class POSControllerTest {
 
         WaitForAsyncUtils.waitForFxEvents(); // Wait for GridView cells to stamp
 
-        // Act: Click the "+" button for Apple to add it to the cart
-        javafx.scene.Node btn = robot.lookup("#add-btn-1").query();
-        robot.clickOn(btn);
+        // Act: Click the product tile for Apple to add it to the cart
+        robot.clickOn("Apple");
 
         // Assert: The total label should update
         WaitForAsyncUtils.waitForFxEvents(); // Wait for JavaFX thread to update

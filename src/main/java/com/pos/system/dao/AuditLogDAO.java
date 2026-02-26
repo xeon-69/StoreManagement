@@ -48,6 +48,23 @@ public class AuditLogDAO extends BaseDAO {
         return getPaginatedLogs(limit, 0);
     }
 
+    public List<AuditLog> searchLogs(String query) throws SQLException {
+        List<AuditLog> list = new ArrayList<>();
+        String sql = "SELECT * FROM audit_logs WHERE action LIKE ? OR entity_name LIKE ? OR details LIKE ? ORDER BY created_at DESC";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            String pattern = "%" + query + "%";
+            stmt.setString(1, pattern);
+            stmt.setString(2, pattern);
+            stmt.setString(3, pattern);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToLog(rs));
+                }
+            }
+        }
+        return list;
+    }
+
     public List<AuditLog> getPaginatedLogs(int limit, int offset) throws SQLException {
         List<AuditLog> list = new ArrayList<>();
         String sql = "SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT ? OFFSET ?";

@@ -8,7 +8,6 @@ import com.pos.system.models.SaleItem;
 import com.pos.system.models.SalePayment;
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -34,7 +33,6 @@ public class TransactionDetailsControllerTest {
 
     private MockedConstruction<SaleDAO> mockedSaleDAO;
     private MockedConstruction<SalePaymentDAO> mockedSalePaymentDAO;
-    private TransactionDetailsController controller;
     private Sale dummySale;
 
     @Start
@@ -61,7 +59,7 @@ public class TransactionDetailsControllerTest {
         fxmlLoader.setResources(App.getBundle());
 
         VBox root = fxmlLoader.load();
-        controller = fxmlLoader.getController();
+        TransactionDetailsController controller = fxmlLoader.getController();
 
         Platform.runLater(() -> controller.setSale(dummySale));
 
@@ -82,8 +80,8 @@ public class TransactionDetailsControllerTest {
         WaitForAsyncUtils.waitForFxEvents();
 
         FxAssert.verifyThat("#saleIdLabel", LabeledMatchers.hasText("Sale ID: 99"));
-        FxAssert.verifyThat("#subtotalLabel", LabeledMatchers.hasText("100.00"));
-        FxAssert.verifyThat("#totalLabel", LabeledMatchers.hasText("105.00"));
+        FxAssert.verifyThat("#subtotalLabel", LabeledMatchers.hasText("100.00 MMK"));
+        FxAssert.verifyThat("#totalLabel", LabeledMatchers.hasText("105.00 MMK"));
 
         TableView<SaleItem> itemsTable = robot.lookup("#itemsTable").queryTableView();
         assertEquals(1, itemsTable.getItems().size());

@@ -8,6 +8,8 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 import java.sql.SQLException;
+import com.pos.system.services.SecurityService;
+import com.pos.system.utils.SessionManager;
 
 public class AddProductController {
 
@@ -34,6 +36,7 @@ public class AddProductController {
     private Product productToEdit; // To track edit mode
     private byte[] selectedImageData = null; // Changed from String path to byte[]
     private Runnable onSaveCallback;
+    private SecurityService securityService;
 
     public void setOnSaveCallback(Runnable onSaveCallback) {
         this.onSaveCallback = onSaveCallback;
@@ -41,6 +44,11 @@ public class AddProductController {
 
     @FXML
     public void initialize() {
+        try {
+            securityService = new SecurityService();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         loadCategories();
     }
 
@@ -138,6 +146,12 @@ public class AddProductController {
                 productDAO.updateProduct(product); // Update
                 java.util.ResourceBundle b = com.pos.system.App.getBundle();
                 messageLabel.setText(b.getString("inventory.editProduct.success"));
+
+                if (securityService != null) {
+                    securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                            "UPDATE_PRODUCT", "Product", String.valueOf(id),
+                            "Name: " + nameField.getText().trim());
+                }
             } else {
                 // Adding an entirely new product
                 product = new Product(id, barcodeField.getText().trim(), nameField.getText().trim(), categoryId,
@@ -151,12 +165,18 @@ public class AddProductController {
                             .getConnection()) {
                         com.pos.system.services.InventoryService invService = new com.pos.system.services.InventoryService();
                         invService.addStock(conn, newlyCreated.getId(), parsedStock, newlyCreated.getCostPrice(), null,
-                                "INITIAL-ADD", null);
+                                "INITIAL-ADD", SessionManager.getInstance().getCurrentUser().getId());
                     }
                 }
 
                 java.util.ResourceBundle b = com.pos.system.App.getBundle();
                 messageLabel.setText(b.getString("inventory.addProduct.success"));
+
+                if (securityService != null) {
+                    securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                            "CREATE_PRODUCT", "Product", barcodeField.getText().trim(),
+                            "Name: " + nameField.getText().trim());
+                }
             }
 
             messageLabel.setStyle("-fx-text-fill: green;");

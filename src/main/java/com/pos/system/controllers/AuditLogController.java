@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Pagination;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import java.sql.SQLException;
@@ -29,6 +30,8 @@ public class AuditLogController {
     private TableColumn<AuditLog, String> entityCol;
     @FXML
     private TableColumn<AuditLog, String> detailsCol;
+    @FXML
+    private TextField searchField;
     @FXML
     private Pagination pagination;
 
@@ -56,7 +59,35 @@ public class AuditLogController {
 
         auditTable.setItems(logsList);
 
+        if (searchField != null) {
+            searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue == null || newValue.trim().isEmpty()) {
+                    setupPagination();
+                }
+            });
+        }
+
         setupPagination();
+    }
+
+    @FXML
+    private void handleSearch() {
+        String query = searchField.getText();
+        if (query == null || query.trim().isEmpty()) {
+            setupPagination();
+            return;
+        }
+
+        pagination.setPageCount(1);
+        pagination.setPageFactory(pageIndex -> {
+            logsList.clear();
+            try (AuditLogDAO dao = new AuditLogDAO()) {
+                logsList.addAll(dao.searchLogs(query.trim()));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return new VBox();
+        });
     }
 
     private void setupPagination() {

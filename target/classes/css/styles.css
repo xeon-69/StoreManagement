@@ -173,6 +173,21 @@
     -fx-background-radius: 20;
     -fx-padding: 8 15;
     -fx-pref-height: 40;
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e0;
+    -fx-border-radius: 20;
+}
+
+.search-field:focused {
+    -fx-border-color: #3498db;
+    -fx-effect: dropshadow(gaussian, rgba(52, 152, 219, 0.2), 5, 0, 0, 0);
+}
+
+.search-button {
+    -fx-background-radius: 20;
+    -fx-min-width: 40;
+    -fx-min-height: 40;
+    -fx-padding: 0;
 }
 
 .category-combo {

@@ -3,7 +3,9 @@ package com.pos.system.controllers;
 import com.pos.system.dao.ExpenseDAO;
 import com.pos.system.dao.SaleDAO;
 import com.pos.system.models.Expense;
+import com.pos.system.services.SecurityService;
 import com.pos.system.utils.NotificationUtils;
+import com.pos.system.utils.SessionManager;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -27,6 +29,8 @@ public class FinanceController {
     private Label totalExpensesLabel;
     @FXML
     private Label netProfitLabel;
+
+    private SecurityService securityService;
 
     // Date filter controls
     @FXML
@@ -59,10 +63,16 @@ public class FinanceController {
     private TableColumn<Expense, Double> amountCol;
     @FXML
     private TableColumn<Expense, Void> actionCol;
+    @FXML
+    private Pagination pagination;
+
+    private static final int ROWS_PER_PAGE = 15;
 
     @FXML
     public void initialize() {
         try {
+            securityService = new SecurityService();
+
             // Setup date filter ComboBox
             dateRangeComboBox.setItems(FXCollections.observableArrayList(
                     com.pos.system.App.getBundle().getString("reports.filter.today"),
@@ -156,8 +166,9 @@ public class FinanceController {
             // Action column with Delete button
             setupActionColumn();
 
-            // Default to "All Time"
-            dateRangeComboBox.getSelectionModel().select(3);
+            // Default to "Today" (index 0)
+            dateRangeComboBox.getSelectionModel().select(0);
+            setupPagination();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -205,6 +216,12 @@ public class FinanceController {
                 handleFilter(); // Refresh
                 NotificationUtils.showSuccess(b.getString("finance.delete.success"),
                         b.getString("finance.delete.successMsg"));
+
+                if (securityService != null) {
+                    securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                            "DELETE_EXPENSE", "Expense", String.valueOf(expense.getId()),
+                            "Category: " + expense.getCategory() + ", Amount: " + expense.getAmount());
+                }
             } catch (SQLException e) {
                 e.printStackTrace();
                 NotificationUtils.showError(b.getString("dialog.error"), b.getString("finance.delete.errorMsg"));
@@ -216,15 +233,45 @@ public class FinanceController {
         return new ExpenseDAO();
     }
 
-    /**
-     * Synchronous filter — queries income (sales) and expenses for the selected
-     * date range.
-     */
-    @FXML
-    private void handleFilter() {
+    private void setupPagination() {
+        LocalDateTime[] range = getSelectedRange();
+        if (range == null)
+            return;
+
+        try (ExpenseDAO dao = createExpenseDAO()) {
+            int total = dao.getExpensesCountBetween(range[0], range[1]);
+            int pageCount = (int) Math.ceil((double) total / ROWS_PER_PAGE);
+            if (pageCount == 0)
+                pageCount = 1;
+
+            pagination.setPageCount(pageCount);
+            pagination.setPageFactory(pageIndex -> {
+                loadPaginatedExpenses(pageIndex);
+                return new javafx.scene.layout.VBox();
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadPaginatedExpenses(int pageIndex) {
+        LocalDateTime[] range = getSelectedRange();
+        if (range == null)
+            return;
+
+        int offset = pageIndex * ROWS_PER_PAGE;
+        try (ExpenseDAO dao = createExpenseDAO()) {
+            List<Expense> expenses = dao.getPaginatedExpensesBetween(range[0], range[1], ROWS_PER_PAGE, offset);
+            expenseTable.setItems(FXCollections.observableArrayList(expenses));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private LocalDateTime[] getSelectedRange() {
         int index = dateRangeComboBox.getSelectionModel().getSelectedIndex();
         if (index < 0)
-            return;
+            return null;
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime start, end;
@@ -249,13 +296,28 @@ public class FinanceController {
                 break;
             case 4: // Custom
                 if (startDatePicker.getValue() == null || endDatePicker.getValue() == null)
-                    return;
+                    return null;
                 start = startDatePicker.getValue().atStartOfDay();
                 end = endDatePicker.getValue().atTime(23, 59, 59);
                 break;
             default:
-                return;
+                return null;
         }
+        return new LocalDateTime[] { start, end };
+    }
+
+    /**
+     * Synchronous filter — queries income (sales) and expenses for the selected
+     * date range. Resets pagination.
+     */
+    @FXML
+    private void handleFilter() {
+        LocalDateTime[] range = getSelectedRange();
+        if (range == null)
+            return;
+
+        LocalDateTime start = range[0];
+        LocalDateTime end = range[1];
 
         try (SaleDAO saleDAO = new SaleDAO();
                 ExpenseDAO expenseDAO = createExpenseDAO()) {
@@ -263,8 +325,6 @@ public class FinanceController {
             double totalIncome = saleDAO.getTotalSalesBetween(start, end);
             double totalExpenses = expenseDAO.getTotalExpensesBetween(start, end);
             double netProfit = totalIncome - totalExpenses;
-
-            List<Expense> expenses = expenseDAO.getExpensesBetween(start, end);
 
             // Update UI
             String mmk = com.pos.system.App.getBundle().getString("common.mmk");
@@ -279,7 +339,7 @@ public class FinanceController {
                 netProfitLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 22px; -fx-font-weight: bold;");
             }
 
-            expenseTable.setItems(FXCollections.observableArrayList(expenses));
+            setupPagination();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -308,6 +368,12 @@ public class FinanceController {
             descField.clear();
 
             handleFilter(); // Refresh with current filter
+
+            if (securityService != null) {
+                securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                        "ADD_EXPENSE", "Expense", "N/A",
+                        "Category: " + category + ", Amount: " + amount);
+            }
 
         } catch (NumberFormatException e) {
             java.util.ResourceBundle b = com.pos.system.App.getBundle();

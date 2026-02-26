@@ -51,6 +51,7 @@ public class CheckoutController {
     private ObservableList<SaleItem> cartItems;
     private ObservableList<SalePayment> payments = FXCollections.observableArrayList();
     private Runnable onSuccessCallback;
+    private com.pos.system.services.CheckoutService checkoutService = new com.pos.system.services.CheckoutService();
 
     @FXML
     public void initialize() {
@@ -85,7 +86,7 @@ public class CheckoutController {
             }
         });
 
-        paymentsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        paymentsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         paymentsTable.setItems(payments);
 
         discountField.textProperty().addListener((obs, oldV, newV) -> recalculateTotal());
@@ -105,6 +106,10 @@ public class CheckoutController {
         subtotalLabel.setText(String.format("%,.2f %s", subtotal, currency));
 
         recalculateTotal();
+    }
+
+    public void setCheckoutService(com.pos.system.services.CheckoutService checkoutService) {
+        this.checkoutService = checkoutService;
     }
 
     private void recalculateTotal() {
@@ -206,7 +211,6 @@ public class CheckoutController {
         javafx.concurrent.Task<Void> checkoutTask = new javafx.concurrent.Task<>() {
             @Override
             protected Void call() throws Exception {
-                com.pos.system.services.CheckoutService checkoutService = new com.pos.system.services.CheckoutService();
                 checkoutService.processCheckoutWithPayments(sale, cartItems, payments);
                 return null;
             }

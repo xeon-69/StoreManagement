@@ -1,6 +1,5 @@
 package com.pos.system.services;
 
-import com.pos.system.dao.ProductDAO;
 import com.pos.system.database.DatabaseManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +21,9 @@ public class StockAdjustmentService {
         this.inventoryService = inventoryService;
     }
 
-    public void adjustStock(int productId, int quantityChange, String reason) throws SQLException {
+    public void adjustStock(int productId, int quantityChange, String reason, Integer createdBy) throws SQLException {
         try (Connection connection = DatabaseManager.getInstance().getConnection()) {
-            inventoryService.adjustStock(connection, productId, quantityChange, reason, null);
+            inventoryService.adjustStock(connection, productId, quantityChange, reason, createdBy);
             logger.info("Stock adjusted for Product ID: {} by {}. Reason: {}", productId, quantityChange, reason);
         }
     }

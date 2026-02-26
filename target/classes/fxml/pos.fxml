@@ -27,7 +27,7 @@
                <children>
                   <TextField fx:id="searchField" promptText="%pos.search" HBox.hgrow="ALWAYS" styleClass="search-field" />
                   <ComboBox fx:id="categoryFilter" prefWidth="150.0" promptText="%pos.allCategories" styleClass="category-combo" />
-                  <Button mnemonicParsing="false" onAction="#handleSearch" text="%pos.searchBtn" styleClass="btn-primary, pos-tool-btn" contentDisplay="GRAPHIC_ONLY">
+                  <Button mnemonicParsing="false" onAction="#handleSearch" styleClass="btn-primary, search-button" contentDisplay="GRAPHIC_ONLY">
                       <graphic><FontIcon iconLiteral="fas-search" iconColor="white"/></graphic>
                       <tooltip><Tooltip text="%pos.searchBtn"/></tooltip>
                   </Button>

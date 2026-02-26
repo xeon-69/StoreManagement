@@ -16,11 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
-import org.testfx.api.FxAssert;
 import org.testfx.api.FxRobot;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
-import org.testfx.matcher.control.LabeledMatchers;
 import org.testfx.util.WaitForAsyncUtils;
 
 import java.sql.Connection;
@@ -99,6 +97,7 @@ public class AddProductControllerTest {
         robot.clickOn("#barcodeField").write("12345");
         robot.clickOn("#nameField").write("New Item");
 
+        @SuppressWarnings("unchecked")
         ComboBox<Category> categoryCombo = robot.lookup("#categoryComboBox").queryAs(ComboBox.class);
         robot.interact(() -> categoryCombo.getSelectionModel().select(0)); // Electronics
 

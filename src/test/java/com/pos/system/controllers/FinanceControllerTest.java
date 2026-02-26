@@ -3,14 +3,12 @@ package com.pos.system.controllers;
 import com.pos.system.App;
 import com.pos.system.dao.ExpenseDAO;
 import com.pos.system.models.Expense;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -76,6 +74,7 @@ public class FinanceControllerTest {
     public void testFinanceLoadsDataOnStart(FxRobot robot) {
         WaitForAsyncUtils.waitForFxEvents();
 
+        @SuppressWarnings("unchecked")
         TableView<Expense> table = robot.lookup("#expenseTable").queryAs(TableView.class);
         assertEquals(1, table.getItems().size());
         assertEquals("Supplies", table.getItems().get(0).getCategory());

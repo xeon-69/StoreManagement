@@ -2,7 +2,6 @@ package com.pos.system;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.stage.Stage;
 
 import java.util.ResourceBundle;
@@ -13,7 +12,7 @@ public class TestLoad extends Application {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/settings.fxml"));
             loader.setResources(ResourceBundle.getBundle("bundle.messages"));
-            Parent root = loader.load();
+            loader.load();
             System.out.println("SUCCESS: Settings loaded");
         } catch (Exception e) {
             System.err.println("FAILED: Settings");
@@ -23,7 +22,7 @@ public class TestLoad extends Application {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/users.fxml"));
             loader.setResources(ResourceBundle.getBundle("bundle.messages"));
-            Parent root = loader.load();
+            loader.load();
             System.out.println("SUCCESS: Users loaded");
         } catch (Exception e) {
             System.err.println("FAILED: Users");

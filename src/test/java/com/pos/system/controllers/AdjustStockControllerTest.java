@@ -68,7 +68,7 @@ public class AdjustStockControllerTest {
         WaitForAsyncUtils.waitForFxEvents();
 
         // Verify the adjustment service was never called due to invalid input
-        verify(mockAdjustmentService, never()).adjustStock(anyInt(), anyInt(), anyString());
+        verify(mockAdjustmentService, never()).adjustStock(anyInt(), anyInt(), anyString(), any());
     }
 
     @Test
@@ -82,6 +82,6 @@ public class AdjustStockControllerTest {
 
         WaitForAsyncUtils.waitForFxEvents();
 
-        verify(mockAdjustmentService, times(1)).adjustStock(1, 10, "Test Reason");
+        verify(mockAdjustmentService, times(1)).adjustStock(eq(1), eq(10), eq("Test Reason"), any());
     }
 }

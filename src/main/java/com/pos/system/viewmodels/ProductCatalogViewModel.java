@@ -9,10 +9,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.StringProperty;
-import javafx.beans.property.SimpleStringProperty;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -42,7 +38,6 @@ public class ProductCatalogViewModel {
         t.setDaemon(true);
         return t;
     });
-    private volatile Runnable pendingSearch;
 
     // Internal state
     private ProductDAO productDAO; // only used when injected for tests

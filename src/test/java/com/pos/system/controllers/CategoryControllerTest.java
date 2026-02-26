@@ -1,28 +1,21 @@
 package com.pos.system.controllers;
 
 import com.pos.system.App;
-import com.pos.system.dao.CategoryDAO;
 import com.pos.system.models.Category;
 import com.pos.system.services.CategoryService;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedConstruction;
-import org.testfx.api.FxAssert;
 import org.testfx.api.FxRobot;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
-import org.testfx.matcher.control.TableViewMatchers;
 
 import java.util.Arrays;
-import java.util.ResourceBundle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mockConstruction;

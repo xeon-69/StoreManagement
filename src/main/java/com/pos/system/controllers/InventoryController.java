@@ -11,11 +11,14 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.util.List;
+import com.pos.system.services.SecurityService;
+import com.pos.system.utils.SessionManager;
 
 public class InventoryController {
 
     // For Dependency Injection in Tests only
     private ProductDAO injectedProductDAO;
+    private SecurityService securityService;
 
     public void setProductDAO(ProductDAO productDAO) {
         this.injectedProductDAO = productDAO;
@@ -187,10 +190,6 @@ public class InventoryController {
                 }
             };
 
-            deleteTask.setOnSucceeded(e -> {
-                loadProducts();
-            });
-
             deleteTask.setOnFailed(e -> {
                 e.getSource().getException().printStackTrace();
                 com.pos.system.utils.NotificationUtils.showError(b.getString("dialog.dbError"),
@@ -198,8 +197,18 @@ public class InventoryController {
                                 e.getSource().getException().getMessage()));
             });
 
+            deleteTask.setOnSucceeded(e -> {
+                if (securityService != null) {
+                    securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                            "DELETE_PRODUCT", "Product", String.valueOf(selectedProduct.getId()),
+                            "Name: " + selectedProduct.getName());
+                }
+                loadProducts();
+            });
+
             new Thread(deleteTask).start();
         }
+
     }
 
     private void loadProducts() {
@@ -373,7 +382,11 @@ public class InventoryController {
             batchCol.setPrefWidth(100);
             batchCol.setMinWidth(80);
 
-            table.getColumns().addAll(dateCol, typeCol, qtyCol, refCol, batchCol);
+            @SuppressWarnings("unchecked")
+            TableColumn<com.pos.system.models.InventoryTransaction, ?>[] columns = new TableColumn[] {
+                    dateCol, typeCol, qtyCol, refCol, batchCol
+            };
+            table.getColumns().addAll(columns);
             table.setItems(FXCollections.observableArrayList(history));
             table.setPrefWidth(900);
             table.setPrefHeight(450);

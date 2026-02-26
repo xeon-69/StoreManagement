@@ -20,7 +20,11 @@
       <!-- Top Action Bar -->
       <HBox spacing="15.0" alignment="CENTER_LEFT" style="-fx-padding: 0 0 10 0;">
          <children>
-            <TextField fx:id="searchField" promptText="Search Categories..." prefWidth="350.0" />
+            <TextField fx:id="searchField" promptText="%categories.search" prefWidth="350.0" styleClass="search-field" />
+            <Button mnemonicParsing="false" onAction="#handleSearch" styleClass="btn-primary, search-button" contentDisplay="GRAPHIC_ONLY">
+                <graphic><FontIcon iconLiteral="fas-search" iconColor="white"/></graphic>
+                <tooltip><Tooltip text="%pos.searchBtn"/></tooltip>
+            </Button>
             <HBox HBox.hgrow="ALWAYS"/>
             <Button mnemonicParsing="false" onAction="#handleAddCategory" styleClass="btn-success" contentDisplay="GRAPHIC_ONLY">
                 <graphic><FontIcon iconLiteral="fas-plus" iconColor="white"/></graphic>

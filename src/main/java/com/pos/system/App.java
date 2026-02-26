@@ -44,10 +44,6 @@ public class App extends Application {
 
         // Initialize Database
         com.pos.system.database.DatabaseManager.getInstance();
-
-        // Start Background Services
-        com.pos.system.services.StoreMonitorService monitorService = new com.pos.system.services.StoreMonitorService();
-        monitorService.start();
     }
 
     public static void setRoot(String fxml) throws IOException {

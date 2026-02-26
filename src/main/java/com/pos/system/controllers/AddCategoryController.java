@@ -9,6 +9,8 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 import java.sql.SQLException;
+import com.pos.system.services.SecurityService;
+import com.pos.system.utils.SessionManager;
 
 public class AddCategoryController {
 
@@ -23,6 +25,16 @@ public class AddCategoryController {
 
     private Category categoryToEdit; // To track edit mode
     private Runnable onSaveCallback;
+    private SecurityService securityService;
+
+    @FXML
+    public void initialize() {
+        try {
+            securityService = new SecurityService();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void setOnSaveCallback(Runnable onSaveCallback) {
         this.onSaveCallback = onSaveCallback;
@@ -51,9 +63,21 @@ public class AddCategoryController {
             if (categoryToEdit != null) {
                 dao.updateCategory(category);
                 messageLabel.setText(b.getString("category.update.success"));
+
+                if (securityService != null) {
+                    securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                            "UPDATE_CATEGORY", "Category", String.valueOf(id),
+                            "Name: " + category.getName());
+                }
             } else {
                 dao.addCategory(category);
                 messageLabel.setText(b.getString("category.add.success"));
+
+                if (securityService != null) {
+                    securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                            "CREATE_CATEGORY", "Category", "N/A",
+                            "Name: " + category.getName());
+                }
             }
 
             messageLabel.setStyle("-fx-text-fill: green;");

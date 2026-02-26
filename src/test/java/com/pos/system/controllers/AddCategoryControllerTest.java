@@ -9,11 +9,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedConstruction;
-import org.testfx.api.FxAssert;
 import org.testfx.api.FxRobot;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
-import org.testfx.matcher.control.LabeledMatchers;
 import org.testfx.util.WaitForAsyncUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -58,8 +56,15 @@ public class AddCategoryControllerTest {
         WaitForAsyncUtils.waitForFxEvents();
 
         // Fill form
-        robot.clickOn("#nameField").write("Test Category");
-        robot.clickOn("#descriptionArea").write("Test Description");
+        try {
+            robot.clickOn("#nameField").write("Test Category");
+            robot.clickOn("#descriptionArea").write("Test Description");
+        } catch (Exception e) {
+            System.err.println("DEBUG: Lookup failed. Available IDs: " +
+                    robot.lookup(n -> n.getId() != null).queryAll().stream()
+                            .map(javafx.scene.Node::getId).collect(java.util.stream.Collectors.joining(", ")));
+            throw e;
+        }
 
         // Click Save (.btn-success is the save button)
         robot.clickOn(".btn-success");

@@ -1,0 +1,23 @@
+Store Management System
+REPORT RANGE: 2026-02-26 to 2026-02-26
+Generated: 2026-02-26 10:09:51
+
+========================================
+DATE: 2026-02-26
+========================================
+DAILY SUMMARY
+Total Revenue,20.00
+Total Profit,10.00
+Transaction Count,2
+
+TRANSACTION #33,2026-02-26 09:58:22,Total: 10.00,Payment Methods: [CASH: 15.00],Total Paid: 15.00,Change: 5.00
+TRANSACTION #32,2026-02-26 09:56:08,Total: 10.00,Payment Methods: [CASH: 15.00],Total Paid: 15.00,Change: 5.00
+
+========================================
+INVENTORY ACTIVITY
+========================================
+Time,Product,Type,Qty Change,Action,Details
+2026-02-26 09:56:08,1,Sale,-5,SALE,SALE-32
+2026-02-26 09:58:22,1,Sale,-2,SALE,SALE-33
+2026-02-26 09:58:22,1,Sale,-2,SALE,SALE-33
+2026-02-26 09:58:22,1,Sale,-1,SALE,SALE-33

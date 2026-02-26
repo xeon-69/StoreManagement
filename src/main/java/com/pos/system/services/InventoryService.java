@@ -14,6 +14,22 @@ import java.util.List;
 import java.util.UUID;
 
 public class InventoryService {
+    private final SecurityService securityService;
+
+    public InventoryService() {
+        SecurityService ss = null;
+        try {
+            ss = new SecurityService();
+        } catch (SQLException e) {
+            // Cannot log to audit log if security service fails, but we have logger in
+            // other services
+        }
+        this.securityService = ss;
+    }
+
+    public InventoryService(SecurityService securityService) {
+        this.securityService = securityService;
+    }
 
     // Protected methods to allow mocking DAOs in tests
     protected BatchDAO getBatchDAO(Connection connection) {
@@ -49,6 +65,12 @@ public class InventoryService {
 
             // 3. Update Cached Product Stock
             updateCachedProductStock(conn, productId, txDAO);
+
+            // 4. Audit Log
+            if (securityService != null) {
+                securityService.logAction(createdBy, "STOCK_PURCHASE", "Product", String.valueOf(productId),
+                        "Qty added: " + quantity + ", Ref: " + referenceId);
+            }
         }
     }
 
@@ -117,6 +139,12 @@ public class InventoryService {
                 // Treat negative adjustment like a standard deduction to ensure FEFO is honored
                 deductStock(conn, productId, Math.abs(quantityChange), TransactionType.ADJUSTMENT, referenceId,
                         createdBy);
+            }
+
+            // Audit Log
+            if (securityService != null) {
+                securityService.logAction(createdBy, "STOCK_ADJUSTMENT", "Product", String.valueOf(productId),
+                        "Qty change: " + quantityChange + ", Ref: " + referenceId);
             }
         }
     }

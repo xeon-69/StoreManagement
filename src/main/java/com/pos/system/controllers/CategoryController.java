@@ -18,6 +18,8 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import com.pos.system.services.SecurityService;
+import com.pos.system.utils.SessionManager;
 
 public class CategoryController {
 
@@ -34,19 +36,21 @@ public class CategoryController {
     @FXML
     private TextField searchField;
 
-    private Category selectedCategory;
+    private SecurityService securityService;
 
     @FXML
     public void initialize() {
+        try {
+            securityService = new SecurityService();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         descCol.setCellValueFactory(new PropertyValueFactory<>("description"));
 
         setupActionColumn();
-
-        categoryTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            selectedCategory = newVal;
-        });
 
         loadCategories();
 
@@ -127,6 +131,11 @@ public class CategoryController {
     }
 
     @FXML
+    private void handleSearch() {
+        filterCategories(searchField.getText());
+    }
+
+    @FXML
     private void handleAddCategory() {
         openCategoryForm(null);
     }
@@ -168,6 +177,12 @@ public class CategoryController {
                 service.deleteCategory(category.getId());
                 NotificationUtils.showInfo(b.getString("dialog.success"), b.getString("category.delete.success"));
                 loadCategories();
+
+                if (securityService != null) {
+                    securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                            "DELETE_CATEGORY", "Category", String.valueOf(category.getId()),
+                            "Name: " + category.getName());
+                }
             } catch (SQLException e) {
                 e.printStackTrace();
                 if (e.getMessage().contains("SQLITE_CONSTRAINT_FOREIGNKEY")) {

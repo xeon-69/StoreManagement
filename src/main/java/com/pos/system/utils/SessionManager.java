@@ -1,7 +1,6 @@
 package com.pos.system.utils;
 
 import com.pos.system.models.User;
-import com.pos.system.models.User;
 
 public class SessionManager {
     private static SessionManager instance;

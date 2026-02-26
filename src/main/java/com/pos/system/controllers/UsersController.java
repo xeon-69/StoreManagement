@@ -4,6 +4,7 @@ import com.pos.system.dao.UserDAO;
 import com.pos.system.models.User;
 import com.pos.system.services.SecurityService;
 import com.pos.system.utils.NotificationUtils;
+import com.pos.system.utils.SessionManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,10 +14,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-import java.sql.SQLException;
 import java.util.List;
 import javafx.concurrent.Task;
-import javafx.application.Platform;
 
 public class UsersController {
 
@@ -197,6 +196,11 @@ public class UsersController {
                     NotificationUtils.showInfo(b.getString("dialog.successTitle"), b.getString("users.add.success"));
                     handleClearForm();
                     loadUsers();
+
+                    if (securityService != null) {
+                        securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                                "CREATE_USER", "User", "N/A", "Username: " + username + ", Role: " + role);
+                    }
                 } else {
                     NotificationUtils.showError(b.getString("dialog.errorTitle"), b.getString("users.add.fail"));
                 }
@@ -224,6 +228,12 @@ public class UsersController {
                     NotificationUtils.showInfo(b.getString("dialog.successTitle"), b.getString("users.update.success"));
                     handleClearForm();
                     loadUsers();
+
+                    if (securityService != null) {
+                        securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                                "UPDATE_USER_ROLE", "User", String.valueOf(selectedUserForEdit.getId()),
+                                "Username: " + selectedUserForEdit.getUsername() + ", New Role: " + role);
+                    }
                 } else {
                     NotificationUtils.showError(b.getString("dialog.errorTitle"), b.getString("users.update.fail"));
                 }
@@ -299,6 +309,12 @@ public class UsersController {
                     NotificationUtils.showInfo(b_inner.getString("dialog.successTitle"),
                             String.format(b_inner.getString("users.password.updated"), user.getUsername()));
                     loadUsers();
+
+                    if (securityService != null) {
+                        securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                                "CHANGE_USER_PASSWORD", "User", String.valueOf(user.getId()),
+                                "Username: " + user.getUsername());
+                    }
                 } else {
                     NotificationUtils.showError(b_inner.getString("dialog.errorTitle"),
                             b_inner.getString("users.password.updateFail"));
@@ -334,6 +350,11 @@ public class UsersController {
             delTask.setOnSucceeded(e -> {
                 if (delTask.getValue()) {
                     loadUsers();
+
+                    if (securityService != null) {
+                        securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                                "DELETE_USER", "User", String.valueOf(user.getId()), "Username: " + user.getUsername());
+                    }
                 } else {
                     java.util.ResourceBundle b_inner = com.pos.system.App.getBundle();
                     NotificationUtils.showError(b_inner.getString("dialog.errorTitle"),

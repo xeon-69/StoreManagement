@@ -4,7 +4,6 @@ import com.pos.system.App;
 import com.pos.system.dao.UserDAO;
 import com.pos.system.models.User;
 import com.pos.system.services.SecurityService;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
@@ -27,7 +26,6 @@ public class UsersControllerTest {
 
     private UserDAO mockUserDAO;
     private SecurityService mockSecurityService;
-    private UsersController controller;
     private Stage mainStage;
 
     @Start
@@ -50,22 +48,6 @@ public class UsersControllerTest {
         when(mockSecurityService.hashPassword(anyString())).thenReturn("hashedpwd");
     }
 
-    private void loadFXML() throws Exception {
-        javafx.fxml.FXMLLoader fxmlLoader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/users.fxml"));
-        fxmlLoader.setResources(App.getBundle());
-
-        SplitPane root = fxmlLoader.load();
-        controller = fxmlLoader.getController();
-        controller.setUserDAO(mockUserDAO);
-        controller.setSecurityService(mockSecurityService);
-
-        // Need to run initialize logic that we bypassed initially if required, or we
-        // just setDAOs before initialize by using a custom factory:
-        // Actually, initialize runs during load(), so if we set DAOs AFTER load(), it's
-        // too late for the initial loadUsers().
-        // BUT wait, in our test we inject after load(), so initialize() used real DAOs.
-    }
-
     private void loadFXMLWithFactory() throws Exception {
         javafx.fxml.FXMLLoader fxmlLoader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/users.fxml"));
         fxmlLoader.setResources(App.getBundle());
@@ -77,7 +59,7 @@ public class UsersControllerTest {
         });
 
         SplitPane root = fxmlLoader.load();
-        controller = fxmlLoader.getController();
+        fxmlLoader.getController();
 
         org.testfx.util.WaitForAsyncUtils.asyncFx(() -> {
             mainStage.setScene(new Scene(root, 800, 600));

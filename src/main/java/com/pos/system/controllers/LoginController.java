@@ -71,6 +71,10 @@ public class LoginController {
                         "Successful login");
 
                 try {
+                    // Start Background Services
+                    com.pos.system.services.StoreMonitorService monitorService = new com.pos.system.services.StoreMonitorService();
+                    monitorService.start();
+
                     com.pos.system.App.setRoot("dashboard");
                 } catch (java.io.IOException e) {
                     e.printStackTrace();

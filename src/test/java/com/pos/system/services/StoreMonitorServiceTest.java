@@ -1,8 +1,10 @@
 package com.pos.system.services;
 
+import com.pos.system.dao.AuditLogDAO;
 import com.pos.system.dao.ProductDAO;
 import com.pos.system.models.Product;
 import com.pos.system.utils.NotificationUtils;
+import com.pos.system.App;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import org.junit.jupiter.api.AfterEach;
@@ -24,6 +26,7 @@ import static org.mockito.Mockito.*;
 public class StoreMonitorServiceTest {
 
     private MockedConstruction<ProductDAO> mockedProductDAO;
+    private MockedConstruction<AuditLogDAO> mockedAuditLogDAO;
     private MockedStatic<Platform> mockedPlatform;
     private MockedStatic<NotificationUtils> mockedNotificationUtils;
 
@@ -39,6 +42,8 @@ public class StoreMonitorServiceTest {
             products.add(new Product(2, "BC2", "Item 2", 1, "Cat", 10.0, 20.0, 5, null));
             when(mock.getAllProducts()).thenReturn(products);
         });
+
+        mockedAuditLogDAO = mockConstruction(AuditLogDAO.class);
 
         // Mock Platform.runLater to execute immediately
         mockedPlatform = mockStatic(Platform.class);
@@ -59,6 +64,8 @@ public class StoreMonitorServiceTest {
     public void tearDown() {
         if (mockedProductDAO != null)
             mockedProductDAO.close();
+        if (mockedAuditLogDAO != null)
+            mockedAuditLogDAO.close();
         if (mockedPlatform != null)
             mockedPlatform.close();
         if (mockedNotificationUtils != null)
@@ -79,7 +86,8 @@ public class StoreMonitorServiceTest {
 
         // Verify that NotificationUtils.showWarning was called precisely once (for the
         // low stock item)
-        mockedNotificationUtils.verify(() -> NotificationUtils.showWarning(eq("Low Stock"), contains("Item 2")),
+        String expectedTitle = App.getBundle().getString("monitor.lowStock.title");
+        mockedNotificationUtils.verify(() -> NotificationUtils.showWarning(eq(expectedTitle), contains("Item 2")),
                 times(1));
     }
 }

@@ -27,7 +27,7 @@ public class SalePaymentDAOTest extends BaseDAOTest {
 
         // Preload user and sale
         userDAO.createUser(new User(0, "payuser", "pass", "CASHIER", false));
-        int testUserId = userDAO.getUserByUsername("payuser").getId();
+        userDAO.getUserByUsername("payuser");
 
         Sale sale = new Sale(1, 1, 100.0, 0.0, LocalDateTime.now());
         testSaleId = saleDAO.insertSale(sale);

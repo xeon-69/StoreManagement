@@ -59,12 +59,19 @@ public class ExpenseDAO extends BaseDAO {
     }
 
     public List<Expense> getExpensesBetween(LocalDateTime start, LocalDateTime end) throws SQLException {
+        return getPaginatedExpensesBetween(start, end, Integer.MAX_VALUE, 0);
+    }
+
+    public List<Expense> getPaginatedExpensesBetween(LocalDateTime start, LocalDateTime end, int limit, int offset)
+            throws SQLException {
         List<Expense> expenses = new ArrayList<>();
-        String sql = "SELECT * FROM expenses WHERE expense_date >= ? AND expense_date <= ? ORDER BY expense_date DESC";
+        String sql = "SELECT * FROM expenses WHERE expense_date >= ? AND expense_date <= ? ORDER BY expense_date DESC LIMIT ? OFFSET ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, start.toString().replace("T", " "));
             pstmt.setString(2, end.toString().replace("T", " "));
+            pstmt.setInt(3, limit);
+            pstmt.setInt(4, offset);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     expenses.add(new Expense(
@@ -77,6 +84,20 @@ public class ExpenseDAO extends BaseDAO {
             }
         }
         return expenses;
+    }
+
+    public int getExpensesCountBetween(LocalDateTime start, LocalDateTime end) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM expenses WHERE expense_date >= ? AND expense_date <= ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, start.toString().replace("T", " "));
+            pstmt.setString(2, end.toString().replace("T", " "));
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
     }
 
     public double getTotalExpensesBetween(LocalDateTime start, LocalDateTime end) throws SQLException {

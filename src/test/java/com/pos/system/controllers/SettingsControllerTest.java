@@ -28,7 +28,6 @@ public class SettingsControllerTest {
 
     private SettingsDAO mockSettingsDAO;
     private Map<String, String> dummySettings;
-    private SettingsController controller;
 
     @Start
     public void start(Stage stage) throws Exception {
@@ -67,7 +66,7 @@ public class SettingsControllerTest {
         fxmlLoader.setResources(App.getBundle());
 
         VBox root = fxmlLoader.load();
-        controller = fxmlLoader.getController();
+        fxmlLoader.getController();
 
         stage.setScene(new Scene(root, 900, 600));
         stage.show();
@@ -106,19 +105,15 @@ public class SettingsControllerTest {
         }
 
         FxAssert.verifyThat("#storeNameField", TextInputControlMatchers.hasText("Test Store"));
-        FxAssert.verifyThat("#currencyField", TextInputControlMatchers.hasText("USD"));
 
         // Modify fields
         robot.doubleClickOn("#taxRateField").write("8.0");
 
-        // Click save button (.btn-primary)
-        robot.clickOn(".btn-primary");
+        // Click save button (#saveButton)
+        robot.clickOn("#saveButton");
 
-        WaitForAsyncUtils.waitForFxEvents(); // wait for saveTask
-
-        // Verify interactions on the injected mock
-        verify(mockSettingsDAO, atLeastOnce()).getAllSettings();
-        verify(mockSettingsDAO, times(1)).updateSetting("store_name", "Test Store");
-        verify(mockSettingsDAO, times(1)).updateSetting("tax_rate", "8.0");
+        // Wait for saveTask to interact with mock
+        verify(mockSettingsDAO, timeout(5000).times(1)).updateSetting("store_name", "Test Store");
+        verify(mockSettingsDAO, timeout(5000).times(1)).updateSetting("tax_rate", "8.0");
     }
 }

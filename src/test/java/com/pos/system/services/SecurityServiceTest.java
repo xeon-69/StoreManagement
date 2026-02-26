@@ -70,7 +70,6 @@ public class SecurityServiceTest {
     @Test
     void testVerifyLegacyPlaintextPassword() {
         // Arrange
-        String plainText = "legacypass";
 
         // Act
         boolean result = securityService.verifyPassword("legacypass", "legacypass");

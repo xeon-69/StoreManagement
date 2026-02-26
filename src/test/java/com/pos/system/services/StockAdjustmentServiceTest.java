@@ -31,7 +31,7 @@ public class StockAdjustmentServiceTest {
         String reason = "Damaged Goods";
 
         // Act
-        stockAdjustmentService.adjustStock(productId, quantityChange, reason);
+        stockAdjustmentService.adjustStock(productId, quantityChange, reason, null);
 
         // Assert
         // We verify that the underlying inventoryService.adjustStock was called.

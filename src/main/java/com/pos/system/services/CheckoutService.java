@@ -19,6 +19,7 @@ public class CheckoutService {
     private static final Logger logger = LoggerFactory.getLogger(CheckoutService.class);
 
     private final InventoryService inventoryService;
+    private final SecurityService securityService;
 
     public CheckoutService() {
         this(new InventoryService());
@@ -27,6 +28,18 @@ public class CheckoutService {
     // For Dependency Injection in testing
     public CheckoutService(InventoryService inventoryService) {
         this.inventoryService = inventoryService;
+        SecurityService ss = null;
+        try {
+            ss = new SecurityService();
+        } catch (SQLException e) {
+            logger.error("Failed to initialize SecurityService", e);
+        }
+        this.securityService = ss;
+    }
+
+    public CheckoutService(InventoryService inventoryService, SecurityService securityService) {
+        this.inventoryService = inventoryService;
+        this.securityService = securityService;
     }
 
     // Protected method to allow mocking the connection in tests
@@ -73,6 +86,12 @@ public class CheckoutService {
                 connection.commit();
                 logger.info("Checkout transaction committed successfully.");
 
+                // 5. Audit Log
+                if (securityService != null) {
+                    securityService.logAction(sale.getUserId(), "SALE", "Sale", String.valueOf(saleId),
+                            "Total: " + sale.getTotalAmount());
+                }
+
             } catch (SQLException e) {
                 logger.error("Checkout failed, rolling back transaction.", e);
                 connection.rollback();
@@ -117,6 +136,12 @@ public class CheckoutService {
                 // 5. Commit Transaction
                 connection.commit();
                 logger.info("Checkout transaction committed successfully.");
+
+                // 6. Audit Log
+                if (securityService != null) {
+                    securityService.logAction(sale.getUserId(), "SALE", "Sale", String.valueOf(saleId),
+                            "Total: " + sale.getTotalAmount());
+                }
 
             } catch (SQLException e) {
                 logger.error("Checkout failed, rolling back transaction.", e);

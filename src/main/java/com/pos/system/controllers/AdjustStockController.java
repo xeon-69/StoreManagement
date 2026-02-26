@@ -3,6 +3,7 @@ package com.pos.system.controllers;
 import com.pos.system.models.Product;
 import com.pos.system.services.StockAdjustmentService;
 import com.pos.system.utils.NotificationUtils;
+import com.pos.system.utils.SessionManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -59,7 +60,8 @@ public class AdjustStockController {
 
             StockAdjustmentService service = this.adjustmentService != null ? this.adjustmentService
                     : new StockAdjustmentService();
-            service.adjustStock(product.getId(), qtyChange, reason);
+            service.adjustStock(product.getId(), qtyChange, reason,
+                    SessionManager.getInstance().getCurrentUser().getId());
 
             NotificationUtils.showSuccess(b.getString("inventory.adjustStock.successTitle"),
                     b.getString("inventory.adjustStock.successMsg"));

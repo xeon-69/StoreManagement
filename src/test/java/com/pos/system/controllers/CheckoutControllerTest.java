@@ -2,19 +2,15 @@ package com.pos.system.controllers;
 
 import com.pos.system.App;
 import com.pos.system.models.SaleItem;
-import com.pos.system.models.Sale;
 import com.pos.system.models.SalePayment;
 import com.pos.system.models.User;
 import com.pos.system.services.CheckoutService;
 import com.pos.system.services.PrinterService;
 import com.pos.system.utils.SessionManager;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.AfterEach;
@@ -37,7 +33,7 @@ public class CheckoutControllerTest {
 
     private MockedStatic<SessionManager> mockedSessionManager;
     private SessionManager mockSessionInstance;
-    private MockedConstruction<CheckoutService> mockedCheckoutService;
+    private CheckoutService mockCheckoutService;
     private MockedConstruction<PrinterService> mockedPrinterService;
 
     private CheckoutController controller;
@@ -56,9 +52,9 @@ public class CheckoutControllerTest {
         mockedSessionManager.when(SessionManager::getInstance).thenReturn(mockSessionInstance);
 
         // Mock Services
-        mockedCheckoutService = mockConstruction(CheckoutService.class, (mock, context) -> {
-            doNothing().when(mock).processCheckoutWithPayments(any(), any(), any());
-        });
+        mockCheckoutService = mock(CheckoutService.class);
+        doNothing().when(mockCheckoutService).processCheckoutWithPayments(any(), any(), any());
+
         mockedPrinterService = mockConstruction(PrinterService.class);
 
         // Load FXML
@@ -74,6 +70,7 @@ public class CheckoutControllerTest {
         cart.add(item1);
 
         controller.setCheckoutData(cart, () -> successCallbackTriggered = true);
+        controller.setCheckoutService(mockCheckoutService);
 
         stage.setScene(new Scene(root, 600, 800));
         stage.show();
@@ -83,8 +80,6 @@ public class CheckoutControllerTest {
     public void tearDown() {
         if (mockedSessionManager != null)
             mockedSessionManager.close();
-        if (mockedCheckoutService != null)
-            mockedCheckoutService.close();
         if (mockedPrinterService != null)
             mockedPrinterService.close();
     }
@@ -94,9 +89,9 @@ public class CheckoutControllerTest {
         WaitForAsyncUtils.waitForFxEvents();
 
         // Check Initial Load
-        FxAssert.verifyThat("#subtotalLabel", LabeledMatchers.hasText("10.00"));
-        FxAssert.verifyThat("#totalLabel", LabeledMatchers.hasText("10.00"));
-        FxAssert.verifyThat("#remainingLabel", LabeledMatchers.hasText("10.00"));
+        FxAssert.verifyThat("#subtotalLabel", LabeledMatchers.hasText("10.00 MMK"));
+        FxAssert.verifyThat("#totalLabel", LabeledMatchers.hasText("10.00 MMK"));
+        FxAssert.verifyThat("#remainingLabel", LabeledMatchers.hasText("10.00 MMK"));
 
         Button confirmBtn = robot.lookup("#confirmButton").queryButton();
         assertTrue(confirmBtn.isDisabled());
@@ -118,8 +113,8 @@ public class CheckoutControllerTest {
         }
 
         // Check Updates
-        FxAssert.verifyThat("#remainingLabel", LabeledMatchers.hasText("0.00"));
-        FxAssert.verifyThat("#changeLabel", LabeledMatchers.hasText("5.00"));
+        FxAssert.verifyThat("#remainingLabel", LabeledMatchers.hasText("0.00 MMK"));
+        FxAssert.verifyThat("#changeLabel", LabeledMatchers.hasText("5.00 MMK"));
         assertFalse(confirmBtn.isDisabled());
 
         // Click Confirm

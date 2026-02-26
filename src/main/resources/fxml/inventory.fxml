@@ -17,7 +17,7 @@
       <HBox spacing="10.0" alignment="CENTER_LEFT">
          <children>
             <TextField fx:id="searchField" HBox.hgrow="SOMETIMES" prefWidth="350.0" promptText="%inventory.search" styleClass="search-field" />
-            <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#handleSearch" styleClass="btn-primary" contentDisplay="GRAPHIC_ONLY">
+            <Button fx:id="searchBtn" mnemonicParsing="false" onAction="#handleSearch" styleClass="btn-primary, search-button" contentDisplay="GRAPHIC_ONLY">
                 <graphic><FontIcon iconLiteral="fas-search" iconColor="white"/></graphic>
                 <tooltip><Tooltip text="%inventory.searchBtn"/></tooltip>
             </Button>
