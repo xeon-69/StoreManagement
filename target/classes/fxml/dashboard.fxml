@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<BorderPane fx:id="mainPane" prefHeight="1000.0" prefWidth="1500.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.DashboardController" stylesheets="@../css/styles.css">
+   <left>
+      <VBox fx:id="sidebar" alignment="TOP_CENTER" prefHeight="600.0" minWidth="200.0" maxWidth="400.0" styleClass="sidebar" BorderPane.alignment="CENTER">
+         <children>
+            <Button mnemonicParsing="false" onAction="#toggleSidebar" maxWidth="Infinity" styleClass="sidebar-button" alignment="BASELINE_LEFT">
+               <VBox.margin><Insets bottom="20.0" top="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-bars" iconSize="20" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="Toggle Sidebar"/></tooltip>
+            </Button>
+            <!-- <Label text="%app.title" textFill="WHITE" wrapText="true" textAlignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="20.0" />
+               </font>
+               <VBox.margin>
+                  <Insets bottom="30.0" top="20.0" left="10.0" right="10.0"/>
+               </VBox.margin>
+            </Label> -->
+
+            <ComboBox fx:id="languageComboBox" maxWidth="Infinity">
+               <VBox.margin>
+                  <Insets bottom="20.0" />
+               </VBox.margin>
+            </ComboBox>
+
+            <Button fx:id="navPosBtn" mnemonicParsing="false" onAction="#showPOS" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.pos" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-shopping-cart" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.pos"/></tooltip>
+            </Button>
+            
+            <Button fx:id="navInventoryBtn" mnemonicParsing="false" onAction="#showInventory" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.inventory" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-boxes" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.inventory"/></tooltip>
+            </Button>
+            
+            <Button fx:id="navCategoriesBtn" mnemonicParsing="false" onAction="#showCategories" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.categories" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-tags" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.categories"/></tooltip>
+            </Button>
+            
+            <Button fx:id="navFinanceBtn" mnemonicParsing="false" onAction="#showFinance" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.finance" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-money-bill-wave" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.finance"/></tooltip>
+            </Button>
+            
+            <Button fx:id="navReportsBtn" mnemonicParsing="false" onAction="#showReports" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.reports" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-chart-bar" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.reports"/></tooltip>
+            </Button>
+            
+
+            <Button fx:id="navAuditBtn" mnemonicParsing="false" onAction="#showAuditLogs" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.audit" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-shield-alt" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.audit"/></tooltip>
+            </Button>
+            
+            <Button fx:id="navUsersBtn" mnemonicParsing="false" onAction="#showUsers" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.users" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-users" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.users"/></tooltip>
+            </Button>
+
+            <Button fx:id="navSettingsBtn" mnemonicParsing="false" onAction="#showSettings" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.settings" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-cog" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.settings"/></tooltip>
+            </Button>
+            
+            <VBox alignment="BOTTOM_CENTER" VBox.vgrow="ALWAYS">
+               <children>
+                  <Button fx:id="logoutBtn" mnemonicParsing="false" onAction="#logout" maxWidth="Infinity" styleClass="btn-danger" text="%nav.logout">
+                     <VBox.margin><Insets bottom="20.0" /></VBox.margin>
+                     <graphic><FontIcon iconLiteral="fas-sign-out-alt" iconSize="16" iconColor="white"/></graphic>
+                     <tooltip><Tooltip text="%nav.logout"/></tooltip>
+                  </Button>
+                  <Label fx:id="currentUserLabel" text="%nav.user" textFill="#bdc3c7" wrapText="true">
+                     <VBox.margin>
+                        <Insets bottom="10.0" left="10.0" right="10.0"/>
+                     </VBox.margin>
+                  </Label>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </left>
+   <center>
+      <VBox alignment="CENTER" BorderPane.alignment="CENTER">
+         <children>
+            <FontIcon iconLiteral="fas-store" iconSize="100" iconColor="#bdc3c7">
+               <VBox.margin><Insets bottom="20.0" /></VBox.margin>
+            </FontIcon>
+            <Label text="%dashboard.welcome" textFill="#7f8c8d" wrapText="true" textAlignment="CENTER">
+               <font>
+                  <Font size="32.0" />
+               </font>
+            </Label>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

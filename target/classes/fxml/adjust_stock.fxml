@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox alignment="TOP_CENTER" minWidth="350.0" maxWidth="400.0" spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.AdjustStockController" stylesheets="@../css/styles.css" styleClass="root">
+   <children>
+      <Label fx:id="titleLabel" text="Adjust Stock" styleClass="header-label">
+         <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+      </Label>
+      <VBox spacing="5.0">
+         <children>
+            <Label text="Quantity Change (+ or -)" />
+            <TextField fx:id="qtyField" promptText="e.g. 5 or -2" />
+         </children>
+      </VBox>
+      <VBox spacing="5.0" VBox.vgrow="ALWAYS">
+         <children>
+            <Label text="Reason / Reference" />
+            <TextArea fx:id="reasonArea" prefHeight="80.0" promptText="e.g. Audited discrepancy, Found stock, Spoilage" wrapText="true" />
+         </children>
+      </VBox>
+      <Label fx:id="messageLabel" textFill="RED" wrapText="true" />
+      <HBox alignment="CENTER_RIGHT" spacing="10.0">
+         <children>
+            <Button fx:id="saveBtn" mnemonicParsing="false" onAction="#handleSave" prefWidth="130.0" styleClass="btn-success" text="%product.save">
+                <graphic><FontIcon iconLiteral="fas-save" iconColor="white"/></graphic>
+            </Button>
+            <Button fx:id="cancelBtn" mnemonicParsing="false" onAction="#handleCancel" text="%product.cancel" styleClass="btn-danger" prefWidth="130.0">
+                <graphic><FontIcon iconLiteral="fas-times" iconColor="white"/></graphic>
+            </Button>
+         </children>
+         <VBox.margin><Insets top="10.0" /></VBox.margin>
+      </HBox>
+   </children>
+   <padding><Insets bottom="20.0" left="20.0" right="20.0" top="20.0" /></padding>
+</VBox>
