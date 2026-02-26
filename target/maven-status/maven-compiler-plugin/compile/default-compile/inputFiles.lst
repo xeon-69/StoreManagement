@@ -23,7 +23,9 @@ C:\POS\src\main\java\com\pos\system\controllers\FinanceController.java
 C:\POS\src\main\java\com\pos\system\models\InventoryTransaction.java
 C:\POS\src\main\java\com\pos\system\services\CheckoutService.java
 C:\POS\src\main\java\com\pos\system\models\SalePayment.java
+C:\POS\src\main\java\com\pos\system\controllers\ReportHistoryController.java
 C:\POS\src\main\java\com\pos\system\dao\UserDAO.java
+C:\POS\src\main\java\com\pos\system\utils\AppDataUtils.java
 C:\POS\src\main\java\com\pos\system\viewmodels\ProductCatalogViewModel.java
 C:\POS\src\main\java\com\pos\system\controllers\UsersController.java
 C:\POS\src\main\java\com\pos\system\models\Expense.java

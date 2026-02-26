@@ -4,6 +4,7 @@ import com.pos.system.App;
 import com.pos.system.dao.UserDAO;
 import com.pos.system.models.User;
 import com.pos.system.services.SecurityService;
+import com.pos.system.utils.SessionManager;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableView;
@@ -46,6 +47,9 @@ public class UsersControllerTest {
 
         mockSecurityService = mock(SecurityService.class);
         when(mockSecurityService.hashPassword(anyString())).thenReturn("hashedpwd");
+
+        // Set up session for logging actions
+        SessionManager.getInstance().setCurrentUser(u1);
     }
 
     private void loadFXMLWithFactory() throws Exception {

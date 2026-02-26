@@ -34,12 +34,25 @@ public class SettingsController {
     private javafx.scene.control.TableColumn<BackupFile, String> colBackupSize;
     @FXML
     private javafx.scene.control.Button restoreButton;
+    @FXML
+    private javafx.scene.control.Button createBackupBtn;
+    @FXML
+    private javafx.scene.control.Button openBackupDirBtn;
 
     @FXML
     public void initialize() {
         loadSettings();
         setupBackupTable();
         loadBackups();
+        setupTooltips();
+    }
+
+    private void setupTooltips() {
+        java.util.ResourceBundle b = com.pos.system.App.getBundle();
+        createBackupBtn.setTooltip(new javafx.scene.control.Tooltip(b.getString("settings.backup.create")));
+        openBackupDirBtn.setTooltip(new javafx.scene.control.Tooltip(b.getString("settings.backup.openDir")));
+        restoreButton.setTooltip(new javafx.scene.control.Tooltip(b.getString("settings.backup.restore")));
+        backupWarningLabel.setTooltip(new javafx.scene.control.Tooltip(b.getString("settings.backup.warning")));
     }
 
     /**
@@ -174,7 +187,7 @@ public class SettingsController {
             @Override
             protected java.util.List<BackupFile> call() throws Exception {
                 java.util.ResourceBundle b = com.pos.system.App.getBundle();
-                java.nio.file.Path backupDir = java.nio.file.Path.of("backup");
+                java.nio.file.Path backupDir = com.pos.system.utils.AppDataUtils.getBackupDir();
                 if (!java.nio.file.Files.exists(backupDir))
                     return java.util.Collections.emptyList();
 
@@ -217,7 +230,7 @@ public class SettingsController {
 
             // Calculate total storage
             try {
-                java.nio.file.Path backupDir = java.nio.file.Path.of("backup");
+                java.nio.file.Path backupDir = com.pos.system.utils.AppDataUtils.getBackupDir();
                 if (java.nio.file.Files.exists(backupDir)) {
                     long totalBytes = java.nio.file.Files.walk(backupDir)
                             .filter(java.nio.file.Files::isRegularFile)
@@ -239,6 +252,7 @@ public class SettingsController {
 
                     backupStorageLabel
                             .setText(String.format(b.getString("settings.backup.storage"), totalMB, percentUsed));
+                    backupStorageLabel.setTooltip(new javafx.scene.control.Tooltip(backupStorageLabel.getText()));
 
                     if (percentUsed >= 80.0) {
                         backupWarningLabel.setVisible(true);
@@ -282,6 +296,25 @@ public class SettingsController {
         });
 
         new Thread(backupTask).start();
+    }
+
+    @FXML
+    private void handleOpenBackupDir() {
+        try {
+            java.nio.file.Path backupDir = com.pos.system.utils.AppDataUtils.getBackupDir();
+            if (java.nio.file.Files.exists(backupDir)) {
+                java.awt.Desktop.getDesktop().open(backupDir.toFile());
+            } else {
+                java.util.ResourceBundle b = com.pos.system.App.getBundle();
+                NotificationUtils.showError(b.getString("dialog.errorTitle"),
+                        b.getString("settings.backup.openDir.notFound"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showError(b.getString("dialog.errorTitle"),
+                    String.format(b.getString("settings.backup.openDir.error"), e.getMessage()));
+        }
     }
 
     @FXML
@@ -334,7 +367,7 @@ public class SettingsController {
                         dbm.createPreRestoreBackup();
 
                         // 3. Extract the selected zip backup and replace store.db
-                        java.io.File storeDb = new java.io.File("store.db");
+                        java.io.File storeDb = new java.io.File(com.pos.system.utils.AppDataUtils.getDatabasePath());
                         try (java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream(
                                 new java.io.FileInputStream(selected.getPath().toFile()))) {
                             java.util.zip.ZipEntry zipEntry = zis.getNextEntry();

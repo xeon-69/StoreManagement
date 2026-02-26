@@ -282,36 +282,6 @@ public class InventoryController {
         loadProducts();
     }
 
-    @FXML
-    private void handleExpireStock() {
-        javafx.concurrent.Task<Void> expireTask = new javafx.concurrent.Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                try (java.sql.Connection conn = com.pos.system.database.DatabaseManager.getInstance().getConnection()) {
-                    com.pos.system.services.InventoryService invService = new com.pos.system.services.InventoryService();
-                    invService.expireItems(conn, null);
-                }
-                return null;
-            }
-        };
-
-        expireTask.setOnSucceeded(e -> {
-            java.util.ResourceBundle b = com.pos.system.App.getBundle();
-            com.pos.system.utils.NotificationUtils.showInfo(b.getString("inventory.expiry.success.title"),
-                    b.getString("inventory.expiry.success.msg"));
-            loadProducts();
-        });
-
-        expireTask.setOnFailed(e -> {
-            e.getSource().getException().printStackTrace();
-            java.util.ResourceBundle b = com.pos.system.App.getBundle();
-            com.pos.system.utils.NotificationUtils.showError(b.getString("inventory.expiry.fail.title"),
-                    e.getSource().getException().getMessage());
-        });
-
-        new Thread(expireTask).start();
-    }
-
     private void handleViewLedger(Product selectedProduct) {
         if (selectedProduct == null) {
             return;

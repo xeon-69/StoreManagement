@@ -429,6 +429,26 @@ public class ReportsController {
         }
     }
 
+    @FXML
+    private void handleViewHistory() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/report_history_modal.fxml"));
+            loader.setResources(com.pos.system.App.getBundle());
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle(com.pos.system.App.getBundle().getString("reports.history.title"));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (IOException e) {
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            NotificationUtils.showError(b.getString("dialog.uiError"),
+                    "Could not load report history: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private void formatCurrencyColumn(TableColumn<Sale, Double> column) {
         column.setCellFactory(col -> new javafx.scene.control.TableCell<Sale, Double>() {
             @Override

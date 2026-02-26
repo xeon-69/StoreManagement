@@ -65,10 +65,7 @@ public class ReportingService {
                 AuditLogDAO auditLogDAO = new AuditLogDAO(conn);
                 ExpenseDAO expenseDAO = new ExpenseDAO(conn)) {
 
-            File reportsDir = new File("reports");
-            if (!reportsDir.exists()) {
-                reportsDir.mkdirs();
-            }
+            File reportsDir = com.pos.system.utils.AppDataUtils.getReportsDir();
 
             String dateStr = start.equals(end) ? start.toString() : start.toString() + "_to_" + end.toString();
             File reportFile = new File(reportsDir, "report-" + dateStr + ".csv");
@@ -159,10 +156,7 @@ public class ReportingService {
                 AuditLogDAO auditLogDAO = new AuditLogDAO(conn);
                 ExpenseDAO expenseDAO = new ExpenseDAO(conn)) {
 
-            File reportsDir = new File("reports");
-            if (!reportsDir.exists()) {
-                reportsDir.mkdirs();
-            }
+            File reportsDir = com.pos.system.utils.AppDataUtils.getReportsDir();
 
             String dateStr = start.equals(end) ? start.toString() : start.toString() + "_to_" + end.toString();
             File reportFile = new File(reportsDir, "report-" + dateStr + ".xlsx");

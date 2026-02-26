@@ -22,28 +22,46 @@ public class App extends Application {
     private static String currentFxml;
 
     @Override
-    public void start(Stage stage) throws IOException {
-        // Init default locale
-        String savedLang = com.pos.system.utils.ConfigManager.getLanguage();
-        currentLocale = Locale.forLanguageTag(savedLang);
-        bundle = ResourceBundle.getBundle("bundle.messages", currentLocale);
+    public void start(Stage stage) {
+        try {
+            // Init default locale
+            String savedLang = com.pos.system.utils.ConfigManager.getLanguage();
+            currentLocale = Locale.forLanguageTag(savedLang);
+            bundle = ResourceBundle.getBundle("bundle.messages", currentLocale);
 
-        // Apply AtlantaFX Theme
-        Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
+            // Apply AtlantaFX Theme
+            Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
 
-        // We will start with the Login Screen
-        currentFxml = "login";
-        scene = new Scene(loadFXML("login"), 640, 480);
+            // We will start with the Login Screen
+            currentFxml = "login";
+            scene = new Scene(loadFXML("login"), 640, 480);
 
-        // Load CSS if available?
-        // scene.getStylesheets().add(App.class.getResource("/css/styles.css").toExternalForm());
+            // Load CSS if available?
+            // scene.getStylesheets().add(App.class.getResource("/css/styles.css").toExternalForm());
 
-        stage.setScene(scene);
-        stage.setTitle("Store Management System");
-        stage.show();
+            stage.setScene(scene);
+            stage.setTitle("Store Management System");
+            stage.show();
 
-        // Initialize Database
-        com.pos.system.database.DatabaseManager.getInstance();
+            // Initialize Database
+            com.pos.system.database.DatabaseManager.getInstance();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            try {
+                java.nio.file.Path logPath = java.nio.file.Paths.get(System.getProperty("user.home"),
+                        "StoreManager_startup_error.log");
+                java.util.List<String> lines = new java.util.ArrayList<>();
+                lines.add("App.start Error at " + java.time.LocalDateTime.now());
+                lines.add(t.toString());
+                for (StackTraceElement element : t.getStackTrace()) {
+                    lines.add("  at " + element.toString());
+                }
+                java.nio.file.Files.write(logPath, lines, java.nio.file.StandardOpenOption.CREATE,
+                        java.nio.file.StandardOpenOption.APPEND);
+            } catch (Exception e) {
+                // Ignore log errors
+            }
+        }
     }
 
     public static void setRoot(String fxml) throws IOException {

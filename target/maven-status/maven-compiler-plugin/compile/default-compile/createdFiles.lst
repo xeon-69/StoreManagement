@@ -1,3 +1,4 @@
+com\pos\system\utils\AppDataUtils.class
 com\pos\system\models\SalePayment.class
 TestLoad.class
 com\pos\system\controllers\LoginController.class
@@ -28,6 +29,7 @@ com\pos\system\controllers\AddCategoryController.class
 com\pos\system\controllers\DateRangeReportController$2.class
 com\pos\system\controllers\InventoryController$3.class
 com\pos\system\services\PrinterService.class
+com\pos\system\controllers\ReportHistoryController.class
 com\pos\system\utils\ConfigManager.class
 com\pos\system\controllers\UsersController$1.class
 com\pos\system\models\Category.class
@@ -35,7 +37,7 @@ com\pos\system\dao\CategoryDAO.class
 com\pos\system\controllers\FinanceController.class
 com\pos\system\controllers\DateRangeReportController.class
 com\pos\system\controllers\InventoryController$2.class
-com\pos\system\controllers\InventoryController$9.class
+com\pos\system\controllers\ReportHistoryController$1.class
 com\pos\system\dao\BaseDAO.class
 com\pos\system\utils\NotificationUtils$DialogType.class
 com\pos\system\dao\ExpenseDAO.class
@@ -46,6 +48,7 @@ com\pos\system\controllers\UsersController$2.class
 com\pos\system\controllers\SettingsController$2.class
 com\pos\system\models\InventoryTransaction.class
 com\pos\system\services\ReportingService$AggregationLevel.class
+com\pos\system\controllers\ReportHistoryController$2.class
 com\pos\system\controllers\SettingsController$4.class
 com\pos\system\services\StockAdjustmentService.class
 com\pos\system\controllers\AuditLogController.class

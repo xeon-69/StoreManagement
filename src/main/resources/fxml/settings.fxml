@@ -62,7 +62,8 @@
           <Label fx:id="backupStorageLabel" text="%settings.backup.storage" style="-fx-font-weight: bold;"/>
           <Label fx:id="backupWarningLabel" text="%settings.backup.warning" textFill="red" visible="false" managed="false" style="-fx-font-weight: bold;"/>
           <javafx.scene.layout.Region HBox.hgrow="ALWAYS" />
-          <Button mnemonicParsing="false" onAction="#handleCreateManualBackup" styleClass="btn-secondary" text="%settings.backup.create" />
+          <Button fx:id="createBackupBtn" mnemonicParsing="false" onAction="#handleCreateManualBackup" styleClass="btn-secondary" text="%settings.backup.create" />
+          <Button fx:id="openBackupDirBtn" mnemonicParsing="false" onAction="#handleOpenBackupDir" styleClass="btn-secondary" text="%settings.backup.openDir" />
       </HBox>
 
       <javafx.scene.control.TableView fx:id="backupTable" prefHeight="200.0" VBox.vgrow="ALWAYS">

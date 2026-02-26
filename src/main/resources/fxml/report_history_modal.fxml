@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox prefHeight="500.0" prefWidth="700.0" spacing="15.0" stylesheets="@../css/styles.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pos.system.controllers.ReportHistoryController">
+   <children>
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
+         <children>
+            <Label styleClass="header-label" text="%reports.history.title" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button mnemonicParsing="false" onAction="#handleRefresh" styleClass="btn-secondary">
+               <graphic><FontIcon iconLiteral="fas-sync-alt" iconSize="16"/></graphic>
+            </Button>
+         </children>
+      </HBox>
+      
+      <TableView fx:id="reportsTable" VBox.vgrow="ALWAYS">
+         <columns>
+            <TableColumn fx:id="nameCol" prefWidth="350.0" text="%reports.history.col.name" />
+            <TableColumn fx:id="dateCol" prefWidth="150.0" text="%reports.history.col.date" />
+            <TableColumn fx:id="actionCol" prefWidth="150.0" text="%pos.action" />
+         </columns>
+         <placeholder>
+            <Label text="%reports.history.noFiles" />
+         </placeholder>
+      </TableView>
+      
+      <Pagination fx:id="pagination" maxPageIndicatorCount="5" />
+      
+      <HBox alignment="CENTER_RIGHT">
+         <children>
+            <Button mnemonicParsing="false" onAction="#handleClose" styleClass="btn-primary" text="%dialog.ok" />
+         </children>
+      </HBox>
+   </children>
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+</VBox>

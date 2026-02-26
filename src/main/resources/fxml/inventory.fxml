@@ -27,10 +27,6 @@
             </Button>
             <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS" spacing="10.0">
                <children>
-                  <Button mnemonicParsing="false" onAction="#handleExpireStock" styleClass="btn-warning" contentDisplay="GRAPHIC_ONLY">
-                      <graphic><FontIcon iconLiteral="fas-calendar-times" iconColor="black" /></graphic>
-                      <tooltip><Tooltip text="%inventory.runExpiryBtn"/></tooltip>
-                  </Button>
                   <Button mnemonicParsing="false" onAction="#handleAddProduct" styleClass="btn-success" contentDisplay="GRAPHIC_ONLY">
                       <graphic><FontIcon iconLiteral="fas-plus" iconColor="white"/></graphic>
                       <tooltip><Tooltip text="%inventory.addBtn"/></tooltip>

@@ -13,6 +13,9 @@
          <children>
             <Label styleClass="header-label" text="%reports.title" />
             <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="historyBtn" mnemonicParsing="false" onAction="#handleViewHistory" styleClass="btn-secondary" text="%reports.history.btn">
+               <graphic><FontIcon iconLiteral="fas-history" iconSize="16"/></graphic>
+            </Button>
             <Button fx:id="zReportBtn" mnemonicParsing="false" onAction="#handleGenerateZReport" styleClass="btn-primary" text="%reports.zreport">
                <graphic><FontIcon iconLiteral="fas-file-csv" iconSize="16" iconColor="white"/></graphic>
             </Button>

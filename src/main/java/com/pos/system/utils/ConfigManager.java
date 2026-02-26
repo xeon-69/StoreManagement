@@ -8,7 +8,6 @@ import java.util.Properties;
 
 public class ConfigManager {
 
-    private static final String CONFIG_FILE = "config.properties";
     private static final Properties properties = new Properties();
 
     static {
@@ -16,7 +15,7 @@ public class ConfigManager {
     }
 
     private static void loadConfig() {
-        File file = new File(CONFIG_FILE);
+        File file = new File(AppDataUtils.getConfigPath());
         if (file.exists()) {
             try (FileInputStream fis = new FileInputStream(file)) {
                 properties.load(fis);
@@ -36,7 +35,7 @@ public class ConfigManager {
     }
 
     private static void saveConfig() {
-        try (FileOutputStream fos = new FileOutputStream(CONFIG_FILE)) {
+        try (FileOutputStream fos = new FileOutputStream(AppDataUtils.getConfigPath())) {
             properties.store(fos, "Application Configuration");
         } catch (IOException e) {
             e.printStackTrace();

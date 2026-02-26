@@ -197,7 +197,7 @@ public class UsersController {
                     handleClearForm();
                     loadUsers();
 
-                    if (securityService != null) {
+                    if (securityService != null && SessionManager.getInstance().getCurrentUser() != null) {
                         securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
                                 "CREATE_USER", "User", "N/A", "Username: " + username + ", Role: " + role);
                     }
@@ -229,7 +229,7 @@ public class UsersController {
                     handleClearForm();
                     loadUsers();
 
-                    if (securityService != null) {
+                    if (securityService != null && SessionManager.getInstance().getCurrentUser() != null) {
                         securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
                                 "UPDATE_USER_ROLE", "User", String.valueOf(selectedUserForEdit.getId()),
                                 "Username: " + selectedUserForEdit.getUsername() + ", New Role: " + role);
@@ -252,6 +252,11 @@ public class UsersController {
         forceChangeCheckBox.setSelected(user.isForcePasswordChange());
         passwordContainer.setVisible(false);
         passwordContainer.setManaged(false);
+
+        // Prevent self-lockout: disable role change if editing own account
+        User currentUser = SessionManager.getInstance().getCurrentUser();
+        boolean isSelf = currentUser != null && currentUser.getId() == user.getId();
+        roleComboBox.setDisable(isSelf);
     }
 
     private void handlePasswordChangeRequest(User user) {
@@ -310,7 +315,7 @@ public class UsersController {
                             String.format(b_inner.getString("users.password.updated"), user.getUsername()));
                     loadUsers();
 
-                    if (securityService != null) {
+                    if (securityService != null && SessionManager.getInstance().getCurrentUser() != null) {
                         securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
                                 "CHANGE_USER_PASSWORD", "User", String.valueOf(user.getId()),
                                 "Username: " + user.getUsername());
@@ -351,7 +356,7 @@ public class UsersController {
                 if (delTask.getValue()) {
                     loadUsers();
 
-                    if (securityService != null) {
+                    if (securityService != null && SessionManager.getInstance().getCurrentUser() != null) {
                         securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
                                 "DELETE_USER", "User", String.valueOf(user.getId()), "Username: " + user.getUsername());
                     }
@@ -376,6 +381,7 @@ public class UsersController {
         passwordContainer.setVisible(true);
         passwordContainer.setManaged(true);
         forceChangeCheckBox.setSelected(false);
+        roleComboBox.setDisable(false);
         roleComboBox.getSelectionModel().selectFirst();
     }
 }

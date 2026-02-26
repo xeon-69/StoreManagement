@@ -35,7 +35,8 @@ public class DatabaseManager {
     private void initialize() {
         try {
             HikariConfig config = new HikariConfig();
-            config.setJdbcUrl("jdbc:sqlite:store.db");
+            String dbPath = com.pos.system.utils.AppDataUtils.getDatabasePath();
+            config.setJdbcUrl("jdbc:sqlite:" + dbPath);
             config.setDriverClassName("org.sqlite.JDBC");
 
             // SQLite specific optimizations
@@ -187,11 +188,11 @@ public class DatabaseManager {
     public void performBackup(boolean isManual) {
         try {
             logger.info("Starting database backup...");
-            File dbFile = new File("store.db");
+            File dbFile = new File(com.pos.system.utils.AppDataUtils.getDatabasePath());
             if (!dbFile.exists())
                 return;
 
-            Path backupDir = Path.of("backup");
+            Path backupDir = com.pos.system.utils.AppDataUtils.getBackupDir();
             if (!Files.exists(backupDir)) {
                 Files.createDirectories(backupDir);
             }
@@ -276,11 +277,11 @@ public class DatabaseManager {
 
     public void createPreRestoreBackup() throws IOException {
         logger.info("Creating pre-restore safety backup...");
-        File dbFile = new File("store.db");
+        File dbFile = new File(com.pos.system.utils.AppDataUtils.getDatabasePath());
         if (!dbFile.exists())
             return;
 
-        Path backupDir = Path.of("backup");
+        Path backupDir = com.pos.system.utils.AppDataUtils.getBackupDir();
         if (!Files.exists(backupDir)) {
             Files.createDirectories(backupDir);
         }
