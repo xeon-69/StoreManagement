@@ -45,17 +45,25 @@ public class DatabaseManager {
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
             // Pool settings for desktop app
-            config.setMaximumPoolSize(20);
-            config.setMinimumIdle(2);
-            config.setConnectionTimeout(5000); // 5s - fail fast instead of hanging
-            config.setLeakDetectionThreshold(30000); // Log warning when connection held >30s
+            config.setMaximumPoolSize(10); // Optimal for SQLite with Hikari
+            config.setMinimumIdle(1);
+            config.setConnectionTimeout(5000); // 5s
+            config.setLeakDetectionThreshold(30000);
             config.setPoolName("POS-HikariPool");
 
             this.dataSource = new HikariDataSource(config);
             logger.info("Database connection pool initialized.");
 
-            // Initialize tables
-            try (Connection conn = dataSource.getConnection()) {
+            // Initialize WAL mode and optimizations
+            try (Connection conn = dataSource.getConnection();
+                    var stmt = conn.createStatement()) {
+                stmt.execute("PRAGMA journal_mode = WAL");
+                stmt.execute("PRAGMA synchronous = NORMAL");
+                stmt.execute("PRAGMA mmap_size = 268435456"); // 256MB mmap for faster reads
+                stmt.execute("PRAGMA cache_size = -64000"); // 64MB cache
+                stmt.execute("PRAGMA busy_timeout = 5000");
+                stmt.execute("PRAGMA foreign_keys = ON");
+
                 initializeTables(conn);
 
                 // Run heavy migrations/optimizations in background
@@ -63,16 +71,16 @@ public class DatabaseManager {
                     try (Connection bgConn = dataSource.getConnection()) {
                         migrateLegacyStock(bgConn);
 
-                        // Normalize date format: replace 'T' separator with space for consistent SQLite comparisons
-                        try (var stmt = bgConn.createStatement()) {
-                            stmt.executeUpdate(
+                        // Normalize date format
+                        try (var bgStmt = bgConn.createStatement()) {
+                            bgStmt.executeUpdate(
                                     "UPDATE sales SET sale_date = REPLACE(sale_date, 'T', ' ') WHERE sale_date LIKE '%T%'");
-                            logger.info("Normalized sale_date format in sales table.");
+                            logger.info("Background Date normalization completed.");
                         }
                     } catch (SQLException e) {
-                         logger.error("Background migration failed", e);
+                        logger.error("Background migration failed", e);
                     }
-                }).start();
+                }, "DB-Background-Migration").start();
             }
 
             // Ensure backup on shutdown

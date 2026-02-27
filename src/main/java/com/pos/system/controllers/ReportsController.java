@@ -2,7 +2,6 @@ package com.pos.system.controllers;
 
 import com.pos.system.dao.SaleDAO;
 import com.pos.system.dao.SalePaymentDAO;
-import com.pos.system.models.SalePayment;
 import com.pos.system.models.Sale;
 
 import javafx.collections.FXCollections;
@@ -315,28 +314,28 @@ public class ReportsController {
             return;
 
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime start, end;
+        LocalDateTime startTime, endTime;
 
         switch (index) {
             case 0: // Today
-                start = now.toLocalDate().atStartOfDay();
-                end = now;
+                startTime = now.toLocalDate().atStartOfDay();
+                endTime = now;
                 break;
             case 1: // This Week
-                start = now.toLocalDate().minusDays(6).atStartOfDay();
-                end = now;
+                startTime = now.toLocalDate().minusDays(6).atStartOfDay();
+                endTime = now;
                 break;
             case 2: // This Month
-                start = now.toLocalDate().withDayOfMonth(1).atStartOfDay();
-                end = now;
+                startTime = now.toLocalDate().withDayOfMonth(1).atStartOfDay();
+                endTime = now;
                 break;
             case 3: // This Year
-                start = now.toLocalDate().withDayOfYear(1).atStartOfDay();
-                end = now;
+                startTime = now.toLocalDate().withDayOfYear(1).atStartOfDay();
+                endTime = now;
                 break;
             case 4: // All Time
-                start = LocalDateTime.of(2000, 1, 1, 0, 0);
-                end = now;
+                startTime = LocalDateTime.of(2000, 1, 1, 0, 0);
+                endTime = now;
                 break;
             case 5: // Custom
                 if (startDatePicker.getValue() == null || endDatePicker.getValue() == null) {
@@ -348,65 +347,111 @@ public class ReportsController {
                             b.getString("reports.filter.invalidRangeMsg"));
                     return;
                 }
-                start = startDatePicker.getValue().atStartOfDay();
+                startTime = startDatePicker.getValue().atStartOfDay();
                 if (!endDatePicker.getValue().isBefore(now.toLocalDate())) {
-                    end = now;
+                    endTime = now;
                 } else {
-                    end = endDatePicker.getValue().atTime(23, 59, 59);
+                    endTime = endDatePicker.getValue().atTime(23, 59, 59);
                 }
                 break;
             default:
                 return;
         }
 
-        // Query synchronously — fast on local SQLite
-        try (SaleDAO saleDAO = new SaleDAO(); SalePaymentDAO paymentDAO = new SalePaymentDAO()) {
-            double filteredSales = saleDAO.getTotalSalesBetween(start, end);
-            double filteredProfit = saleDAO.getTotalProfitBetween(start, end);
-            double totalSales = saleDAO.getTotalSalesBetween(
-                    LocalDateTime.of(2000, 1, 1, 0, 0), LocalDateTime.now());
+        // Use final copies for Task
+        final LocalDateTime start = startTime;
+        final LocalDateTime end = endTime;
 
-            List<Sale> salesData = saleDAO.getSalesBetween(start, end);
+        javafx.concurrent.Task<ReportData> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected ReportData call() throws Exception {
+                try (SaleDAO saleDAO = createSaleDAO();
+                        SalePaymentDAO paymentDAO = createPaymentDAO()) {
 
-            // Populate payment summary for each sale
-            for (Sale sale : salesData) {
-                try {
-                    List<SalePayment> payments = paymentDAO.findBySaleId(sale.getId());
-                    if (!payments.isEmpty()) {
-                        StringBuilder sb = new StringBuilder();
-                        for (SalePayment p : payments) {
-                            if (sb.length() > 0)
-                                sb.append(", ");
-                            sb.append(p.getPaymentMethod())
-                                    .append(" (").append(String.format("%,.0f", p.getAmount())).append(")");
-                        }
-                        double totalPaid = payments.stream().mapToDouble(SalePayment::getAmount).sum();
-                        double change = totalPaid - sale.getTotalAmount();
-                        sale.setChange(Math.max(0, change));
-                        sale.setPaymentMethods(sb.toString());
+                    ReportData result = new ReportData();
+                    result.totalSales = saleDAO.getTotalSalesBetween(start, end);
+                    result.totalProfit = saleDAO.getTotalProfitBetween(start, end);
+                    result.allTimeSales = saleDAO.getTotalSalesBetween(
+                            LocalDateTime.of(2000, 1, 1, 0, 0), LocalDateTime.now());
+
+                    List<Sale> salesData = saleDAO.getSalesBetween(start, end);
+                    if (salesData.isEmpty()) {
+                        result.sales = salesData;
+                        return result;
                     }
-                } catch (Exception ignored) {
+
+                    // Batch fetch payments
+                    List<Integer> saleIds = salesData.stream().map(Sale::getId)
+                            .collect(java.util.stream.Collectors.toList());
+                    List<com.pos.system.models.SalePayment> allPayments = paymentDAO.findBySaleIds(saleIds);
+
+                    // Group payments by sale ID
+                    java.util.Map<Integer, List<com.pos.system.models.SalePayment>> paymentMap = allPayments.stream()
+                            .collect(java.util.stream.Collectors
+                                    .groupingBy(com.pos.system.models.SalePayment::getSaleId));
+
+                    for (Sale sale : salesData) {
+                        List<com.pos.system.models.SalePayment> payments = paymentMap.get(sale.getId());
+                        if (payments != null && !payments.isEmpty()) {
+                            StringBuilder sb = new StringBuilder();
+                            for (com.pos.system.models.SalePayment p : payments) {
+                                if (sb.length() > 0)
+                                    sb.append(", ");
+                                sb.append(p.getPaymentMethod())
+                                        .append(" (").append(String.format("%,.0f", p.getAmount())).append(")");
+                            }
+                            double totalPaid = payments.stream()
+                                    .mapToDouble(com.pos.system.models.SalePayment::getAmount).sum();
+                            double change = totalPaid - sale.getTotalAmount();
+                            sale.setChange(Math.max(0, change));
+                            sale.setPaymentMethods(sb.toString());
+                        }
+                    }
+                    result.sales = salesData;
+                    return result;
                 }
             }
+        };
 
-            // Update UI directly (we're already on the FX thread)
-            String mmk = com.pos.system.App.getBundle().getString("common.mmk");
-            todaySalesLabel.setText(String.format("%,.2f %s", filteredSales, mmk));
-            todayProfitLabel.setText(String.format("%,.2f %s", filteredProfit, mmk));
-            totalSalesLabel.setText(String.format("%,.2f %s", totalSales, mmk));
+        task.setOnSucceeded(e -> {
+            ReportData data = task.getValue();
+            java.util.ResourceBundle b = com.pos.system.App.getBundle();
+            String mmk = b.getString("common.mmk");
 
-            this.allFilteredSales = salesData;
+            todaySalesLabel.setText(String.format("%,.2f %s", data.totalSales, mmk));
+            todayProfitLabel.setText(String.format("%,.2f %s", data.totalProfit, mmk));
+            totalSalesLabel.setText(String.format("%,.2f %s", data.allTimeSales, mmk));
+
+            allFilteredSales = data.sales;
             int pageCount = (int) Math.ceil((double) allFilteredSales.size() / ROWS_PER_PAGE);
             pagination.setPageCount(Math.max(1, pageCount));
             pagination.setCurrentPageIndex(0);
             updatePage(0);
-            updateCharts(salesData, start, end);
+            updateCharts(allFilteredSales, start, end);
+        });
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        task.setOnFailed(e -> {
+            task.getException().printStackTrace();
             java.util.ResourceBundle b = com.pos.system.App.getBundle();
             NotificationUtils.showError(b.getString("dialog.error"), b.getString("reports.load.error"));
-        }
+        });
+
+        new Thread(task).start();
+    }
+
+    protected SaleDAO createSaleDAO() throws java.sql.SQLException {
+        return new SaleDAO();
+    }
+
+    protected SalePaymentDAO createPaymentDAO() throws java.sql.SQLException {
+        return new SalePaymentDAO();
+    }
+
+    private static class ReportData {
+        double totalSales;
+        double totalProfit;
+        double allTimeSales;
+        List<Sale> sales;
     }
 
     @FXML
@@ -629,18 +674,28 @@ public class ReportsController {
             itemsPerHour.put(String.format("%02d:00", i), 0.0);
         }
 
-        try (com.pos.system.dao.SaleDAO saleDAO = new com.pos.system.dao.SaleDAO()) {
+        try (com.pos.system.dao.SaleDAO saleDAO = createSaleDAO()) {
+            List<Integer> saleIds = data.stream().map(Sale::getId).collect(java.util.stream.Collectors.toList());
+            List<com.pos.system.models.SaleItem> allItems = saleDAO.getItemsBySaleIds(saleIds);
+
+            // Group items by sale ID
+            java.util.Map<Integer, List<com.pos.system.models.SaleItem>> itemsBySaleMap = allItems.stream()
+                    .collect(java.util.stream.Collectors.groupingBy(com.pos.system.models.SaleItem::getSaleId));
+
             for (Sale s : data) {
                 String hourKey = String.format("%02d:00", s.getSaleDate().getHour());
                 double itemsInSale = 0;
-                List<com.pos.system.models.SaleItem> items = saleDAO.getItemsBySaleId(s.getId());
-                for (com.pos.system.models.SaleItem item : items) {
-                    String cat = item.getCategoryName();
-                    if (cat == null)
-                        cat = "Uncategorized";
-                    revByCat.put(cat, revByCat.getOrDefault(cat, 0.0) + (item.getQuantity() * item.getPriceAtSale()));
-                    qtyByCat.put(cat, qtyByCat.getOrDefault(cat, 0.0) + item.getQuantity());
-                    itemsInSale += item.getQuantity();
+                List<com.pos.system.models.SaleItem> items = itemsBySaleMap.get(s.getId());
+                if (items != null) {
+                    for (com.pos.system.models.SaleItem item : items) {
+                        String cat = item.getCategoryName();
+                        if (cat == null)
+                            cat = "Uncategorized";
+                        revByCat.put(cat,
+                                revByCat.getOrDefault(cat, 0.0) + (item.getQuantity() * item.getPriceAtSale()));
+                        qtyByCat.put(cat, qtyByCat.getOrDefault(cat, 0.0) + item.getQuantity());
+                        itemsInSale += item.getQuantity();
+                    }
                 }
                 itemsPerHour.put(hourKey, itemsPerHour.get(hourKey) + itemsInSale);
             }

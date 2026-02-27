@@ -90,6 +90,13 @@
                <graphic><FontIcon iconLiteral="fas-cog" iconSize="18" iconColor="white"/></graphic>
                <tooltip><Tooltip text="%nav.settings"/></tooltip>
             </Button>
+
+            <Button fx:id="navHardwareBtn" mnemonicParsing="false" onAction="#showHardware" maxWidth="Infinity" styleClass="sidebar-button" text="%nav.hardware" alignment="BASELINE_LEFT">
+               <font><Font size="16.0" /></font>
+               <VBox.margin><Insets bottom="10.0" /></VBox.margin>
+               <graphic><FontIcon iconLiteral="fas-microchip" iconSize="18" iconColor="white"/></graphic>
+               <tooltip><Tooltip text="%nav.hardware"/></tooltip>
+            </Button>
             
             <VBox alignment="BOTTOM_CENTER" VBox.vgrow="ALWAYS">
                <children>

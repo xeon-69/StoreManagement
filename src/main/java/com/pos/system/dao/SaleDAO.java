@@ -213,22 +213,58 @@ public class SaleDAO extends BaseDAO {
             stmt.setInt(1, saleId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    SaleItem item = new SaleItem(
-                            rs.getInt("id"),
-                            rs.getInt("sale_id"),
-                            rs.getInt("product_id"),
-                            rs.getString("product_name"),
-                            rs.getInt("quantity"),
-                            rs.getDouble("price_at_sale"),
-                            rs.getDouble("cost_at_sale"));
-                    item.setDiscountAmount(rs.getDouble("discount_amount"));
-                    item.setTaxAmount(rs.getDouble("tax_amount"));
-                    item.setCategoryName(rs.getString("category_name"));
+                    SaleItem item = mapResultSetToSaleItem(rs);
                     items.add(item);
                 }
             }
         }
         return items;
+    }
+
+    public List<SaleItem> getItemsBySaleIds(List<Integer> saleIds) throws SQLException {
+        List<SaleItem> items = new java.util.ArrayList<>();
+        if (saleIds == null || saleIds.isEmpty())
+            return items;
+
+        StringBuilder sql = new StringBuilder("SELECT si.*, p.name as product_name, c.name as category_name " +
+                "FROM sale_items si " +
+                "JOIN products p ON si.product_id = p.id " +
+                "LEFT JOIN categories c ON p.category_id = c.id " +
+                "WHERE si.sale_id IN (");
+
+        for (int i = 0; i < saleIds.size(); i++) {
+            sql.append("?");
+            if (i < saleIds.size() - 1)
+                sql.append(",");
+        }
+        sql.append(")");
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < saleIds.size(); i++) {
+                stmt.setInt(i + 1, saleIds.get(i));
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    items.add(mapResultSetToSaleItem(rs));
+                }
+            }
+        }
+        return items;
+    }
+
+    private SaleItem mapResultSetToSaleItem(ResultSet rs) throws SQLException {
+        SaleItem item = new SaleItem(
+                rs.getInt("id"),
+                rs.getInt("sale_id"),
+                rs.getInt("product_id"),
+                rs.getString("product_name"),
+                rs.getInt("quantity"),
+                rs.getDouble("price_at_sale"),
+                rs.getDouble("cost_at_sale"));
+        item.setDiscountAmount(rs.getDouble("discount_amount"));
+        item.setTaxAmount(rs.getDouble("tax_amount"));
+        item.setCategoryName(rs.getString("category_name"));
+        return item;
     }
 
     private Sale mapResultSetToSale(ResultSet rs) throws SQLException {

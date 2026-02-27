@@ -59,10 +59,10 @@ public class LoginController {
             return;
         }
 
-        try (UserDAO userDAO = new UserDAO()) {
-            User user = userDAO.getUserByUsername(username);
+        try (UserDAO userDAO = new UserDAO();
+                com.pos.system.services.SecurityService securityService = new com.pos.system.services.SecurityService()) {
 
-            com.pos.system.services.SecurityService securityService = new com.pos.system.services.SecurityService();
+            User user = userDAO.getUserByUsername(username);
 
             if (user != null && securityService.verifyPassword(password, user.getPassword())) {
                 // Successful Login

@@ -52,6 +52,33 @@ public class SalePaymentDAO extends BaseDAO {
         return list;
     }
 
+    public List<SalePayment> findBySaleIds(List<Integer> saleIds) throws SQLException {
+        List<SalePayment> list = new ArrayList<>();
+        if (saleIds == null || saleIds.isEmpty())
+            return list;
+
+        // Construct IN clause
+        StringBuilder sql = new StringBuilder("SELECT * FROM sale_payments WHERE sale_id IN (");
+        for (int i = 0; i < saleIds.size(); i++) {
+            sql.append("?");
+            if (i < saleIds.size() - 1)
+                sql.append(",");
+        }
+        sql.append(") ORDER BY sale_id, payment_date ASC");
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < saleIds.size(); i++) {
+                stmt.setInt(i + 1, saleIds.get(i));
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToPayment(rs));
+                }
+            }
+        }
+        return list;
+    }
+
     private SalePayment mapResultSetToPayment(ResultSet rs) throws SQLException {
         SalePayment payment = new SalePayment();
         payment.setId(rs.getInt("id"));

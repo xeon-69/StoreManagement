@@ -42,9 +42,18 @@ public class App extends Application {
             stage.setScene(scene);
             stage.setTitle("Store Management System");
             stage.show();
+            System.out.println("Main Stage shown. Starting DB initialization in background...");
 
-            // Initialize Database
-            com.pos.system.database.DatabaseManager.getInstance();
+            // Initialize Database in background to avoid hanging UI thread
+            new Thread(() -> {
+                try {
+                    com.pos.system.database.DatabaseManager.getInstance();
+                    System.out.println("Database initialization completed in background.");
+                } catch (Throwable t) {
+                    System.err.println("Database initialization failed in background!");
+                    t.printStackTrace();
+                }
+            }, "Database-Initializer").start();
         } catch (Throwable t) {
             t.printStackTrace();
             try {

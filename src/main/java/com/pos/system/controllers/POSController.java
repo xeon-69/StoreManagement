@@ -229,7 +229,8 @@ public class POSController {
 
         java.util.ResourceBundle b = com.pos.system.App.getBundle();
         Label placeholder = new Label(b.getString("pos.noImage"));
-        placeholder.setStyle("-fx-text-fill: #bdc3c7; -fx-border-color: #bdc3c7; -fx-border-style: dashed; -fx-padding: 20;");
+        placeholder.setStyle(
+                "-fx-text-fill: #bdc3c7; -fx-border-color: #bdc3c7; -fx-border-style: dashed; -fx-padding: 20;");
         imageContainer.getChildren().add(placeholder);
 
         javafx.scene.image.ImageView imageView = new javafx.scene.image.ImageView();
@@ -237,12 +238,12 @@ public class POSController {
         imageView.setFitWidth(80);
         imageView.setPreserveRatio(true);
 
-        // Check if we already have the image data
         if (p.getImageData() != null && p.getImageData().length > 0) {
-             try {
+            try {
                 java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(p.getImageData());
                 imageView.setImage(new javafx.scene.image.Image(bis));
                 imageContainer.getChildren().add(imageView);
+                placeholder.setVisible(false);
             } catch (Exception e) {
                 // Ignore image load error, placeholder remains
             }
@@ -252,11 +253,13 @@ public class POSController {
             if (cached != null) {
                 imageView.setImage(cached);
                 imageContainer.getChildren().add(imageView);
+                placeholder.setVisible(false);
             } else {
                 ImageCacheService.getInstance().loadImage(p.getId(), img -> {
                     imageView.setImage(img);
                     if (!imageContainer.getChildren().contains(imageView)) {
                         imageContainer.getChildren().add(imageView);
+                        placeholder.setVisible(false);
                     }
                 });
             }
@@ -284,7 +287,6 @@ public class POSController {
         card.getChildren().addAll(nameLbl, priceLbl, stockLbl);
         return card;
     }
-
 
     private boolean isProductInCart(Product p) {
         return cartItems.stream().anyMatch(item -> item.getProductId() == p.getId());
@@ -580,30 +582,31 @@ public class POSController {
     private void setupCategoryFilter() {
         java.util.ResourceBundle b = com.pos.system.App.getBundle();
         // Dummy "All Categories" category
-        com.pos.system.models.Category allCat = new com.pos.system.models.Category(0, b.getString("pos.allCategories"), "");
+        com.pos.system.models.Category allCat = new com.pos.system.models.Category(0, b.getString("pos.allCategories"),
+                "");
 
         Task<ObservableList<com.pos.system.models.Category>> task = new Task<>() {
             @Override
             protected ObservableList<com.pos.system.models.Category> call() throws Exception {
                 try (com.pos.system.dao.CategoryDAO categoryDAO = new com.pos.system.dao.CategoryDAO()) {
-                     java.util.List<com.pos.system.models.Category> categories = categoryDAO.getAllCategories();
-                     ObservableList<com.pos.system.models.Category> comboItems = FXCollections.observableArrayList();
-                     comboItems.add(allCat);
-                     comboItems.addAll(categories);
-                     return comboItems;
+                    java.util.List<com.pos.system.models.Category> categories = categoryDAO.getAllCategories();
+                    ObservableList<com.pos.system.models.Category> comboItems = FXCollections.observableArrayList();
+                    comboItems.add(allCat);
+                    comboItems.addAll(categories);
+                    return comboItems;
                 }
             }
         };
 
         task.setOnSucceeded(e -> {
-             categoryFilter.setItems(task.getValue());
-             categoryFilter.getSelectionModel().select(allCat);
+            categoryFilter.setItems(task.getValue());
+            categoryFilter.getSelectionModel().select(allCat);
         });
 
         task.setOnFailed(e -> {
-             e.getSource().getException().printStackTrace();
-             categoryFilter.setItems(FXCollections.observableArrayList(allCat));
-             categoryFilter.getSelectionModel().select(allCat);
+            e.getSource().getException().printStackTrace();
+            categoryFilter.setItems(FXCollections.observableArrayList(allCat));
+            categoryFilter.getSelectionModel().select(allCat);
         });
 
         new Thread(task).start();

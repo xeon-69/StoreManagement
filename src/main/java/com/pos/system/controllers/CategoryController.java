@@ -36,16 +36,8 @@ public class CategoryController {
     @FXML
     private TextField searchField;
 
-    private SecurityService securityService;
-
     @FXML
     public void initialize() {
-        try {
-            securityService = new SecurityService();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         descCol.setCellValueFactory(new PropertyValueFactory<>("description"));
@@ -60,8 +52,7 @@ public class CategoryController {
     }
 
     private void loadCategories() {
-        try {
-            CategoryService service = new CategoryService();
+        try (CategoryService service = new CategoryService()) {
             categoryTable.setItems(FXCollections.observableArrayList(service.getAllCategories()));
         } catch (SQLException e) {
             e.printStackTrace();
@@ -77,8 +68,7 @@ public class CategoryController {
         }
 
         String lowerCaseKeyword = keyword.toLowerCase();
-        try {
-            CategoryService service = new CategoryService();
+        try (CategoryService service = new CategoryService()) {
             FilteredList<Category> filteredList = new FilteredList<>(
                     FXCollections.observableArrayList(service.getAllCategories()), category -> {
                         if (category.getName().toLowerCase().contains(lowerCaseKeyword))
@@ -172,16 +162,17 @@ public class CategoryController {
                 String.format(b.getString("category.delete.confirm"), category.getName()));
 
         if (confirm) {
-            try {
-                CategoryService service = new CategoryService();
+            try (CategoryService service = new CategoryService()) {
                 service.deleteCategory(category.getId());
                 NotificationUtils.showInfo(b.getString("dialog.success"), b.getString("category.delete.success"));
                 loadCategories();
 
-                if (securityService != null) {
+                try (SecurityService securityService = new SecurityService()) {
                     securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
                             "DELETE_CATEGORY", "Category", String.valueOf(category.getId()),
                             "Name: " + category.getName());
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();

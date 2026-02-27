@@ -7,7 +7,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
-public class SecurityService {
+public class SecurityService implements AutoCloseable {
     private AuditLogDAO auditLogDAO;
 
     public SecurityService() throws SQLException {
@@ -36,6 +36,13 @@ public class SecurityService {
             auditLogDAO.create(log);
         } catch (SQLException e) {
             System.err.println("Failed to write audit log: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void close() {
+        if (auditLogDAO != null) {
+            auditLogDAO.close();
         }
     }
 }

@@ -60,6 +60,9 @@ public class DashboardController {
     private Button navSettingsBtn;
 
     @FXML
+    private Button navHardwareBtn;
+
+    @FXML
     private Button logoutBtn;
 
     private boolean isSidebarExpanded = true;
@@ -124,7 +127,7 @@ public class DashboardController {
         isSidebarExpanded = !isSidebarExpanded;
 
         Button[] allNavButtons = { navPosBtn, navInventoryBtn, navCategoriesBtn, navFinanceBtn, navReportsBtn,
-                navAuditBtn, navUsersBtn, navSettingsBtn, logoutBtn };
+                navAuditBtn, navUsersBtn, navSettingsBtn, navHardwareBtn, logoutBtn };
 
         if (isSidebarExpanded) {
             sidebar.setPrefWidth(200.0);
@@ -192,6 +195,11 @@ public class DashboardController {
     }
 
     @FXML
+    private void showHardware() {
+        loadView("hardware");
+    }
+
+    @FXML
     private void logout() throws IOException {
         SessionManager.getInstance().logout();
         currentActiveView = null;
@@ -201,7 +209,7 @@ public class DashboardController {
 
     private void updateActiveButton(String fxml) {
         Button[] allNavButtons = { navPosBtn, navInventoryBtn, navCategoriesBtn, navFinanceBtn, navReportsBtn,
-                navAuditBtn, navUsersBtn, navSettingsBtn };
+                navAuditBtn, navUsersBtn, navSettingsBtn, navHardwareBtn };
         Button activeBtn = switch (fxml) {
             case "pos" -> navPosBtn;
             case "inventory" -> navInventoryBtn;
@@ -211,6 +219,7 @@ public class DashboardController {
             case "audit_logs" -> navAuditBtn;
             case "users" -> navUsersBtn;
             case "settings" -> navSettingsBtn;
+            case "hardware" -> navHardwareBtn;
             default -> null;
         };
 

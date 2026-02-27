@@ -6,7 +6,7 @@ import com.pos.system.models.Category;
 import java.sql.SQLException;
 import java.util.List;
 
-public class CategoryService {
+public class CategoryService implements AutoCloseable {
 
     private final CategoryDAO categoryDAO;
 
@@ -33,5 +33,12 @@ public class CategoryService {
 
     public void deleteCategory(int id) throws SQLException {
         categoryDAO.deleteCategory(id);
+    }
+
+    @Override
+    public void close() {
+        if (categoryDAO != null) {
+            categoryDAO.close();
+        }
     }
 }

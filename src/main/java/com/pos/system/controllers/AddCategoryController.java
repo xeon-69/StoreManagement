@@ -25,15 +25,10 @@ public class AddCategoryController {
 
     private Category categoryToEdit; // To track edit mode
     private Runnable onSaveCallback;
-    private SecurityService securityService;
 
     @FXML
     public void initialize() {
-        try {
-            securityService = new SecurityService();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // No persistent services as they hold DB connections
     }
 
     public void setOnSaveCallback(Runnable onSaveCallback) {
@@ -55,7 +50,8 @@ public class AddCategoryController {
         if (!validateInput())
             return;
 
-        try (CategoryDAO dao = new CategoryDAO()) {
+        try (CategoryDAO dao = new CategoryDAO();
+                SecurityService securityService = new SecurityService()) {
             java.util.ResourceBundle b = com.pos.system.App.getBundle();
             int id = (categoryToEdit != null) ? categoryToEdit.getId() : 0;
             Category category = new Category(id, nameField.getText().trim(), descriptionArea.getText().trim());
@@ -64,20 +60,16 @@ public class AddCategoryController {
                 dao.updateCategory(category);
                 messageLabel.setText(b.getString("category.update.success"));
 
-                if (securityService != null) {
-                    securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
-                            "UPDATE_CATEGORY", "Category", String.valueOf(id),
-                            "Name: " + category.getName());
-                }
+                securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                        "UPDATE_CATEGORY", "Category", String.valueOf(id),
+                        "Name: " + category.getName());
             } else {
                 dao.addCategory(category);
                 messageLabel.setText(b.getString("category.add.success"));
 
-                if (securityService != null) {
-                    securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
-                            "CREATE_CATEGORY", "Category", "N/A",
-                            "Name: " + category.getName());
-                }
+                securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
+                        "CREATE_CATEGORY", "Category", "N/A",
+                        "Name: " + category.getName());
             }
 
             messageLabel.setStyle("-fx-text-fill: green;");

@@ -30,8 +30,6 @@ public class FinanceController {
     @FXML
     private Label netProfitLabel;
 
-    private SecurityService securityService;
-
     // Date filter controls
     @FXML
     private ComboBox<String> dateRangeComboBox;
@@ -71,8 +69,6 @@ public class FinanceController {
     @FXML
     public void initialize() {
         try {
-            securityService = new SecurityService();
-
             // Setup date filter ComboBox
             dateRangeComboBox.setItems(FXCollections.observableArrayList(
                     com.pos.system.App.getBundle().getString("reports.filter.today"),
@@ -217,10 +213,12 @@ public class FinanceController {
                 NotificationUtils.showSuccess(b.getString("finance.delete.success"),
                         b.getString("finance.delete.successMsg"));
 
-                if (securityService != null) {
+                try (SecurityService securityService = new SecurityService()) {
                     securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
                             "DELETE_EXPENSE", "Expense", String.valueOf(expense.getId()),
                             "Category: " + expense.getCategory() + ", Amount: " + expense.getAmount());
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -233,13 +231,26 @@ public class FinanceController {
         return new ExpenseDAO();
     }
 
+    protected SaleDAO createSaleDAO() throws SQLException {
+        return new SaleDAO();
+    }
+
     private void setupPagination() {
         LocalDateTime[] range = getSelectedRange();
         if (range == null)
             return;
 
-        try (ExpenseDAO dao = createExpenseDAO()) {
-            int total = dao.getExpensesCountBetween(range[0], range[1]);
+        javafx.concurrent.Task<Integer> countTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected Integer call() throws Exception {
+                try (ExpenseDAO dao = createExpenseDAO()) {
+                    return dao.getExpensesCountBetween(range[0], range[1]);
+                }
+            }
+        };
+
+        countTask.setOnSucceeded(e -> {
+            int total = countTask.getValue();
             int pageCount = (int) Math.ceil((double) total / ROWS_PER_PAGE);
             if (pageCount == 0)
                 pageCount = 1;
@@ -249,9 +260,9 @@ public class FinanceController {
                 loadPaginatedExpenses(pageIndex);
                 return new javafx.scene.layout.VBox();
             });
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        });
+
+        new Thread(countTask).start();
     }
 
     private void loadPaginatedExpenses(int pageIndex) {
@@ -260,12 +271,20 @@ public class FinanceController {
             return;
 
         int offset = pageIndex * ROWS_PER_PAGE;
-        try (ExpenseDAO dao = createExpenseDAO()) {
-            List<Expense> expenses = dao.getPaginatedExpensesBetween(range[0], range[1], ROWS_PER_PAGE, offset);
-            expenseTable.setItems(FXCollections.observableArrayList(expenses));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        javafx.concurrent.Task<List<Expense>> loadTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<Expense> call() throws Exception {
+                try (ExpenseDAO dao = createExpenseDAO()) {
+                    return dao.getPaginatedExpensesBetween(range[0], range[1], ROWS_PER_PAGE, offset);
+                }
+            }
+        };
+
+        loadTask.setOnSucceeded(e -> {
+            expenseTable.setItems(FXCollections.observableArrayList(loadTask.getValue()));
+        });
+
+        new Thread(loadTask).start();
     }
 
     private LocalDateTime[] getSelectedRange() {
@@ -306,57 +325,73 @@ public class FinanceController {
         return new LocalDateTime[] { start, end };
     }
 
-    /**
-     * Synchronous filter — queries income (sales) and expenses for the selected
-     * date range. Resets pagination.
-     */
     @FXML
     private void handleFilter() {
         LocalDateTime[] range = getSelectedRange();
         if (range == null)
             return;
 
-        LocalDateTime start = range[0];
-        LocalDateTime end = range[1];
+        final LocalDateTime start = range[0];
+        final LocalDateTime end = range[1];
 
-        try (SaleDAO saleDAO = new SaleDAO();
-                ExpenseDAO expenseDAO = createExpenseDAO()) {
+        javafx.concurrent.Task<FinanceSummary> filterTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected FinanceSummary call() throws Exception {
+                try (SaleDAO saleDAO = new SaleDAO();
+                        ExpenseDAO expenseDAO = createExpenseDAO()) {
+                    FinanceSummary summary = new FinanceSummary();
+                    summary.totalIncome = saleDAO.getTotalSalesBetween(start, end);
+                    summary.totalExpenses = expenseDAO.getTotalExpensesBetween(start, end);
+                    summary.netProfit = summary.totalIncome - summary.totalExpenses;
+                    return summary;
+                }
+            }
+        };
 
-            double totalIncome = saleDAO.getTotalSalesBetween(start, end);
-            double totalExpenses = expenseDAO.getTotalExpensesBetween(start, end);
-            double netProfit = totalIncome - totalExpenses;
-
+        filterTask.setOnSucceeded(e -> {
+            FinanceSummary summary = filterTask.getValue();
             // Update UI
             String mmk = com.pos.system.App.getBundle().getString("common.mmk");
-            totalIncomeLabel.setText(String.format("%,.2f %s", totalIncome, mmk));
-            totalExpensesLabel.setText(String.format("%,.2f %s", totalExpenses, mmk));
-            netProfitLabel.setText(String.format("%,.2f %s", netProfit, mmk));
+            totalIncomeLabel.setText(String.format("%,.2f %s", summary.totalIncome, mmk));
+            totalExpensesLabel.setText(String.format("%,.2f %s", summary.totalExpenses, mmk));
+            netProfitLabel.setText(String.format("%,.2f %s", summary.netProfit, mmk));
 
             // Color-code net profit
-            if (netProfit >= 0) {
+            if (summary.netProfit >= 0) {
                 netProfitLabel.setStyle("-fx-text-fill: #27ae60; -fx-font-size: 22px; -fx-font-weight: bold;");
             } else {
                 netProfitLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 22px; -fx-font-weight: bold;");
             }
 
             setupPagination();
+        });
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        filterTask.setOnFailed(e -> {
+            filterTask.getException().printStackTrace();
             NotificationUtils.showError(com.pos.system.App.getBundle().getString("dialog.error"),
                     com.pos.system.App.getBundle().getString("finance.load.error"));
-        }
+        });
+
+        new Thread(filterTask).start();
+    }
+
+    private static class FinanceSummary {
+        double totalIncome;
+        double totalExpenses;
+        double netProfit;
     }
 
     @FXML
     private void handleAddExpense() {
         try {
             String category = categoryField.getText();
-            double amount = Double.parseDouble(amountField.getText());
+            String amountStr = amountField.getText();
             String desc = descField.getText();
 
-            if (category.isEmpty())
+            if (category.isEmpty() || amountStr.isEmpty())
                 return;
+
+            double amount = Double.parseDouble(amountStr);
 
             try (ExpenseDAO expenseDAO = createExpenseDAO()) {
                 Expense expense = new Expense(0, category, amount, desc, LocalDateTime.now());
@@ -369,10 +404,12 @@ public class FinanceController {
 
             handleFilter(); // Refresh with current filter
 
-            if (securityService != null) {
+            try (SecurityService securityService = new SecurityService()) {
                 securityService.logAction(SessionManager.getInstance().getCurrentUser().getId(),
                         "ADD_EXPENSE", "Expense", "N/A",
                         "Category: " + category + ", Amount: " + amount);
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
 
         } catch (NumberFormatException e) {

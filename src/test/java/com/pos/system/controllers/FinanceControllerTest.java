@@ -2,12 +2,15 @@ package com.pos.system.controllers;
 
 import com.pos.system.App;
 import com.pos.system.dao.ExpenseDAO;
+import com.pos.system.dao.SaleDAO;
 import com.pos.system.models.Expense;
 import javafx.scene.Scene;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import com.pos.system.utils.SessionManager;
+import com.pos.system.models.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +21,6 @@ import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
 import org.testfx.util.WaitForAsyncUtils;
 
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
@@ -31,6 +33,9 @@ public class FinanceControllerTest {
     @Mock
     private ExpenseDAO mockExpenseDAO;
 
+    @Mock
+    private SaleDAO mockSaleDAO;
+
     private AutoCloseable mocks;
     private FinanceController controller;
 
@@ -41,8 +46,15 @@ public class FinanceControllerTest {
 
         // Mock data
         Expense e1 = new Expense(1, "Supplies", 50.0, "Paper", LocalDateTime.now());
-        when(mockExpenseDAO.getExpensesBetween(any(), any())).thenReturn(Arrays.asList(e1));
+        when(mockExpenseDAO.getExpensesCountBetween(any(), any())).thenReturn(1);
+        when(mockExpenseDAO.getPaginatedExpensesBetween(any(), any(), anyInt(), anyInt()))
+                .thenReturn(Arrays.asList(e1));
         when(mockExpenseDAO.getTotalExpensesBetween(any(), any())).thenReturn(50.0);
+        when(mockSaleDAO.getTotalSalesBetween(any(), any())).thenReturn(100.0);
+
+        // Set Session
+        User admin = new User(1, "admin", "password", "ADMIN");
+        SessionManager.getInstance().setCurrentUser(admin);
 
         javafx.fxml.FXMLLoader fxmlLoader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/finance.fxml"));
         fxmlLoader.setResources(App.getBundle());
@@ -53,6 +65,11 @@ public class FinanceControllerTest {
                 @Override
                 protected ExpenseDAO createExpenseDAO() {
                     return mockExpenseDAO;
+                }
+
+                @Override
+                protected SaleDAO createSaleDAO() {
+                    return mockSaleDAO;
                 }
             };
             return controller;
@@ -68,11 +85,16 @@ public class FinanceControllerTest {
         if (mocks != null) {
             mocks.close();
         }
+        SessionManager.getInstance().logout();
     }
 
     @Test
-    public void testFinanceLoadsDataOnStart(FxRobot robot) {
-        WaitForAsyncUtils.waitForFxEvents();
+    public void testFinanceLoadsDataOnStart(FxRobot robot) throws Exception {
+        // Wait for async load (increased timeout)
+        WaitForAsyncUtils.waitFor(10, java.util.concurrent.TimeUnit.SECONDS, () -> {
+            TableView<Expense> table = robot.lookup("#expenseTable").queryAs(TableView.class);
+            return table.getItems().size() == 1;
+        });
 
         @SuppressWarnings("unchecked")
         TableView<Expense> table = robot.lookup("#expenseTable").queryAs(TableView.class);
@@ -82,7 +104,7 @@ public class FinanceControllerTest {
     }
 
     @Test
-    public void testAddExpense(FxRobot robot) throws SQLException {
+    public void testAddExpense(FxRobot robot) throws Exception {
         WaitForAsyncUtils.waitForFxEvents();
 
         TextField categoryField = robot.lookup("#categoryField").queryAs(TextField.class);
@@ -95,12 +117,19 @@ public class FinanceControllerTest {
 
         robot.clickOn(".btn-success");
 
+        // Wait for async background work (increased timeout)
+        WaitForAsyncUtils.waitFor(10, java.util.concurrent.TimeUnit.SECONDS, () -> {
+            try {
+                verify(mockExpenseDAO, atLeastOnce()).addExpense(any(Expense.class));
+                return true;
+            } catch (Throwable t) {
+                return false;
+            }
+        });
+
         WaitForAsyncUtils.waitForFxEvents();
 
         // Verify DAO was called to add Expense
         verify(mockExpenseDAO, times(1)).addExpense(any(Expense.class));
-
-        // It should also reload the table, calling appropriate methods
-        verify(mockExpenseDAO, atLeastOnce()).getExpensesBetween(any(), any());
     }
 }

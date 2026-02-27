@@ -141,3 +141,14 @@ UPDATE users
 SET password = '$2a$10$I2jdGIOzwA6L9EjQCfovRu9H1YCns/sKPR6zqI4kLo1ce/yRFF5R6',
     force_password_change = 1
 WHERE username = 'admin';
+
+-- Indexes for Performance Tuning
+CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
+CREATE INDEX IF NOT EXISTS idx_products_barcode ON products(barcode);
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
+CREATE INDEX IF NOT EXISTS idx_sales_date ON sales(sale_date);
+CREATE INDEX IF NOT EXISTS idx_sale_items_sale ON sale_items(sale_id);
+CREATE INDEX IF NOT EXISTS idx_sale_items_product ON sale_items(product_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_date ON audit_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_sale_payments_sale ON sale_payments(sale_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(expense_date);
