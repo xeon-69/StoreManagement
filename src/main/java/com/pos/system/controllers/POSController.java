@@ -11,21 +11,26 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 import javafx.geometry.Bounds;
 
 import org.controlsfx.control.GridView;
 import org.controlsfx.control.GridCell;
+
+import com.pos.system.services.ImageCacheService;
 
 public class POSController {
 
@@ -40,8 +45,6 @@ public class POSController {
 
     private static final int ITEMS_PER_PAGE = 9;
 
-    // Removed TableView and Columns for products
-
     @FXML
     private TableView<SaleItem> cartTable;
     @FXML
@@ -53,10 +56,6 @@ public class POSController {
 
     @FXML
     private Label totalLabel;
-
-    // DAOs will be instantiated as needed to manage connections properly
-    // private final ProductDAO productDAO = new ProductDAO();
-    // private final SaleDAO saleDAO = new SaleDAO();
 
     private final ObservableList<SaleItem> cartItems = FXCollections.observableArrayList();
     private ProductCatalogViewModel catalogViewModel;
@@ -184,21 +183,38 @@ public class POSController {
      */
     private void handleBarcodeInput(String barcode) {
         java.util.ResourceBundle b = com.pos.system.App.getBundle();
-        try (ProductDAO productDAO = new ProductDAO()) {
-            Product product = productDAO.getProductByBarcode(barcode);
+
+        Task<Product> task = new Task<>() {
+            @Override
+            protected Product call() throws Exception {
+                try (ProductDAO productDAO = new ProductDAO()) {
+                    return productDAO.getProductByBarcode(barcode);
+                }
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            Product product = task.getValue();
             if (product != null) {
                 updateCartQuantity(product, 1);
             } else {
                 NotificationUtils.showWarning(b.getString("dialog.warning"),
                         String.format(b.getString("pos.barcode.notFound"), barcode));
             }
-        } catch (java.sql.SQLException e) {
-            e.printStackTrace();
+            // Clear and re-focus for next scan
+            searchField.clear();
+            searchField.requestFocus();
+        });
+
+        task.setOnFailed(e -> {
+            e.getSource().getException().printStackTrace();
             NotificationUtils.showError(b.getString("dialog.error"), b.getString("pos.barcode.error"));
-        }
-        // Clear and re-focus for next scan
-        searchField.clear();
-        searchField.requestFocus();
+            // Clear and re-focus for next scan
+            searchField.clear();
+            searchField.requestFocus();
+        });
+
+        new Thread(task).start();
     }
 
     private VBox createProductTile(Product p) {
@@ -208,28 +224,45 @@ public class POSController {
         card.setPrefHeight(230);
         card.setAlignment(Pos.CENTER);
 
-        // Image Handling
+        StackPane imageContainer = new StackPane();
+        imageContainer.setPrefSize(80, 80);
+
         java.util.ResourceBundle b = com.pos.system.App.getBundle();
+        Label placeholder = new Label(b.getString("pos.noImage"));
+        placeholder.setStyle("-fx-text-fill: #bdc3c7; -fx-border-color: #bdc3c7; -fx-border-style: dashed; -fx-padding: 20;");
+        imageContainer.getChildren().add(placeholder);
+
+        javafx.scene.image.ImageView imageView = new javafx.scene.image.ImageView();
+        imageView.setFitHeight(80);
+        imageView.setFitWidth(80);
+        imageView.setPreserveRatio(true);
+
+        // Check if we already have the image data
         if (p.getImageData() != null && p.getImageData().length > 0) {
-            try {
+             try {
                 java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(p.getImageData());
-                javafx.scene.image.ImageView imageView = new javafx.scene.image.ImageView(
-                        new javafx.scene.image.Image(bis));
-                imageView.setFitHeight(80);
-                imageView.setFitWidth(80);
-                imageView.setPreserveRatio(true);
-                card.getChildren().add(imageView);
+                imageView.setImage(new javafx.scene.image.Image(bis));
+                imageContainer.getChildren().add(imageView);
             } catch (Exception e) {
-                Label imgPlaceholder = new Label(b.getString("pos.noImage"));
-                imgPlaceholder.setStyle("-fx-text-fill: gray;"); // Keep simple or add class
-                card.getChildren().add(imgPlaceholder);
+                // Ignore image load error, placeholder remains
             }
         } else {
-            Label imgPlaceholder = new Label(b.getString("pos.noImage"));
-            imgPlaceholder.setStyle(
-                    "-fx-text-fill: #bdc3c7; -fx-border-color: #bdc3c7; -fx-border-style: dashed; -fx-padding: 20;");
-            card.getChildren().add(imgPlaceholder);
+            // Lazy load via ImageCacheService
+            Image cached = ImageCacheService.getInstance().getCachedImage(p.getId());
+            if (cached != null) {
+                imageView.setImage(cached);
+                imageContainer.getChildren().add(imageView);
+            } else {
+                ImageCacheService.getInstance().loadImage(p.getId(), img -> {
+                    imageView.setImage(img);
+                    if (!imageContainer.getChildren().contains(imageView)) {
+                        imageContainer.getChildren().add(imageView);
+                    }
+                });
+            }
         }
+
+        card.getChildren().add(imageContainer);
 
         Label nameLbl = new Label(p.getName());
         nameLbl.getStyleClass().add("product-name");
@@ -248,11 +281,10 @@ public class POSController {
             card.getStyleClass().add("product-card-active");
         }
 
-        // Click handler moved to GridCell level for better reuse/stability
-
         card.getChildren().addAll(nameLbl, priceLbl, stockLbl);
         return card;
     }
+
 
     private boolean isProductInCart(Product p) {
         return cartItems.stream().anyMatch(item -> item.getProductId() == p.getId());
@@ -547,24 +579,34 @@ public class POSController {
 
     private void setupCategoryFilter() {
         java.util.ResourceBundle b = com.pos.system.App.getBundle();
-
         // Dummy "All Categories" category
-        com.pos.system.models.Category allCat = new com.pos.system.models.Category(0, b.getString("pos.allCategories"),
-                "");
+        com.pos.system.models.Category allCat = new com.pos.system.models.Category(0, b.getString("pos.allCategories"), "");
 
-        // Load categories from DAO
-        try (com.pos.system.dao.CategoryDAO categoryDAO = new com.pos.system.dao.CategoryDAO()) {
-            java.util.List<com.pos.system.models.Category> categories = categoryDAO.getAllCategories();
-            ObservableList<com.pos.system.models.Category> comboItems = FXCollections.observableArrayList();
-            comboItems.add(allCat);
-            comboItems.addAll(categories);
-            categoryFilter.setItems(comboItems);
-            categoryFilter.getSelectionModel().select(allCat);
-        } catch (java.sql.SQLException e) {
-            e.printStackTrace();
-            categoryFilter.setItems(FXCollections.observableArrayList(allCat));
-            categoryFilter.getSelectionModel().select(allCat);
-        }
+        Task<ObservableList<com.pos.system.models.Category>> task = new Task<>() {
+            @Override
+            protected ObservableList<com.pos.system.models.Category> call() throws Exception {
+                try (com.pos.system.dao.CategoryDAO categoryDAO = new com.pos.system.dao.CategoryDAO()) {
+                     java.util.List<com.pos.system.models.Category> categories = categoryDAO.getAllCategories();
+                     ObservableList<com.pos.system.models.Category> comboItems = FXCollections.observableArrayList();
+                     comboItems.add(allCat);
+                     comboItems.addAll(categories);
+                     return comboItems;
+                }
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+             categoryFilter.setItems(task.getValue());
+             categoryFilter.getSelectionModel().select(allCat);
+        });
+
+        task.setOnFailed(e -> {
+             e.getSource().getException().printStackTrace();
+             categoryFilter.setItems(FXCollections.observableArrayList(allCat));
+             categoryFilter.getSelectionModel().select(allCat);
+        });
+
+        new Thread(task).start();
 
         // Listener for filter
         categoryFilter.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {

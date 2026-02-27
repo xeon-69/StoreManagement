@@ -71,10 +71,24 @@ public class DateRangeReportController {
             return;
         }
 
-        try {
-            ReportingService reportingService = new ReportingService();
-            File csvFile = reportingService.generateRangeReportCSV(start, end);
-            File excelFile = reportingService.generateRangeReportExcel(start, end);
+        Stage stage = (Stage) startDatePicker.getScene().getWindow();
+        stage.getScene().setCursor(javafx.scene.Cursor.WAIT);
+
+        javafx.concurrent.Task<File[]> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected File[] call() throws Exception {
+                ReportingService reportingService = new ReportingService();
+                File csvFile = reportingService.generateRangeReportCSV(start, end);
+                File excelFile = reportingService.generateRangeReportExcel(start, end);
+                return new File[]{csvFile, excelFile};
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            stage.getScene().setCursor(javafx.scene.Cursor.DEFAULT);
+            File[] files = task.getValue();
+            File csvFile = files[0];
+            File excelFile = files[1];
 
             java.util.ResourceBundle b = com.pos.system.App.getBundle();
             String msg = String.format(
@@ -87,14 +101,19 @@ public class DateRangeReportController {
             NotificationUtils.showSuccess(b.getString("report.notify.generated"), msg);
 
             handleCancel(); // Close modal
-        } catch (Exception e) {
+        });
+
+        task.setOnFailed(e -> {
+            stage.getScene().setCursor(javafx.scene.Cursor.DEFAULT);
             java.util.ResourceBundle b = com.pos.system.App.getBundle();
             String errorMsg = String.format(
                     b.getString("report.notify.failMsg"),
-                    e.getMessage());
+                    e.getSource().getException().getMessage());
             NotificationUtils.showError(b.getString("report.notify.failed"), errorMsg);
-            e.printStackTrace();
-        }
+            e.getSource().getException().printStackTrace();
+        });
+
+        new Thread(task).start();
     }
 
     @FXML

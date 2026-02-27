@@ -1,0 +1,15 @@
+-------------------------------------------------------------------------------
+Test set: com.pos.system.database.DatabaseManagerConcurrencyTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.085 s <<< FAILURE! -- in com.pos.system.database.DatabaseManagerConcurrencyTest
+com.pos.system.database.DatabaseManagerConcurrencyTest.testBackupDuringConcurrentWrites -- Time elapsed: 0.081 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: One manual backup should exist even when triggered under load ==> expected: <1> but was: <0>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:166)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:664)
+	at com.pos.system.database.DatabaseManagerConcurrencyTest.testBackupDuringConcurrentWrites(DatabaseManagerConcurrencyTest.java:108)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)

@@ -44,7 +44,7 @@ public class StoreMonitorService extends ScheduledService<Void> {
 
     private void checkLowStock() {
         try (ProductDAO productDAO = new ProductDAO()) {
-            List<Product> products = productDAO.getAllProducts();
+            List<Product> products = productDAO.getAllProductsSummary();
             for (Product p : products) {
                 if (p.getStock() <= LOW_STOCK_THRESHOLD) {
                     // Only notify once per product

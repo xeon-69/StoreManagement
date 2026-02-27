@@ -106,4 +106,66 @@ public class ProductDAO extends BaseDAO {
         return null; // Not found
     }
 
+    public List<Product> getAllProductsSummary() throws SQLException {
+        List<Product> products = new ArrayList<>();
+        // Select all EXCEPT image_blob
+        String sql = "SELECT p.id, p.barcode, p.name, p.category_id, c.name AS category_name, p.cost_price, p.selling_price, p.stock "
+                + "FROM products p LEFT JOIN categories c ON p.category_id = c.id";
+
+        try (Statement stmt = connection.createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                // Pass null for imageData
+                products.add(new Product(
+                        rs.getInt("id"),
+                        rs.getString("barcode"),
+                        rs.getString("name"),
+                        rs.getInt("category_id"),
+                        rs.getString("category_name"),
+                        rs.getDouble("cost_price"),
+                        rs.getDouble("selling_price"),
+                        rs.getInt("stock"),
+                        null));
+            }
+        }
+        return products;
+    }
+
+    public byte[] getProductImage(int id) throws SQLException {
+        String sql = "SELECT image_blob FROM products WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBytes("image_blob");
+                }
+            }
+        }
+        return null;
+    }
+
+    public Product getProductById(int id) throws SQLException {
+        String sql = "SELECT p.id, p.barcode, p.name, p.category_id, c.name AS category_name, p.cost_price, p.selling_price, p.stock, p.image_blob "
+                + "FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Product(
+                            rs.getInt("id"),
+                            rs.getString("barcode"),
+                            rs.getString("name"),
+                            rs.getInt("category_id"),
+                            rs.getString("category_name"),
+                            rs.getDouble("cost_price"),
+                            rs.getDouble("selling_price"),
+                            rs.getInt("stock"),
+                            rs.getBytes("image_blob"));
+                }
+            }
+        }
+        return null; // Not found
+    }
+
 }

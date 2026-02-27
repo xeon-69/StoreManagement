@@ -9,8 +9,14 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.concurrent.Task;
+import javafx.application.Platform;
 
 import java.util.List;
+
+import com.pos.system.services.ImageCacheService;
 import com.pos.system.services.SecurityService;
 import com.pos.system.utils.SessionManager;
 
@@ -50,7 +56,7 @@ public class InventoryController {
         // Image Column Setup
         imageCol.setCellValueFactory(new PropertyValueFactory<>("imageData"));
         imageCol.setCellFactory(col -> new javafx.scene.control.TableCell<Product, byte[]>() {
-            private final javafx.scene.image.ImageView imageView = new javafx.scene.image.ImageView();
+            private final ImageView imageView = new ImageView();
             {
                 imageView.setFitHeight(40);
                 imageView.setFitWidth(40);
@@ -60,15 +66,34 @@ public class InventoryController {
             @Override
             protected void updateItem(byte[] imageData, boolean empty) {
                 super.updateItem(imageData, empty);
-                if (empty || imageData == null || imageData.length == 0) {
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                 } else {
-                    try {
-                        java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(imageData);
-                        imageView.setImage(new javafx.scene.image.Image(bis));
+                    Product p = getTableRow().getItem();
+                    // Check if we have image data already (e.g. from edit)
+                    if (imageData != null && imageData.length > 0) {
+                         try {
+                             imageView.setImage(new Image(new java.io.ByteArrayInputStream(imageData)));
+                             setGraphic(imageView);
+                         } catch (Exception e) { setGraphic(null); }
+                         return;
+                    }
+
+                    // Lazy load via ImageCacheService
+                    Image cached = ImageCacheService.getInstance().getCachedImage(p.getId());
+                    if (cached != null) {
+                        imageView.setImage(cached);
                         setGraphic(imageView);
-                    } catch (Exception e) {
-                        setGraphic(null);
+                    } else {
+                        setGraphic(null); // Clear while loading
+                        ImageCacheService.getInstance().loadImage(p.getId(), img -> {
+                            // Only update if cell still contains same product
+                            if (getTableRow() != null && getTableRow().getItem() != null
+                                    && getTableRow().getItem().getId() == p.getId()) {
+                                 imageView.setImage(img);
+                                 setGraphic(imageView);
+                            }
+                        });
                     }
                 }
             }
@@ -110,6 +135,7 @@ public class InventoryController {
 
         loadProducts();
     }
+
 
     private void setupActionColumn() {
         actionCol.setCellFactory(param -> new javafx.scene.control.TableCell<Product, Void>() {
@@ -217,7 +243,7 @@ public class InventoryController {
             protected List<Product> call() throws Exception {
                 try (ProductDAO dao = injectedProductDAO != null ? null : new ProductDAO()) {
                     ProductDAO activeDAO = injectedProductDAO != null ? injectedProductDAO : dao;
-                    return activeDAO.getAllProducts();
+                    return activeDAO.getAllProductsSummary(); // Changed to Summary
                 } catch (java.sql.SQLException e) {
                     e.printStackTrace();
                     return java.util.Collections.emptyList();
@@ -253,7 +279,7 @@ public class InventoryController {
             protected List<Product> call() throws Exception {
                 try (ProductDAO dao = injectedProductDAO != null ? null : new ProductDAO()) {
                     ProductDAO activeDAO = injectedProductDAO != null ? injectedProductDAO : dao;
-                    List<Product> allProducts = activeDAO.getAllProducts();
+                    List<Product> allProducts = activeDAO.getAllProductsSummary(); // Changed to Summary
                     return allProducts.stream()
                             .filter(p -> p.getName().toLowerCase().contains(lowerCaseQuery) ||
                                     (p.getBarcode() != null && p.getBarcode().toLowerCase().contains(lowerCaseQuery)))
@@ -381,6 +407,26 @@ public class InventoryController {
             return;
         }
 
+        Task<Product> task = new Task<>() {
+            @Override
+            protected Product call() throws Exception {
+                try (ProductDAO dao = new ProductDAO()) {
+                     return dao.getProductById(selectedProduct.getId());
+                }
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+             Product fullProduct = task.getValue();
+             openEditDialog(fullProduct);
+        });
+
+        task.setOnFailed(e -> e.getSource().getException().printStackTrace());
+
+        new Thread(task).start();
+    }
+
+    private void openEditDialog(Product selectedProduct) {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/fxml/add_product.fxml"));

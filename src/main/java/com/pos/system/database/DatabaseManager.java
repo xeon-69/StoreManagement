@@ -57,15 +57,22 @@ public class DatabaseManager {
             // Initialize tables
             try (Connection conn = dataSource.getConnection()) {
                 initializeTables(conn);
-                migrateLegacyStock(conn);
 
-                // Normalize date format: replace 'T' separator with space for consistent SQLite
-                // comparisons
-                try (var stmt = conn.createStatement()) {
-                    stmt.executeUpdate(
-                            "UPDATE sales SET sale_date = REPLACE(sale_date, 'T', ' ') WHERE sale_date LIKE '%T%'");
-                    logger.info("Normalized sale_date format in sales table.");
-                }
+                // Run heavy migrations/optimizations in background
+                new Thread(() -> {
+                    try (Connection bgConn = dataSource.getConnection()) {
+                        migrateLegacyStock(bgConn);
+
+                        // Normalize date format: replace 'T' separator with space for consistent SQLite comparisons
+                        try (var stmt = bgConn.createStatement()) {
+                            stmt.executeUpdate(
+                                    "UPDATE sales SET sale_date = REPLACE(sale_date, 'T', ' ') WHERE sale_date LIKE '%T%'");
+                            logger.info("Normalized sale_date format in sales table.");
+                        }
+                    } catch (SQLException e) {
+                         logger.error("Background migration failed", e);
+                    }
+                }).start();
             }
 
             // Ensure backup on shutdown

@@ -59,7 +59,7 @@ public class ProductCatalogViewModel {
             protected List<Product> call() throws Exception {
                 try (ProductDAO dao = productDAO != null ? null : new ProductDAO()) {
                     ProductDAO activeDAO = productDAO != null ? productDAO : dao;
-                    return activeDAO.getAllProducts();
+                    return activeDAO.getAllProductsSummary();
                 } catch (java.sql.SQLException e) {
                     e.printStackTrace();
                     return FXCollections.observableArrayList();
