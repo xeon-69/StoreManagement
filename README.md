@@ -49,4 +49,4 @@ A complete Point of Sale (POS) system for desktop, featuring inventory managemen
 
 ## Default Login
 - **Username**: `admin`
-- **Password**: `SalesAdmin123`
+- **Password**: `admin`
